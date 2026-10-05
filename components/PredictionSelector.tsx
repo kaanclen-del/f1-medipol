@@ -2,16 +2,27 @@
 
 import { useState } from "react";
 import type { OpenF1Driver } from "@/lib/openf1";
+import { createClient } from "@/utils/supabase/client";
 
 type Props = {
   drivers: OpenF1Driver[];
+  season: number;
+  round: number;
+  raceName: string;
+  predictionType?: "race" | "sprint";
 };
 
 type PodiumSlot = "P1" | "P2" | "P3";
 
 export default function PredictionSelector({
   drivers,
+  season,
+  round,
+  raceName,
+  predictionType = "race",
 }: Props) {
+  const supabase = createClient();
+
   const [activeSlot, setActiveSlot] =
     useState<PodiumSlot>("P1");
 
@@ -25,14 +36,15 @@ export default function PredictionSelector({
     P3: null,
   });
 
+  const [saving, setSaving] =
+    useState(false);
+
+  const [message, setMessage] =
+    useState("");
+
   function selectDriver(
     driverNumber: number
   ) {
-    /*
-      Aynı pilot başka bir sırada seçiliyse
-      oradan kaldır.
-    */
-
     const next = {
       ...selected,
     };
@@ -51,11 +63,7 @@ export default function PredictionSelector({
     next[activeSlot] = driverNumber;
 
     setSelected(next);
-
-    /*
-      Seçimden sonra otomatik
-      sonraki pozisyona geç.
-    */
+    setMessage("");
 
     if (activeSlot === "P1") {
       setActiveSlot("P2");
@@ -78,6 +86,79 @@ export default function PredictionSelector({
     );
   }
 
+  async function savePrediction() {
+    if (
+      !selected.P1 ||
+      !selected.P2 ||
+      !selected.P3
+    ) {
+      setMessage(
+        "Önce P1, P2 ve P3 pilotlarını seç."
+      );
+
+      return;
+    }
+
+    setSaving(true);
+    setMessage("");
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setSaving(false);
+
+      window.location.href =
+        "/login";
+
+      return;
+    }
+
+    const { error } =
+      await supabase
+        .from("predictions")
+        .upsert(
+          {
+            user_id: user.id,
+            season,
+            round,
+            race_name: raceName,
+            prediction_type:
+              predictionType,
+            p1_driver_number:
+              selected.P1,
+            p2_driver_number:
+              selected.P2,
+            p3_driver_number:
+              selected.P3,
+            updated_at:
+              new Date().toISOString(),
+          },
+          {
+            onConflict:
+              "user_id,season,round,prediction_type",
+          }
+        );
+
+    if (error) {
+      setMessage(
+        `Tahmin kaydedilemedi: ${error.message}`
+      );
+
+      setSaving(false);
+
+      return;
+    }
+
+    setMessage(
+      "✅ Tahminin başarıyla kaydedildi."
+    );
+
+    setSaving(false);
+  }
+
   const slots: {
     key: PodiumSlot;
     points: string;
@@ -97,9 +178,11 @@ export default function PredictionSelector({
   ];
 
   const predictionComplete =
-    selected.P1 &&
-    selected.P2 &&
-    selected.P3;
+    Boolean(
+      selected.P1 &&
+        selected.P2 &&
+        selected.P3
+    );
 
   return (
     <div>
@@ -270,9 +353,8 @@ export default function PredictionSelector({
                     fontSize: "12px",
                   }}
                 >
-                  Pilot seçmek için
-                  aşağıdaki kartlardan
-                  birine tıkla.
+                  Pilot seçmek için aşağıdaki
+                  kartlardan birine tıkla.
                 </div>
               )}
             </button>
@@ -425,6 +507,26 @@ export default function PredictionSelector({
         </div>
       </div>
 
+      {/* MESAJ */}
+
+      {message && (
+        <div
+          style={{
+            marginTop: "20px",
+            padding: "13px 15px",
+            borderRadius: "11px",
+            border:
+              "1px solid rgba(255,255,255,.08)",
+            background:
+              "rgba(255,255,255,.035)",
+            color: "#cbd2da",
+            fontSize: "12px",
+          }}
+        >
+          {message}
+        </div>
+      )}
+
       {/* KAYDET */}
 
       <div
@@ -435,24 +537,33 @@ export default function PredictionSelector({
         }}
       >
         <button
+          type="button"
+          onClick={savePrediction}
           className={
             predictionComplete
               ? "btn btn-red"
               : "btn"
           }
-          disabled={!predictionComplete}
+          disabled={
+            !predictionComplete ||
+            saving
+          }
           style={{
             opacity:
-              predictionComplete
+              predictionComplete &&
+              !saving
                 ? 1
                 : 0.45,
             cursor:
-              predictionComplete
+              predictionComplete &&
+              !saving
                 ? "pointer"
                 : "not-allowed",
           }}
         >
-          Tahmini Kaydet →
+          {saving
+            ? "Kaydediliyor..."
+            : "Tahmini Kaydet →"}
         </button>
       </div>
     </div>

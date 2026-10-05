@@ -1,7 +1,21 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 
 export default function Header() {
+  const [supabase] = useState(() =>
+    createClient()
+  );
+
+  const [displayName, setDisplayName] =
+    useState<string | null>(null);
+
+  const [loadingUser, setLoadingUser] =
+    useState(true);
+
   const navItems = [
     {
       label: "Canlı",
@@ -33,6 +47,42 @@ export default function Header() {
     },
   ];
 
+  async function loadUser() {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      setDisplayName(null);
+      setLoadingUser(false);
+      return;
+    }
+
+    const name =
+      user.user_metadata?.display_name ||
+      user.email?.split("@")[0] ||
+      "Kullanıcı";
+
+    setDisplayName(name);
+    setLoadingUser(false);
+  }
+
+  useEffect(() => {
+    loadUser();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(
+      () => {
+        loadUser();
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
   return (
     <header
       style={{
@@ -53,12 +103,13 @@ export default function Header() {
         style={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          justifyContent:
+            "space-between",
           gap: "24px",
           height: "100%",
         }}
       >
-        {/* LOGO - ANA SAYFAYA ZORUNLU DÖNÜŞ */}
+        {/* LOGO */}
 
         <a
           href="/"
@@ -89,7 +140,7 @@ export default function Header() {
           />
         </a>
 
-        {/* NAVİGASYON */}
+        {/* MENÜ */}
 
         <nav
           style={{
@@ -101,8 +152,6 @@ export default function Header() {
             overflowX: "auto",
           }}
         >
-          {/* ANA SAYFA */}
-
           <a
             href="/"
             style={{
@@ -117,8 +166,6 @@ export default function Header() {
           >
             Ana Sayfa
           </a>
-
-          {/* DİĞER SAYFALAR */}
 
           {navItems.map((item) => (
             <Link
@@ -139,21 +186,77 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* GİRİŞ */}
+        {/* KULLANICI */}
 
-        <Link
-          href="/login"
-          className="btn"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            minWidth: "92px",
-          }}
-        >
-          Giriş Yap
-        </Link>
+        {loadingUser ? (
+          <div
+            style={{
+              minWidth: "92px",
+              height: "42px",
+            }}
+          />
+        ) : displayName ? (
+          <div
+            style={{
+              minHeight: "42px",
+              padding: "0 14px",
+              borderRadius: "10px",
+              border:
+                "1px solid rgba(255,255,255,.10)",
+              background:
+                "rgba(255,255,255,.045)",
+              display: "flex",
+              alignItems: "center",
+              gap: "9px",
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: "28px",
+                height: "28px",
+                borderRadius: "50%",
+                background:
+                  "linear-gradient(135deg,#e10600,#ff5149)",
+                display: "grid",
+                placeItems: "center",
+                fontSize: "11px",
+                fontWeight: 1000,
+              }}
+            >
+              {displayName
+                .charAt(0)
+                .toUpperCase()}
+            </div>
+
+            <span
+              style={{
+                fontSize: "12px",
+                fontWeight: 900,
+                maxWidth: "120px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {displayName}
+            </span>
+          </div>
+        ) : (
+          <Link
+            href="/login"
+            className="btn"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              minWidth: "92px",
+            }}
+          >
+            Giriş Yap
+          </Link>
+        )}
       </div>
     </header>
   );

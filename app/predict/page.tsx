@@ -8,6 +8,10 @@ export default async function PredictPage() {
   const race = await getCurrentRaceWeekend();
   const drivers = await getLatestF1Drivers();
 
+  const season = race?.raceDate
+    ? Number(race.raceDate.slice(0, 4))
+    : new Date().getFullYear();
+
   return (
     <>
       <Header />
@@ -81,9 +85,13 @@ export default async function PredictPage() {
                 Podyumunu Oluştur
               </h2>
 
-              {drivers.length > 0 ? (
+              {race && drivers.length > 0 ? (
                 <PredictionSelector
                   drivers={drivers}
+                  season={season}
+                  round={race.round}
+                  raceName={race.raceName}
+                  predictionType="race"
                 />
               ) : (
                 <div
@@ -95,7 +103,8 @@ export default async function PredictPage() {
                     textAlign: "center",
                   }}
                 >
-                  Pilot verileri yüklenemedi.
+                  Yarış veya pilot verileri
+                  yüklenemedi.
                 </div>
               )}
             </div>
@@ -195,9 +204,8 @@ export default async function PredictPage() {
                     marginBottom: 0,
                   }}
                 >
-                  Tahminler ilgili yarış
-                  session&apos;ı başladığında
-                  otomatik olarak
+                  Tahminler yarış session&apos;ı
+                  başladığında otomatik olarak
                   kilitlenecek.
                 </p>
               </div>
@@ -231,6 +239,25 @@ export default async function PredictPage() {
                     fontSize: "12px",
                   }}
                 >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent:
+                        "space-between",
+                      gap: "15px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "#8793a1",
+                      }}
+                    >
+                      Sezon
+                    </span>
+
+                    <b>{season}</b>
+                  </div>
+
                   <div
                     style={{
                       display: "flex",
@@ -333,9 +360,9 @@ export default async function PredictPage() {
                       margin: 0,
                     }}
                   >
-                    Bu hafta sonu için ayrıca
-                    Sprint P1 / P2 / P3 tahmini
-                    sistemi de açılacak.
+                    Sprint tahmin sistemini bir
+                    sonraki aşamada ayrıca
+                    ekleyeceğiz.
                   </p>
                 </div>
               )}
