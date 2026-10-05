@@ -1,83 +1,50 @@
-export default function Home() {
+import Header from "@/components/Header";
+import RaceHeroBackground from "@/components/RaceHeroBackground";
+import { getCurrentRaceWeekend } from "@/lib/race-data";
+import { getRaceHeroImages } from "@/lib/race-image";
+
+function formatRaceDate(date?: string) {
+  if (!date) return "TARİH BEKLENİYOR";
+
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "numeric",
+    month: "long",
+  })
+    .format(new Date(`${date}T12:00:00Z`))
+    .toLocaleUpperCase("tr-TR");
+}
+
+export default async function Home() {
+  const race = await getCurrentRaceWeekend();
+
+  const heroImages = race
+    ? await getRaceHeroImages(
+        race.raceName,
+        race.circuitName,
+        race.city
+      )
+    : [];
+
+  const raceTitle = race?.raceName || "FORMULA 1 GRAND PRIX";
+
+  const cleanRaceTitle = raceTitle
+    .replace(/grand prix/i, "")
+    .trim();
+
+  const raceDate = formatRaceDate(race?.raceDate);
+
   return (
     <main>
-      {/* NAVBAR */}
-      <header
+      <Header />
+
+      <div
+        className="site-container"
         style={{
-          height: "78px",
-          borderBottom: "1px solid rgba(255,255,255,.08)",
-          background: "rgba(17,21,29,.92)",
-          backdropFilter: "blur(18px)",
-          position: "sticky",
-          top: 0,
-          zIndex: 50,
+          paddingTop: "24px",
+          paddingBottom: "60px",
         }}
       >
-        <div
-          className="site-container"
-          style={{
-            height: "100%",
-            display: "flex",
-            alignItems: "center",
-            gap: "28px",
-          }}
-        >
-<div
-  style={{
-    width: "245px",
-    height: "56px",
-    overflow: "hidden",
-    borderRadius: "10px",
-    background: "white",
-    marginRight: "18px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  }}
->
-  <img
-    src="/f1-medipol-logo.jpg"
-    alt="F1 Medipol"
-    style={{
-      width: "245px",
-      maxWidth: "none",
-      height: "auto",
-      transform: "translateY(1px)",
-    }}
-  />
-</div>
-
-          <nav
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "22px",
-              fontSize: "13px",
-              fontWeight: 800,
-              color: "#b8c1cc",
-            }}
-          >
-            <a style={{ color: "white" }}>Ana Sayfa</a>
-            <a>Canlı</a>
-            <a>Tahmin</a>
-            <a>Etkinlikler</a>
-            <a>Galeri</a>
-            <a>Yönetim Kurulu</a>
-            <a>Paddock</a>
-            <a>Arcade</a>
-          </nav>
-
-          <button
-            className="btn btn-red"
-            style={{ marginLeft: "auto" }}
-          >
-            Oturum Aç
-          </button>
-        </div>
-      </header>
-
-      <div className="site-container" style={{ paddingTop: "24px" }}>
-        {/* TICKER */}
+        {/* ÜST BİLGİ ŞERİDİ */}
         <div
           style={{
             padding: "10px 16px",
@@ -91,19 +58,31 @@ export default function Home() {
             fontSize: "12px",
           }}
         >
-          <b style={{ color: "#ff5149" }}>F1 MEDİPOL</b>
+          <b style={{ color: "#ff5149" }}>
+            F1 MEDİPOL
+          </b>
 
           <span style={{ color: "#aeb8c4" }}>
-            Singapore GP · Round 17
+            {race
+              ? `${race.raceName} · Round ${race.round}`
+              : "Sıradaki yarış yükleniyor"}
           </span>
 
-          <span style={{ color: "#aeb8c4" }}>
-            Sprint Weekend
-          </span>
+          {race?.sprint && (
+            <span style={{ color: "#ff805c" }}>
+              ⚡ Sprint Weekend
+            </span>
+          )}
 
           <span style={{ color: "#aeb8c4" }}>
-            9–11 Ekim
+            {raceDate}
           </span>
+
+          {race && (
+            <span style={{ color: "#aeb8c4" }}>
+              {race.city} · {race.country}
+            </span>
+          )}
         </div>
 
         {/* HERO */}
@@ -115,6 +94,7 @@ export default function Home() {
             gap: "14px",
           }}
         >
+          {/* ANA YARIŞ KARTI */}
           <div
             className="card"
             style={{
@@ -122,10 +102,15 @@ export default function Home() {
               padding: "42px",
               position: "relative",
               overflow: "hidden",
+              isolation: "isolate",
               background:
-                "radial-gradient(circle at 80% 20%, rgba(225,6,0,.30), transparent 30%), linear-gradient(135deg,#351d25,#1a2330 65%,#12171f)",
+                "linear-gradient(135deg,#351d25,#1a2330 65%,#12171f)",
             }}
           >
+            {/* OTOMATİK DEĞİŞEN 5 YARIŞ FOTOĞRAFI */}
+            <RaceHeroBackground images={heroImages} />
+
+            {/* ROUND SAYISI */}
             <div
               style={{
                 position: "absolute",
@@ -133,117 +118,170 @@ export default function Home() {
                 top: "-35px",
                 fontSize: "190px",
                 fontWeight: 1000,
-                color: "rgba(255,255,255,.035)",
+                color: "rgba(255,255,255,.04)",
                 fontStyle: "italic",
+                zIndex: 2,
               }}
             >
-              17
+              {race?.round ?? "F1"}
             </div>
 
-            <div className="eyebrow">
-              ROUND 17 · MARINA BAY
-            </div>
-
+            {/* HERO İÇERİĞİ */}
             <div
               style={{
-                display: "flex",
-                gap: "8px",
-                marginTop: "14px",
+                position: "relative",
+                zIndex: 3,
               }}
             >
-              {["NIGHT RACE", "SPRINT WEEKEND", "09–11 EKİM"].map(
-                (item) => (
+              <div className="eyebrow">
+                {race
+                  ? `ROUND ${race.round} · ${race.circuitName}`
+                  : "FORMULA 1"}
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  marginTop: "14px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <span
+                  style={{
+                    padding: "7px 10px",
+                    borderRadius: "999px",
+                    border:
+                      "1px solid rgba(255,255,255,.12)",
+                    background:
+                      "rgba(255,255,255,.05)",
+                    fontSize: "10px",
+                    fontWeight: 900,
+                  }}
+                >
+                  {race?.city
+                    ? race.city.toLocaleUpperCase("tr-TR")
+                    : "F1"}
+                </span>
+
+                {race?.sprint && (
                   <span
-                    key={item}
                     style={{
                       padding: "7px 10px",
                       borderRadius: "999px",
-                      border: "1px solid rgba(255,255,255,.12)",
-                      background: "rgba(255,255,255,.04)",
+                      border:
+                        "1px solid rgba(255,120,80,.30)",
+                      background:
+                        "rgba(255,100,60,.10)",
+                      color: "#ff9b75",
                       fontSize: "10px",
                       fontWeight: 900,
                     }}
                   >
-                    {item}
+                    SPRINT WEEKEND
                   </span>
-                ),
-              )}
-            </div>
+                )}
 
-            <h1
-              style={{
-                fontSize: "76px",
-                lineHeight: ".9",
-                margin: "42px 0 15px",
-                letterSpacing: "-.055em",
-              }}
-            >
-              SINGAPORE
-              <br />
-              <span style={{ color: "#ff4942" }}>
-                GRAND PRIX
-              </span>
-            </h1>
-
-            <p
-              style={{
-                color: "#aeb8c4",
-                fontSize: "13px",
-                fontWeight: 800,
-                letterSpacing: ".1em",
-              }}
-            >
-              SIRADAKİ F1 HAFTA SONU
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "10px",
-                margin: "28px 0",
-              }}
-            >
-              {[
-                ["04", "GÜN"],
-                ["14", "SAAT"],
-                ["32", "DAK"],
-                ["18", "SN"],
-              ].map(([n, l]) => (
-                <div
-                  key={l}
+                <span
                   style={{
-                    width: "88px",
-                    padding: "13px",
-                    textAlign: "center",
-                    borderRadius: "12px",
-                    border: "1px solid rgba(255,255,255,.09)",
-                    background: "rgba(10,14,20,.36)",
+                    padding: "7px 10px",
+                    borderRadius: "999px",
+                    border:
+                      "1px solid rgba(255,255,255,.12)",
+                    background:
+                      "rgba(255,255,255,.05)",
+                    fontSize: "10px",
+                    fontWeight: 900,
                   }}
                 >
-                  <b
-                    style={{
-                      display: "block",
-                      fontSize: "25px",
-                    }}
-                  >
-                    {n}
-                  </b>
+                  {raceDate}
+                </span>
+              </div>
 
-                  <small
+              <h1
+                style={{
+                  fontSize: "74px",
+                  lineHeight: ".9",
+                  margin: "42px 0 15px",
+                  letterSpacing: "-.055em",
+                  textTransform: "uppercase",
+                  maxWidth: "760px",
+                }}
+              >
+                {cleanRaceTitle}
+                <br />
+
+                <span style={{ color: "#ff4942" }}>
+                  GRAND PRIX
+                </span>
+              </h1>
+
+              <p
+                style={{
+                  color: "#c2cad4",
+                  fontSize: "13px",
+                  fontWeight: 800,
+                  letterSpacing: ".1em",
+                }}
+              >
+                {race
+                  ? `${race.circuitName} · ${race.city}, ${race.country}`
+                  : "SIRADAKİ F1 HAFTA SONU"}
+              </p>
+
+              {/* ŞİMDİLİK DEMO COUNTDOWN */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  margin: "28px 0",
+                }}
+              >
+                {[
+                  ["04", "GÜN"],
+                  ["14", "SAAT"],
+                  ["32", "DAK"],
+                  ["18", "SN"],
+                ].map(([number, label]) => (
+                  <div
+                    key={label}
                     style={{
-                      color: "#8995a4",
-                      fontSize: "9px",
+                      width: "88px",
+                      padding: "13px",
+                      textAlign: "center",
+                      borderRadius: "12px",
+                      border:
+                        "1px solid rgba(255,255,255,.10)",
+                      background:
+                        "rgba(8,12,18,.48)",
+                      backdropFilter: "blur(8px)",
                     }}
                   >
-                    {l}
-                  </small>
-                </div>
-              ))}
+                    <b
+                      style={{
+                        display: "block",
+                        fontSize: "25px",
+                      }}
+                    >
+                      {number}
+                    </b>
+
+                    <small
+                      style={{
+                        color: "#8995a4",
+                        fontSize: "9px",
+                      }}
+                    >
+                      {label}
+                    </small>
+                  </div>
+                ))}
+              </div>
+
+              <button className="btn btn-red">
+                Yarış Merkezine Git →
+              </button>
             </div>
-
-            <button className="btn btn-red">
-              Yarış Merkezine Git →
-            </button>
           </div>
 
           {/* QUICK INTEL */}
@@ -270,10 +308,33 @@ export default function Home() {
             </h2>
 
             {[
-              ["PIT STRATEJİSİ", "1–2", "Safety Car stratejiyi değiştirebilir."],
-              ["GEÇİŞ", "ZOR", "Marina Bay'de pist pozisyonu kritik."],
-              ["FORM", "HAM", "Son yarıştan sonra güçlü momentum."],
-              ["ŞAMPİYONA", "+84", "Antonelli liderliğini koruyor."],
+              [
+                "PİST",
+                race?.circuitName || "—",
+                race
+                  ? `${race.city}, ${race.country}`
+                  : "Pist bilgisi bekleniyor.",
+              ],
+
+              [
+                "HAFTA SONU",
+                race?.sprint ? "SPRINT" : "NORMAL",
+                race?.sprint
+                  ? "Bu hafta Sprint formatı uygulanıyor."
+                  : "Standart Grand Prix hafta sonu.",
+              ],
+
+              [
+                "ROUND",
+                race ? `${race.round}` : "—",
+                "2026 Formula 1 sezonu.",
+              ],
+
+              [
+                "YARIŞ TARİHİ",
+                raceDate,
+                "Ana yarış programı.",
+              ],
             ].map(([title, value, text]) => (
               <div
                 key={title}
@@ -294,9 +355,12 @@ export default function Home() {
 
                 <div
                   style={{
-                    fontSize: "28px",
+                    fontSize:
+                      title === "PİST"
+                        ? "19px"
+                        : "27px",
                     fontWeight: 1000,
-                    margin: "3px 0",
+                    margin: "4px 0",
                   }}
                 >
                   {value}
@@ -319,9 +383,10 @@ export default function Home() {
         <section
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(3,1fr)",
+            gridTemplateColumns:
+              "repeat(3,1fr)",
             gap: "14px",
-            margin: "14px 0 60px",
+            marginTop: "14px",
           }}
         >
           {[
@@ -330,11 +395,15 @@ export default function Home() {
               "Canlı timing şu anda beklemede.",
               "Canlı Merkezi Aç",
             ],
+
             [
-              "SINGAPORE TAHMİNİ",
-              "Podyum ve Sprint tahminlerini oluştur.",
+              "YARIŞ TAHMİNİ",
+              race
+                ? `${race.raceName} için podyum tahminini oluştur.`
+                : "Podyum tahminini oluştur.",
               "Tahmin Yap",
             ],
+
             [
               "PADDOCK NABZI",
               "Kulüp topluluğundaki son gelişmeleri gör.",
@@ -344,9 +413,13 @@ export default function Home() {
             <article
               className="card"
               key={title}
-              style={{ padding: "22px" }}
+              style={{
+                padding: "22px",
+              }}
             >
-              <div className="eyebrow">{title}</div>
+              <div className="eyebrow">
+                {title}
+              </div>
 
               <h3
                 style={{
