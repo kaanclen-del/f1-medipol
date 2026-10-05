@@ -1,509 +1,596 @@
 import Header from "@/components/Header";
-import RaceHeroBackground from "@/components/RaceHeroBackground";
-import RaceCountdown from "@/components/RaceCountdown";
+import LiveAutoRefresh from "@/components/LiveAutoRefresh";
+import LiveTimingClient from "@/components/LiveTimingClient";
+
 import { getCurrentRaceWeekend } from "@/lib/race-data";
-import { getRaceHeroImages } from "@/lib/race-image";
+import { getLatestF1Session } from "@/lib/openf1";
 
-function formatRaceDate(date?: string) {
-  if (!date) {
-    return "TARİH BEKLENİYOR";
-  }
+export const dynamic = "force-dynamic";
 
-  return new Intl.DateTimeFormat("tr-TR", {
-    day: "numeric",
-    month: "long",
-  })
-    .format(new Date(`${date}T12:00:00Z`))
-    .toLocaleUpperCase("tr-TR");
-}
-
-export default async function Home() {
+export default async function LivePage() {
   const race = await getCurrentRaceWeekend();
 
-  const heroImages = race
-    ? await getRaceHeroImages(
-        race.raceName,
-        race.circuitName,
-        race.city
-      )
-    : [];
+  const latestSession =
+    await getLatestF1Session();
 
-  const raceTitle =
-    race?.raceName || "FORMULA 1 GRAND PRIX";
+  const now = new Date();
 
-  const cleanRaceTitle = raceTitle
-    .replace(/grand prix/i, "")
-    .trim();
+  const sessionStart = latestSession
+    ? new Date(latestSession.date_start)
+    : null;
 
-  const raceDate = formatRaceDate(
-    race?.raceDate
-  );
+  const sessionEnd = latestSession
+    ? new Date(latestSession.date_end)
+    : null;
+
+  const isLive =
+    Boolean(sessionStart) &&
+    Boolean(sessionEnd) &&
+    now >= sessionStart! &&
+    now <= sessionEnd!;
 
   return (
     <>
+      {/* Sayfanın genel session durumu 15 sn'de bir kontrol edilir */}
+      <LiveAutoRefresh />
+
       <Header />
 
       <main>
         <div
           className="site-container"
           style={{
-            paddingTop: "24px",
-            paddingBottom: "60px",
+            paddingTop: "26px",
+            paddingBottom: "70px",
           }}
         >
-          {/* ÜST BİLGİ ŞERİDİ */}
-
-          <div
-            style={{
-              padding: "10px 16px",
-              border:
-                "1px solid rgba(255,255,255,.08)",
-              borderRadius: "12px",
-              background:
-                "rgba(255,255,255,.025)",
-              display: "flex",
-              gap: "22px",
-              alignItems: "center",
-              overflow: "hidden",
-              fontSize: "12px",
-              flexWrap: "wrap",
-            }}
-          >
-            <b
-              style={{
-                color: "#ff5149",
-              }}
-            >
-              F1 MEDİPOL
-            </b>
-
-            <span
-              style={{
-                color: "#aeb8c4",
-              }}
-            >
-              {race
-                ? `${race.raceName} · Round ${race.round}`
-                : "Sıradaki yarış yükleniyor"}
-            </span>
-
-            {race?.sprint && (
-              <span
-                style={{
-                  color: "#ff805c",
-                }}
-              >
-                ⚡ Sprint Weekend
-              </span>
-            )}
-
-            <span
-              style={{
-                color: "#aeb8c4",
-              }}
-            >
-              {raceDate}
-            </span>
-
-            {race && (
-              <span
-                style={{
-                  color: "#aeb8c4",
-                }}
-              >
-                {race.city} · {race.country}
-              </span>
-            )}
-          </div>
-
-          {/* HERO */}
+          {/* ÜST BAŞLIK */}
 
           <section
             style={{
-              marginTop: "18px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              gap: "20px",
+              flexWrap: "wrap",
+              marginBottom: "18px",
+            }}
+          >
+            <div>
+              <div className="eyebrow">
+                F1 MEDİPOL · RACE CENTER
+              </div>
+
+              <h1
+                style={{
+                  margin: "8px 0 4px",
+                  fontSize: "48px",
+                  letterSpacing: "-.04em",
+                }}
+              >
+                CANLI
+              </h1>
+
+              <p
+                style={{
+                  margin: 0,
+                  color: "#9da8b5",
+                  fontSize: "14px",
+                }}
+              >
+                {race
+                  ? `${race.raceName} · ${race.circuitName}`
+                  : "Formula 1 Race Center"}
+              </p>
+            </div>
+
+            {/* SESSION DURUMU */}
+
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                alignItems: "center",
+                padding: "10px 14px",
+                borderRadius: "999px",
+                border:
+                  "1px solid rgba(255,255,255,.08)",
+                background:
+                  "rgba(255,255,255,.035)",
+              }}
+            >
+              <span
+                style={{
+                  width: "9px",
+                  height: "9px",
+                  borderRadius: "50%",
+                  background: isLive
+                    ? "#35d477"
+                    : "#7b8490",
+                  display: "inline-block",
+                  boxShadow: isLive
+                    ? "0 0 15px rgba(53,212,119,.65)"
+                    : "none",
+                }}
+              />
+
+              <span
+                style={{
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  color: isLive
+                    ? "#55e68f"
+                    : "#aeb8c4",
+                  letterSpacing: ".08em",
+                }}
+              >
+                {isLive
+                  ? "SESSION LIVE"
+                  : "SESSION OFFLINE"}
+              </span>
+            </div>
+          </section>
+
+          {/* API DURUM ŞERİDİ */}
+
+          <div
+            className="card"
+            style={{
+              padding: "14px 18px",
+              marginBottom: "14px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+              }}
+            >
+              <span
+                style={{
+                  width: "8px",
+                  height: "8px",
+                  borderRadius: "50%",
+                  background: latestSession
+                    ? "#35d477"
+                    : "#e10600",
+                }}
+              />
+
+              <b
+                style={{
+                  fontSize: "12px",
+                }}
+              >
+                OPENF1 API
+              </b>
+
+              <b
+                style={{
+                  color: latestSession
+                    ? "#35d477"
+                    : "#ff6762",
+                  fontSize: "11px",
+                }}
+              >
+                {latestSession
+                  ? "BAĞLANDI"
+                  : "BAĞLANTI YOK"}
+              </b>
+            </div>
+
+            <div
+              style={{
+                color: "#aeb8c4",
+                fontSize: "12px",
+              }}
+            >
+              {isLive
+                ? "Canlı timing aktif · yaklaşık 4 sn güncelleme"
+                : "Canlı Formula 1 session'ı bekleniyor"}
+            </div>
+          </div>
+
+          {/* ANA GRID */}
+
+          <section
+            style={{
               display: "grid",
               gridTemplateColumns:
-                "minmax(0,1.55fr) minmax(300px,.7fr)",
+                "minmax(0,1.7fr) minmax(300px,.65fr)",
               gap: "14px",
             }}
           >
-            {/* ANA YARIŞ KARTI */}
+            {/* TIMING */}
 
             <div
               className="card"
               style={{
-                minHeight: "540px",
-                padding: "42px",
-                position: "relative",
+                minHeight: "650px",
                 overflow: "hidden",
-                isolation: "isolate",
-                background:
-                  "linear-gradient(135deg,#351d25,#1a2330 65%,#12171f)",
               }}
             >
-              {/* OTOMATİK YARIŞ FOTOĞRAFLARI */}
-
-              <RaceHeroBackground
-                images={heroImages}
-              />
-
-              {/* ROUND SAYISI */}
+              {/* TIMING BAŞLIĞI */}
 
               <div
                 style={{
-                  position: "absolute",
-                  right: "-20px",
-                  top: "-35px",
-                  fontSize: "190px",
-                  fontWeight: 1000,
-                  color:
-                    "rgba(255,255,255,.04)",
-                  fontStyle: "italic",
-                  zIndex: 2,
-                  pointerEvents: "none",
+                  padding: "20px 22px",
+                  borderBottom:
+                    "1px solid rgba(255,255,255,.08)",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "15px",
                 }}
               >
-                {race?.round ?? "F1"}
-              </div>
+                <div>
+                  <div className="eyebrow">
+                    LIVE TIMING
+                  </div>
 
-              {/* HERO İÇERİĞİ */}
-
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: 3,
-                }}
-              >
-                <div className="eyebrow">
-                  {race
-                    ? `ROUND ${race.round} · ${race.circuitName}`
-                    : "FORMULA 1"}
+                  <h2
+                    style={{
+                      margin: "5px 0 0",
+                      fontSize: "25px",
+                    }}
+                  >
+                    Sürücü Sıralaması
+                  </h2>
                 </div>
 
                 <div
                   style={{
-                    display: "flex",
-                    gap: "8px",
-                    marginTop: "14px",
-                    flexWrap: "wrap",
+                    padding: "8px 12px",
+                    borderRadius: "999px",
+                    background: isLive
+                      ? "rgba(53,212,119,.10)"
+                      : "rgba(255,255,255,.05)",
+                    border:
+                      "1px solid rgba(255,255,255,.07)",
+                    fontSize: "11px",
+                    fontWeight: 900,
+                    color: isLive
+                      ? "#55e68f"
+                      : "#aab3bf",
                   }}
                 >
-                  <span
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: "999px",
-                      border:
-                        "1px solid rgba(255,255,255,.12)",
-                      background:
-                        "rgba(255,255,255,.05)",
-                      fontSize: "10px",
-                      fontWeight: 900,
-                    }}
-                  >
-                    {race?.city
-                      ? race.city.toLocaleUpperCase(
-                          "tr-TR"
-                        )
-                      : "F1"}
-                  </span>
+                  {isLive
+                    ? "CANLI VERİ"
+                    : "TIMING KAPALI"}
+                </div>
+              </div>
 
-                  {race?.sprint && (
-                    <span
-                      style={{
-                        padding:
-                          "7px 10px",
-                        borderRadius:
-                          "999px",
-                        border:
-                          "1px solid rgba(255,120,80,.30)",
-                        background:
-                          "rgba(255,100,60,.10)",
-                        color: "#ff9b75",
-                        fontSize: "10px",
-                        fontWeight: 900,
-                      }}
-                    >
-                      SPRINT WEEKEND
-                    </span>
-                  )}
+              {/* TABLO BAŞLIKLARI */}
 
-                  <span
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: "999px",
-                      border:
-                        "1px solid rgba(255,255,255,.12)",
-                      background:
-                        "rgba(255,255,255,.05)",
-                      fontSize: "10px",
-                      fontWeight: 900,
-                    }}
-                  >
-                    {raceDate}
-                  </span>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns:
+                    "55px minmax(170px,1fr) 120px 120px 90px",
+                  gap: "10px",
+                  padding: "12px 22px",
+                  fontSize: "10px",
+                  fontWeight: 900,
+                  color: "#778290",
+                  letterSpacing: ".07em",
+                  borderBottom:
+                    "1px solid rgba(255,255,255,.06)",
+                }}
+              >
+                <span>POS</span>
+                <span>SÜRÜCÜ</span>
+                <span>INTERVAL</span>
+                <span>LAST LAP</span>
+                <span>TYRE</span>
+              </div>
+
+              {/* 
+                ASIL CANLI SİSTEM
+                /api/live adresini kendi içinde
+                yaklaşık 4 saniyede bir kontrol eder
+              */}
+
+              <LiveTimingClient />
+            </div>
+
+            {/* SAĞ PANEL */}
+
+            <aside
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "14px",
+              }}
+            >
+              {/* SESSION STATUS */}
+
+              <div
+                className="card"
+                style={{
+                  padding: "22px",
+                }}
+              >
+                <div className="eyebrow">
+                  SESSION STATUS
                 </div>
 
-                <h1
+                <h2
                   style={{
-                    fontSize: "74px",
-                    lineHeight: ".9",
-                    margin:
-                      "42px 0 15px",
-                    letterSpacing:
-                      "-.055em",
-                    textTransform:
-                      "uppercase",
-                    maxWidth: "760px",
+                    fontSize: "26px",
+                    margin: "8px 0 18px",
                   }}
                 >
-                  {cleanRaceTitle}
+                  {isLive
+                    ? latestSession?.session_name ||
+                      "Canlı"
+                    : "Beklemede"}
+                </h2>
 
-                  <br />
+                {[
+                  [
+                    "Durum",
+                    isLive
+                      ? "CANLI"
+                      : "KAPALI",
+                  ],
 
-                  <span
+                  [
+                    "Session",
+                    isLive
+                      ? latestSession?.session_name ||
+                        "—"
+                      : "—",
+                  ],
+
+                  [
+                    "Tür",
+                    isLive
+                      ? latestSession?.session_type ||
+                        "—"
+                      : "—",
+                  ],
+
+                  [
+                    "Konum",
+                    isLive
+                      ? latestSession?.location ||
+                        latestSession?.country_name ||
+                        "—"
+                      : "—",
+                  ],
+                ].map(([label, value]) => (
+                  <div
+                    key={label}
                     style={{
-                      color: "#ff4942",
+                      padding: "13px 0",
+                      borderTop:
+                        "1px solid rgba(255,255,255,.07)",
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: "20px",
                     }}
                   >
-                    GRAND PRIX
-                  </span>
-                </h1>
+                    <span
+                      style={{
+                        color: "#8793a1",
+                        fontSize: "12px",
+                      }}
+                    >
+                      {label}
+                    </span>
+
+                    <b
+                      style={{
+                        fontSize: "12px",
+                        textAlign: "right",
+                        color:
+                          label === "Durum" &&
+                          isLive
+                            ? "#35d477"
+                            : "white",
+                      }}
+                    >
+                      {value}
+                    </b>
+                  </div>
+                ))}
+              </div>
+
+              {/* RACE WEEKEND */}
+
+              <div
+                className="card"
+                style={{
+                  padding: "22px",
+                }}
+              >
+                <div className="eyebrow">
+                  RACE WEEKEND
+                </div>
+
+                <h3
+                  style={{
+                    margin: "8px 0 16px",
+                    fontSize: "20px",
+                  }}
+                >
+                  {race?.raceName ||
+                    "Formula 1"}
+                </h3>
 
                 <p
                   style={{
-                    color: "#c2cad4",
-                    fontSize: "13px",
-                    fontWeight: 800,
-                    letterSpacing: ".1em",
+                    color: "#929dab",
+                    fontSize: "12px",
+                    lineHeight: 1.7,
+                    margin: 0,
                   }}
                 >
                   {race
-                    ? `${race.circuitName} · ${race.city}, ${race.country}`
-                    : "SIRADAKİ F1 HAFTA SONU"}
+                    ? `${race.circuitName} · ${race.city}, ${race.country} · Round ${race.round}`
+                    : "Yarış bilgileri yükleniyor."}
                 </p>
-
-                {/* GERÇEK GERİ SAYIM */}
-
-                {race && (
-                  <RaceCountdown
-                    raceDate={
-                      race.raceDate
-                    }
-                    raceTime={
-                      race.raceTime
-                    }
-                  />
-                )}
-
-                <button
-                  className="btn btn-red"
-                >
-                  Yarış Merkezine Git →
-                </button>
-              </div>
-            </div>
-
-            {/* QUICK INTEL */}
-
-            <aside
-              className="card"
-              style={{
-                padding: "25px",
-                minHeight: "540px",
-                background:
-                  "linear-gradient(145deg,#262d39,#171d26)",
-              }}
-            >
-              <div className="eyebrow">
-                YARIŞA GİRMEDEN ÖNCE
               </div>
 
-              <h2
+              {/* CANLI VERİ SİSTEMİ */}
+
+              <div
+                className="card"
                 style={{
-                  fontSize: "32px",
-                  margin: "8px 0 24px",
+                  padding: "22px",
                 }}
               >
-                QUICK INTEL
-              </h2>
+                <div className="eyebrow">
+                  LIVE DATA
+                </div>
 
-              {[
-                [
-                  "PİST",
-                  race?.circuitName ||
-                    "—",
-                  race
-                    ? `${race.city}, ${race.country}`
-                    : "Pist bilgisi bekleniyor.",
-                ],
+                <h3
+                  style={{
+                    margin: "8px 0 14px",
+                    fontSize: "20px",
+                  }}
+                >
+                  Otomatik Timing
+                </h3>
 
-                [
-                  "HAFTA SONU",
-                  race?.sprint
-                    ? "SPRINT"
-                    : "NORMAL",
-                  race?.sprint
-                    ? "Bu hafta Sprint formatı uygulanıyor."
-                    : "Standart Grand Prix hafta sonu.",
-                ],
+                <div
+                  style={{
+                    display: "grid",
+                    gap: "9px",
+                  }}
+                >
+                  {[
+                    [
+                      "Session kontrolü",
+                      "15 sn",
+                    ],
+                    [
+                      "Timing verisi",
+                      "~4 sn",
+                    ],
+                    [
+                      "Pozisyon",
+                      "Otomatik",
+                    ],
+                    [
+                      "Interval",
+                      "Otomatik",
+                    ],
+                    [
+                      "Son tur",
+                      "Otomatik",
+                    ],
+                    [
+                      "Lastik",
+                      "Otomatik",
+                    ],
+                  ].map(([name, value]) => (
+                    <div
+                      key={name}
+                      style={{
+                        display: "flex",
+                        justifyContent:
+                          "space-between",
+                        gap: "15px",
+                        fontSize: "12px",
+                        padding: "7px 0",
+                      }}
+                    >
+                      <span
+                        style={{
+                          color: "#8793a1",
+                        }}
+                      >
+                        {name}
+                      </span>
 
-                [
-                  "ROUND",
-                  race
-                    ? `${race.round}`
-                    : "—",
-                  "Formula 1 sezonu.",
-                ],
+                      <b>{value}</b>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-                [
-                  "YARIŞ TARİHİ",
-                  raceDate,
-                  "Ana yarış programı.",
-                ],
-              ].map(
-                ([
-                  title,
-                  value,
-                  text,
-                ]) => (
+              {/* 2026 SYSTEMS */}
+
+              <div
+                className="card"
+                style={{
+                  padding: "22px",
+                }}
+              >
+                <div className="eyebrow">
+                  2026 SYSTEMS
+                </div>
+
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns:
+                      "1fr 1fr",
+                    gap: "10px",
+                    marginTop: "15px",
+                  }}
+                >
                   <div
-                    key={title}
                     style={{
-                      padding:
-                        "17px 0",
-                      borderBottom:
-                        "1px solid rgba(255,255,255,.07)",
+                      padding: "15px",
+                      borderRadius: "12px",
+                      background:
+                        "rgba(255,255,255,.035)",
                     }}
                   >
                     <small
                       style={{
-                        color:
-                          "#8995a4",
-                        fontWeight:
-                          900,
+                        color: "#8995a4",
                       }}
                     >
-                      {title}
+                      ACTIVE AERO
                     </small>
 
                     <div
                       style={{
-                        fontSize:
-                          title ===
-                          "PİST"
-                            ? "19px"
-                            : "27px",
-                        fontWeight:
-                          1000,
-                        margin:
-                          "4px 0",
+                        marginTop: "6px",
+                        fontWeight: 900,
                       }}
                     >
-                      {value}
+                      —
                     </div>
+                  </div>
 
-                    <span
+                  <div
+                    style={{
+                      padding: "15px",
+                      borderRadius: "12px",
+                      background:
+                        "rgba(255,255,255,.035)",
+                    }}
+                  >
+                    <small
                       style={{
-                        color:
-                          "#abb5c1",
-                        fontSize:
-                          "12px",
+                        color: "#8995a4",
                       }}
                     >
-                      {text}
-                    </span>
+                      OVERTAKE
+                    </small>
+
+                    <div
+                      style={{
+                        marginTop: "6px",
+                        fontWeight: 900,
+                      }}
+                    >
+                      —
+                    </div>
                   </div>
-                )
-              )}
+                </div>
+              </div>
             </aside>
-          </section>
-
-          {/* ALT KARTLAR */}
-
-          <section
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(3,minmax(0,1fr))",
-              gap: "14px",
-              marginTop: "14px",
-            }}
-          >
-            <article
-              className="card"
-              style={{
-                padding: "22px",
-              }}
-            >
-              <div className="eyebrow">
-                CANLI YARIŞ MERKEZİ
-              </div>
-
-              <h3
-                style={{
-                  fontSize: "23px",
-                  margin: "10px 0",
-                }}
-              >
-                Canlı timing şu anda
-                beklemede.
-              </h3>
-
-              <button className="btn">
-                Canlı Merkezi Aç →
-              </button>
-            </article>
-
-            <article
-              className="card"
-              style={{
-                padding: "22px",
-              }}
-            >
-              <div className="eyebrow">
-                YARIŞ TAHMİNİ
-              </div>
-
-              <h3
-                style={{
-                  fontSize: "23px",
-                  margin: "10px 0",
-                }}
-              >
-                {race
-                  ? `${race.raceName} için podyum tahminini oluştur.`
-                  : "Podyum tahminini oluştur."}
-              </h3>
-
-              <button className="btn">
-                Tahmin Yap →
-              </button>
-            </article>
-
-            <article
-              className="card"
-              style={{
-                padding: "22px",
-              }}
-            >
-              <div className="eyebrow">
-                PADDOCK NABZI
-              </div>
-
-              <h3
-                style={{
-                  fontSize: "23px",
-                  margin: "10px 0",
-                }}
-              >
-                Kulüp topluluğundaki
-                son gelişmeleri gör.
-              </h3>
-
-              <button className="btn">
-                Paddock&apos;a Git →
-              </button>
-            </article>
           </section>
         </div>
       </main>
