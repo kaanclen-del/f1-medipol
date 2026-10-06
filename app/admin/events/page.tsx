@@ -1,4 +1,6 @@
 import Header from "@/components/Header";
+import AdminEventForm from "@/components/AdminEventForm";
+
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -89,23 +91,10 @@ export default async function AdminEventsPage() {
           >
             <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
 
-            <h1
-              style={{
-                margin: "8px 0",
-                fontSize: "38px",
-              }}
-            >
-              Yetkisiz Erişim
-            </h1>
+            <h1>Yetkisiz Erişim</h1>
 
-            <p
-              style={{
-                color: "#9da8b5",
-                lineHeight: 1.7,
-              }}
-            >
-              Bu bölüm yalnızca yetkili yöneticiler tarafından
-              görüntülenebilir.
+            <p style={{ color: "#9da8b5" }}>
+              Bu bölüm yalnızca yöneticiler tarafından kullanılabilir.
             </p>
 
             <a href="/" className="btn">
@@ -137,6 +126,14 @@ export default async function AdminEventsPage() {
     });
 
   const events = (data ?? []) as EventRow[];
+
+  const publishedCount = events.filter(
+    (event) => event.is_published
+  ).length;
+
+  const draftCount = events.filter(
+    (event) => !event.is_published
+  ).length;
 
   return (
     <>
@@ -181,19 +178,9 @@ export default async function AdminEventsPage() {
             </p>
           </div>
 
-          <div
-            style={{
-              padding: "9px 13px",
-              borderRadius: "999px",
-              background: "rgba(53,212,119,.10)",
-              border: "1px solid rgba(53,212,119,.25)",
-              color: "#65df96",
-              fontSize: "10px",
-              fontWeight: 900,
-            }}
-          >
-            ● ADMIN
-          </div>
+          <a href="/admin" className="btn">
+            ← Admin Paneli
+          </a>
         </div>
 
         <section
@@ -237,7 +224,7 @@ export default async function AdminEventsPage() {
                 marginTop: "7px",
               }}
             >
-              {events.filter((event) => event.is_published).length}
+              {publishedCount}
             </div>
 
             <div
@@ -260,7 +247,7 @@ export default async function AdminEventsPage() {
                 marginTop: "7px",
               }}
             >
-              {events.filter((event) => !event.is_published).length}
+              {draftCount}
             </div>
 
             <div
@@ -273,6 +260,41 @@ export default async function AdminEventsPage() {
             </div>
           </div>
         </section>
+
+        {/* YENİ ETKİNLİK FORMU */}
+
+        <section
+          className="card"
+          style={{
+            marginTop: "16px",
+            padding: "24px",
+          }}
+        >
+          <div className="eyebrow">NEW EVENT</div>
+
+          <h2
+            style={{
+              margin: "7px 0 6px",
+              fontSize: "26px",
+            }}
+          >
+            Yeni Etkinlik Oluştur
+          </h2>
+
+          <p
+            style={{
+              margin: "0 0 22px",
+              color: "#85919f",
+              fontSize: "11px",
+            }}
+          >
+            Etkinlik bilgilerini doldur ve yayın durumunu belirle.
+          </p>
+
+          <AdminEventForm />
+        </section>
+
+        {/* ETKİNLİK LİSTESİ */}
 
         <section
           className="card"
@@ -302,7 +324,7 @@ export default async function AdminEventsPage() {
           {events.length === 0 ? (
             <div
               style={{
-                minHeight: "220px",
+                minHeight: "180px",
                 display: "grid",
                 placeItems: "center",
                 textAlign: "center",
@@ -312,9 +334,7 @@ export default async function AdminEventsPage() {
               <div>
                 <div style={{ fontSize: "32px" }}>🏁</div>
 
-                <h3 style={{ marginBottom: "7px" }}>
-                  Henüz etkinlik yok
-                </h3>
+                <h3>Henüz etkinlik yok</h3>
 
                 <p
                   style={{
@@ -322,8 +342,7 @@ export default async function AdminEventsPage() {
                     fontSize: "12px",
                   }}
                 >
-                  Bir sonraki adımda buraya etkinlik ekleme sistemi
-                  koyacağız.
+                  Yukarıdaki formdan ilk etkinliği oluşturabilirsin.
                 </p>
               </div>
             </div>
@@ -390,6 +409,7 @@ export default async function AdminEventsPage() {
                       }}
                     >
                       {formatDate(event.start_at)}
+
                       {event.location_name
                         ? ` · ${event.location_name}`
                         : ""}
