@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import AdminEventForm from "@/components/AdminEventForm";
+import AdminEventActions from "@/components/AdminEventActions";
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
@@ -261,8 +262,6 @@ export default async function AdminEventsPage() {
           </div>
         </section>
 
-        {/* YENİ ETKİNLİK FORMU */}
-
         <section
           className="card"
           style={{
@@ -293,8 +292,6 @@ export default async function AdminEventsPage() {
 
           <AdminEventForm />
         </section>
-
-        {/* ETKİNLİK LİSTESİ */}
 
         <section
           className="card"
@@ -352,21 +349,22 @@ export default async function AdminEventsPage() {
                 <div
                   key={event.id}
                   style={{
-                    minHeight: "82px",
+                    minHeight: "92px",
                     padding: "14px 20px",
                     borderBottom: "1px solid rgba(255,255,255,.06)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    gap: "18px",
+                    gap: "20px",
                   }}
                 >
-                  <div>
+                  <div style={{ minWidth: 0 }}>
                     <div
                       style={{
                         display: "flex",
                         gap: "7px",
                         alignItems: "center",
+                        flexWrap: "wrap",
                         marginBottom: "6px",
                       }}
                     >
@@ -390,6 +388,26 @@ export default async function AdminEventsPage() {
                           ★ ÖNE ÇIKAN
                         </span>
                       )}
+
+                      <span
+                        style={{
+                          padding: "4px 7px",
+                          borderRadius: "999px",
+                          fontSize: "7px",
+                          fontWeight: 1000,
+                          color: event.is_published
+                            ? "#65df96"
+                            : "#a6b0bd",
+                          background: event.is_published
+                            ? "rgba(53,212,119,.10)"
+                            : "rgba(255,255,255,.06)",
+                          border: event.is_published
+                            ? "1px solid rgba(53,212,119,.20)"
+                            : "1px solid rgba(255,255,255,.08)",
+                        }}
+                      >
+                        {event.is_published ? "YAYINDA" : "TASLAK"}
+                      </span>
                     </div>
 
                     <div
@@ -416,25 +434,11 @@ export default async function AdminEventsPage() {
                     </div>
                   </div>
 
-                  <span
-                    style={{
-                      padding: "7px 10px",
-                      borderRadius: "999px",
-                      fontSize: "8px",
-                      fontWeight: 1000,
-                      color: event.is_published
-                        ? "#65df96"
-                        : "#a6b0bd",
-                      background: event.is_published
-                        ? "rgba(53,212,119,.10)"
-                        : "rgba(255,255,255,.06)",
-                      border: event.is_published
-                        ? "1px solid rgba(53,212,119,.20)"
-                        : "1px solid rgba(255,255,255,.08)",
-                    }}
-                  >
-                    {event.is_published ? "YAYINDA" : "TASLAK"}
-                  </span>
+                  <AdminEventActions
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    isPublished={event.is_published}
+                  />
                 </div>
               ))}
             </div>
