@@ -37,11 +37,17 @@ export default async function AdminEventsPage() {
       <>
         <Header />
 
-        <main className="site-container" style={{ paddingTop: "50px" }}>
+        <main
+          className="site-container"
+          style={{
+            paddingTop: "50px",
+            paddingBottom: "80px",
+          }}
+        >
           <div className="card" style={{ padding: "30px" }}>
             <div className="eyebrow">ADMIN</div>
 
-            <h1>Giriş gerekli</h1>
+            <h1>Giriş Gerekli</h1>
 
             <p style={{ color: "#9da8b5" }}>
               Bu sayfayı görüntülemek için giriş yapmalısın.
@@ -67,7 +73,13 @@ export default async function AdminEventsPage() {
       <>
         <Header />
 
-        <main className="site-container" style={{ paddingTop: "50px" }}>
+        <main
+          className="site-container"
+          style={{
+            paddingTop: "50px",
+            paddingBottom: "80px",
+          }}
+        >
           <div
             className="card"
             style={{
@@ -378,7 +390,6 @@ export default async function AdminEventsPage() {
                       }}
                     >
                       {formatDate(event.start_at)}
-
                       {event.location_name
                         ? ` · ${event.location_name}`
                         : ""}
