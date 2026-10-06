@@ -1,130 +1,192 @@
-type WikimediaPage = {
+type RaceForImage = {
+  raceName: string;
+  circuitName: string;
+  city: string;
+  country: string;
+};
+
+type MediaItem = {
   title?: string;
-  imageinfo?: {
-    thumburl?: string;
-    url?: string;
+  type?: string;
+  srcset?: {
+    src?: string;
+    scale?: string;
   }[];
 };
 
-export async function getRaceHeroImages(
-  raceName: string,
-  circuitName: string,
-  city: string
+type MediaResponse = {
+  items?: MediaItem[];
+};
+
+const BAD_WORDS = [
+  "logo",
+  "map",
+  "layout",
+  "diagram",
+  "icon",
+  "flag",
+  "helmet",
+  "portrait",
+  "poster",
+  "ticket",
+  "badge",
+  "symbol",
+];
+
+function normalizeUrl(url: string) {
+  if (url.startsWith("//")) {
+    return `https:${url}`;
+  }
+
+  return url;
+}
+
+function isPhoto(item: MediaItem) {
+  const title =
+    item.title?.toLowerCase() ?? "";
+
+  if (item.type !== "image") {
+    return false;
+  }
+
+  if (title.endsWith(".svg")) {
+    return false;
+  }
+
+  if (
+    BAD_WORDS.some((word) =>
+      title.includes(word)
+    )
+  ) {
+    return false;
+  }
+
+  return (
+    title.endsWith(".jpg") ||
+    title.endsWith(".jpeg") ||
+    title.endsWith(".png") ||
+    title.endsWith(".webp")
+  );
+}
+
+async function getPageImages(
+  pageTitle: string
 ): Promise<string[]> {
   try {
-    const searchText =
-      `${raceName} ${circuitName} ${city} Formula One Grand Prix race`;
+    const title = encodeURIComponent(
+      pageTitle.replaceAll(" ", "_")
+    );
 
-    const url =
-      "https://commons.wikimedia.org/w/api.php?" +
-      new URLSearchParams({
-        action: "query",
-        generator: "search",
-        gsrsearch: searchText,
-        gsrnamespace: "6",
-        gsrlimit: "25",
-        prop: "imageinfo",
-        iiprop: "url",
-        iiurlwidth: "1800",
-        format: "json",
-        origin: "*",
-      }).toString();
+    const response = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/media-list/${title}`,
+      {
+        cache: "no-store",
 
-    const response = await fetch(url, {
-      next: {
-        revalidate: 86400,
-      },
-    });
+        headers: {
+          "User-Agent":
+            "F1-Medipol-Website/1.0",
+        },
+      }
+    );
 
     if (!response.ok) {
       return [];
     }
 
-    const data = await response.json();
+    const data =
+      (await response.json()) as MediaResponse;
 
-    const pages: WikimediaPage[] = Object.values(
-      data?.query?.pages || {}
-    );
+    const images: string[] = [];
 
-    const blockedWords = [
-      "logo",
-      "map",
-      "icon",
-      "diagram",
-      "flag",
-      "helmet",
-      "portrait",
-      "headshot",
-      "poster",
-      "ticket",
-      "programme",
-      "program",
-    ];
+    for (const item of data.items ?? []) {
+      if (!isPhoto(item)) {
+        continue;
+      }
 
-    const images = pages
-      .filter((page) => {
-        const title =
-          page.title?.toLowerCase() || "";
+      const sources =
+        item.srcset ?? [];
 
-        const hasBlockedWord =
-          blockedWords.some((word) =>
-            title.includes(word)
-          );
+      /*
+        En yüksek çözünürlüklü
+        görseli seç.
+      */
 
-        const hasImage =
-          Boolean(page.imageinfo?.[0]);
+      const best =
+        sources[sources.length - 1];
 
-        return !hasBlockedWord && hasImage;
-      })
-      .map((page) => {
-        return (
-          page.imageinfo?.[0]?.thumburl ||
-          page.imageinfo?.[0]?.url ||
-          null
-        );
-      })
-      .filter(
-        (image): image is string =>
-          Boolean(image)
-      );
+      if (!best?.src) {
+        continue;
+      }
 
-    /*
-      Aynı görselin tekrar gelmesini engelliyoruz.
-    */
+      const url =
+        normalizeUrl(best.src);
 
-    const uniqueImages = [
-      ...new Set(images),
-    ];
+      if (!images.includes(url)) {
+        images.push(url);
+      }
+    }
 
-    /*
-      Hero için maksimum 5 görsel kullanıyoruz.
-    */
-
-    return uniqueImages.slice(0, 5);
+    return images;
   } catch {
     return [];
   }
 }
 
-/*
-  Eski sistem şimdilik çalışmaya devam etsin.
+export async function getRaceHeroImages(
+  race: RaceForImage
+): Promise<string[]> {
+  const images: string[] = [];
 
-  page.tsx şu anda getRaceHeroImage kullanıyor.
-  Bir sonraki adımda onu 5 görsellik kayan sisteme
-  dönüştüreceğiz.
-*/
+  /*
+    Önce yarış sayfası:
+    Singapore Grand Prix gibi.
+  */
 
-export async function getRaceHeroImage(
-  raceName: string,
-  circuitName: string,
-  city: string
-): Promise<string | null> {
-  const images =
-    await getRaceHeroImages(
-      raceName,
-      circuitName,
-      city
+  const raceImages =
+    await getPageImages(
+      race.raceName
     );
 
-  return images[0] || null;
+  for (const image of raceImages) {
+    if (!images.includes(image)) {
+      images.push(image);
+    }
+
+    if (images.length >= 5) {
+      return images;
+    }
+  }
+
+  /*
+    Yeterli sonuç yoksa
+    pist sayfasını da tara.
+  */
+
+  const circuitImages =
+    await getPageImages(
+      race.circuitName
+    );
+
+  for (const image of circuitImages) {
+    if (!images.includes(image)) {
+      images.push(image);
+    }
+
+    if (images.length >= 5) {
+      return images;
+    }
+  }
+
+  return images.slice(0, 5);
+}
+
+export async function getRaceHeroImage(
+  race: RaceForImage
+): Promise<
+  string | null
+> {
+  const images =
+    await getRaceHeroImages(race);
+
+  return images[0] ?? null;
 }
