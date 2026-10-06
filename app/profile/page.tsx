@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import Header from "@/components/Header";
+import ProfileActions from "@/components/ProfileActions";
+
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -114,7 +116,7 @@ export default async function ProfilePage() {
     .maybeSingle();
 
   /*
-    TÜM TAHMİNLER
+    KULLANICININ TÜM TAHMİNLERİ
   */
 
   const { data: predictionData } = await supabase
@@ -290,7 +292,9 @@ export default async function ProfilePage() {
                   )}
 
                   {user.email && (
-                    <span>{user.email}</span>
+                    <span>
+                      {user.email}
+                    </span>
                   )}
                 </div>
 
@@ -506,8 +510,10 @@ export default async function ProfilePage() {
                               marginTop: "5px",
                             }}
                           >
-                            {prediction.season} · Round{" "}
-                            {prediction.round} ·{" "}
+                            {prediction.season}
+                            {" · "}
+                            Round {prediction.round}
+                            {" · "}
                             {prediction.prediction_type ===
                             "sprint"
                               ? "Sprint"
@@ -524,12 +530,14 @@ export default async function ProfilePage() {
                             P1 #
                             {
                               prediction.p1_driver_number
-                            }{" "}
-                            · P2 #
+                            }
+                            {" · "}
+                            P2 #
                             {
                               prediction.p2_driver_number
-                            }{" "}
-                            · P3 #
+                            }
+                            {" · "}
+                            P3 #
                             {
                               prediction.p3_driver_number
                             }
@@ -571,7 +579,7 @@ export default async function ProfilePage() {
               )}
             </div>
 
-            {/* PROFİL BİLGİSİ */}
+            {/* PROFİL BİLGİLERİ */}
 
             <aside
               className="card"
@@ -661,6 +669,8 @@ export default async function ProfilePage() {
                 </div>
               </div>
 
+              {/* TAHMİN BUTONU */}
+
               <Link
                 href="/predict"
                 className="btn btn-red"
@@ -673,6 +683,10 @@ export default async function ProfilePage() {
               >
                 Tahmin Merkezine Git →
               </Link>
+
+              {/* ÇIKIŞ BUTONU */}
+
+              <ProfileActions />
             </aside>
           </section>
         </div>
