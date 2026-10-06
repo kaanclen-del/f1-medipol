@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/score-predictions",
+      "schedule": "30 23 * * *"
+    }
+  ]
+}
