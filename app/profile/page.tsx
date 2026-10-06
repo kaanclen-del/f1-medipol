@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import ProfileActions from "@/components/ProfileActions";
 
 import { createClient } from "@/utils/supabase/server";
+import { getTeamBranding } from "@/lib/team-branding";
 
 export const dynamic = "force-dynamic";
 
@@ -116,7 +117,7 @@ export default async function ProfilePage() {
     .maybeSingle();
 
   /*
-    KULLANICININ TÜM TAHMİNLERİ
+    TAHMİNLER
   */
 
   const { data: predictionData } = await supabase
@@ -153,19 +154,25 @@ export default async function ProfilePage() {
     0
   );
 
-  const predictionCount = predictions.length;
+  const predictionCount =
+    predictions.length;
 
   const bestScore =
     predictionCount > 0
       ? Math.max(
           ...predictions.map(
-            (prediction) => prediction.points ?? 0
+            (prediction) =>
+              prediction.points ?? 0
           )
         )
       : 0;
 
   const recentPredictions =
     predictions.slice(0, 5);
+
+  /*
+    PROFİL ADI
+  */
 
   const displayName =
     profile?.display_name ||
@@ -174,7 +181,18 @@ export default async function ProfilePage() {
     "F1 Medipol Üyesi";
 
   const initial =
-    displayName.charAt(0).toUpperCase();
+    displayName
+      .charAt(0)
+      .toUpperCase();
+
+  /*
+    FAVORİ TAKIM BRANDING
+  */
+
+  const teamBrand =
+    getTeamBranding(
+      profile?.favorite_team
+    );
 
   return (
     <>
@@ -193,125 +211,349 @@ export default async function ProfilePage() {
           <section
             className="card"
             style={{
-              minHeight: "270px",
+              minHeight: "285px",
               padding: "35px",
               position: "relative",
               overflow: "hidden",
-              background:
-                "radial-gradient(circle at 85% 20%,rgba(225,6,0,.18),transparent 32%),linear-gradient(145deg,#262e39,#171d26)",
+
+              background: teamBrand
+                ? `
+                  radial-gradient(
+                    circle at 85% 25%,
+                    ${teamBrand.color}35,
+                    transparent 35%
+                  ),
+                  linear-gradient(
+                    145deg,
+                    #262e39,
+                    #171d26
+                  )
+                `
+                : `
+                  radial-gradient(
+                    circle at 85% 20%,
+                    rgba(225,6,0,.18),
+                    transparent 32%
+                  ),
+                  linear-gradient(
+                    145deg,
+                    #262e39,
+                    #171d26
+                  )
+                `,
             }}
           >
+            {/* ARKA PLAN F1 */}
+
             <div
               style={{
                 position: "absolute",
                 right: "-20px",
                 top: "-70px",
+
                 fontSize: "250px",
                 fontWeight: 1000,
-                color: "rgba(255,255,255,.025)",
+
+                color:
+                  "rgba(255,255,255,.025)",
+
                 fontStyle: "italic",
+
                 pointerEvents: "none",
               }}
             >
               F1
             </div>
 
+            {/* TAKIM RENK ÇİZGİSİ */}
+
+            {teamBrand && (
+              <div
+                style={{
+                  position: "absolute",
+
+                  top: 0,
+                  left: 0,
+                  right: 0,
+
+                  height: "4px",
+
+                  background:
+                    `linear-gradient(
+                      90deg,
+                      ${teamBrand.color},
+                      ${teamBrand.secondaryColor}
+                    )`,
+                }}
+              />
+            )}
+
             <div
               style={{
                 position: "relative",
                 zIndex: 2,
+
                 display: "flex",
                 alignItems: "center",
-                gap: "24px",
+                justifyContent:
+                  "space-between",
+
+                gap: "30px",
               }}
             >
-              {/* AVATAR */}
+              {/* SOL PROFİL */}
 
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={displayName}
-                  style={{
-                    width: "105px",
-                    height: "105px",
-                    borderRadius: "50%",
-                    objectFit: "cover",
-                    border:
-                      "3px solid rgba(255,255,255,.12)",
-                  }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: "105px",
-                    height: "105px",
-                    borderRadius: "50%",
-                    display: "grid",
-                    placeItems: "center",
-                    flexShrink: 0,
-                    background:
-                      "linear-gradient(135deg,#e10600,#ff5149)",
-                    fontSize: "42px",
-                    fontWeight: 1000,
-                    boxShadow:
-                      "0 15px 45px rgba(225,6,0,.22)",
-                  }}
-                >
-                  {initial}
-                </div>
-              )}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "24px",
+                }}
+              >
+                {/* AVATAR */}
 
-              <div>
-                <div className="eyebrow">
-                  F1 MEDİPOL · DRIVER PROFILE
-                </div>
-
-                <h1
-                  style={{
-                    margin: "7px 0 5px",
-                    fontSize: "42px",
-                    letterSpacing: "-.04em",
-                  }}
-                >
-                  {displayName}
-                </h1>
-
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "10px",
-                    flexWrap: "wrap",
-                    color: "#9da8b5",
-                    fontSize: "12px",
-                  }}
-                >
-                  {profile?.username && (
-                    <span>
-                      @{profile.username}
-                    </span>
-                  )}
-
-                  {user.email && (
-                    <span>
-                      {user.email}
-                    </span>
-                  )}
-                </div>
-
-                {profile?.bio && (
-                  <p
+                {profile?.avatar_url ? (
+                  <img
+                    src={
+                      profile.avatar_url
+                    }
+                    alt={displayName}
                     style={{
-                      margin: "13px 0 0",
-                      color: "#b7c0ca",
-                      fontSize: "13px",
-                      maxWidth: "650px",
-                      lineHeight: 1.6,
+                      width: "105px",
+                      height: "105px",
+
+                      borderRadius:
+                        "50%",
+
+                      objectFit:
+                        "cover",
+
+                      border:
+                        "3px solid rgba(255,255,255,.12)",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "105px",
+                      height: "105px",
+
+                      borderRadius:
+                        "50%",
+
+                      display: "grid",
+                      placeItems:
+                        "center",
+
+                      flexShrink: 0,
+
+                      background:
+                        teamBrand
+                          ? `linear-gradient(
+                              135deg,
+                              ${teamBrand.color},
+                              ${teamBrand.secondaryColor}
+                            )`
+                          : "linear-gradient(135deg,#e10600,#ff5149)",
+
+                      fontSize:
+                        "42px",
+
+                      fontWeight:
+                        1000,
+
+                      boxShadow:
+                        teamBrand
+                          ? `0 15px 45px ${teamBrand.color}35`
+                          : "0 15px 45px rgba(225,6,0,.22)",
                     }}
                   >
-                    {profile.bio}
-                  </p>
+                    {initial}
+                  </div>
                 )}
+
+                {/* İSİM */}
+
+                <div>
+                  <div className="eyebrow">
+                    F1 MEDİPOL · DRIVER PROFILE
+                  </div>
+
+                  <h1
+                    style={{
+                      margin:
+                        "7px 0 5px",
+
+                      fontSize:
+                        "42px",
+
+                      letterSpacing:
+                        "-.04em",
+                    }}
+                  >
+                    {displayName}
+                  </h1>
+
+                  <div
+                    style={{
+                      display: "flex",
+
+                      gap: "10px",
+
+                      flexWrap:
+                        "wrap",
+
+                      color:
+                        "#9da8b5",
+
+                      fontSize:
+                        "12px",
+                    }}
+                  >
+                    {profile?.username && (
+                      <span>
+                        @
+                        {
+                          profile.username
+                        }
+                      </span>
+                    )}
+
+                    {user.email && (
+                      <span>
+                        {user.email}
+                      </span>
+                    )}
+                  </div>
+
+                  {profile?.bio && (
+                    <p
+                      style={{
+                        margin:
+                          "13px 0 0",
+
+                        color:
+                          "#b7c0ca",
+
+                        fontSize:
+                          "13px",
+
+                        maxWidth:
+                          "650px",
+
+                        lineHeight:
+                          1.6,
+                      }}
+                    >
+                      {profile.bio}
+                    </p>
+                  )}
+                </div>
               </div>
+
+              {/* TAKIM LOGOSU */}
+
+              {teamBrand && (
+                <div
+                  style={{
+                    minWidth: "180px",
+
+                    padding:
+                      "20px",
+
+                    borderRadius:
+                      "16px",
+
+                    border:
+                      `1px solid ${teamBrand.color}40`,
+
+                    background:
+                      "rgba(10,14,20,.45)",
+
+                    backdropFilter:
+                      "blur(14px)",
+
+                    textAlign:
+                      "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "90px",
+                      height: "90px",
+
+                      margin:
+                        "0 auto 12px",
+
+                      display: "grid",
+
+                      placeItems:
+                        "center",
+
+                      borderRadius:
+                        "18px",
+
+                      background:
+                        "rgba(255,255,255,.95)",
+
+                      overflow:
+                        "hidden",
+                    }}
+                  >
+                    <img
+                      src={
+                        teamBrand.logoUrl
+                      }
+                      alt={
+                        teamBrand.name
+                      }
+                      style={{
+                        width: "65px",
+                        height: "65px",
+
+                        objectFit:
+                          "contain",
+                      }}
+                    />
+                  </div>
+
+                  <div
+                    style={{
+                      color:
+                        "#7f8b99",
+
+                      fontSize:
+                        "9px",
+
+                      fontWeight:
+                        1000,
+
+                      letterSpacing:
+                        ".1em",
+                    }}
+                  >
+                    FAVORİ TAKIM
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop:
+                        "4px",
+
+                      fontSize:
+                        "15px",
+
+                      fontWeight:
+                        1000,
+
+                      color:
+                        teamBrand.color,
+                    }}
+                  >
+                    {teamBrand.name}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
 
@@ -320,9 +562,12 @@ export default async function ProfilePage() {
           <section
             style={{
               display: "grid",
+
               gridTemplateColumns:
                 "repeat(3,minmax(0,1fr))",
+
               gap: "14px",
+
               marginTop: "14px",
             }}
           >
@@ -338,10 +583,17 @@ export default async function ProfilePage() {
 
               <div
                 style={{
-                  fontSize: "46px",
-                  fontWeight: 1000,
-                  marginTop: "8px",
-                  letterSpacing: "-.05em",
+                  fontSize:
+                    "46px",
+
+                  fontWeight:
+                    1000,
+
+                  marginTop:
+                    "8px",
+
+                  letterSpacing:
+                    "-.05em",
                 }}
               >
                 {totalPoints}
@@ -349,9 +601,14 @@ export default async function ProfilePage() {
 
               <div
                 style={{
-                  color: "#8894a2",
-                  fontSize: "11px",
-                  marginTop: "4px",
+                  color:
+                    "#8894a2",
+
+                  fontSize:
+                    "11px",
+
+                  marginTop:
+                    "4px",
                 }}
               >
                 Prediction Championship
@@ -370,10 +627,17 @@ export default async function ProfilePage() {
 
               <div
                 style={{
-                  fontSize: "46px",
-                  fontWeight: 1000,
-                  marginTop: "8px",
-                  letterSpacing: "-.05em",
+                  fontSize:
+                    "46px",
+
+                  fontWeight:
+                    1000,
+
+                  marginTop:
+                    "8px",
+
+                  letterSpacing:
+                    "-.05em",
                 }}
               >
                 {predictionCount}
@@ -381,9 +645,14 @@ export default async function ProfilePage() {
 
               <div
                 style={{
-                  color: "#8894a2",
-                  fontSize: "11px",
-                  marginTop: "4px",
+                  color:
+                    "#8894a2",
+
+                  fontSize:
+                    "11px",
+
+                  marginTop:
+                    "4px",
                 }}
               >
                 Kaydedilmiş yarış tahmini
@@ -402,10 +671,17 @@ export default async function ProfilePage() {
 
               <div
                 style={{
-                  fontSize: "46px",
-                  fontWeight: 1000,
-                  marginTop: "8px",
-                  letterSpacing: "-.05em",
+                  fontSize:
+                    "46px",
+
+                  fontWeight:
+                    1000,
+
+                  marginTop:
+                    "8px",
+
+                  letterSpacing:
+                    "-.05em",
                 }}
               >
                 {bestScore}
@@ -413,9 +689,14 @@ export default async function ProfilePage() {
 
               <div
                 style={{
-                  color: "#8894a2",
-                  fontSize: "11px",
-                  marginTop: "4px",
+                  color:
+                    "#8894a2",
+
+                  fontSize:
+                    "11px",
+
+                  marginTop:
+                    "4px",
                 }}
               >
                 Tek yarışta kazanılan en yüksek puan
@@ -428,9 +709,12 @@ export default async function ProfilePage() {
           <section
             style={{
               marginTop: "14px",
+
               display: "grid",
+
               gridTemplateColumns:
                 "minmax(0,1.35fr) minmax(280px,.65fr)",
+
               gap: "14px",
             }}
           >
@@ -448,22 +732,37 @@ export default async function ProfilePage() {
 
               <h2
                 style={{
-                  margin: "7px 0 22px",
-                  fontSize: "27px",
+                  margin:
+                    "7px 0 22px",
+
+                  fontSize:
+                    "27px",
                 }}
               >
                 Son Tahminler
               </h2>
 
-              {recentPredictions.length === 0 ? (
+              {recentPredictions.length ===
+              0 ? (
                 <div
                   style={{
-                    minHeight: "180px",
-                    display: "grid",
-                    placeItems: "center",
-                    textAlign: "center",
-                    color: "#8994a2",
-                    fontSize: "13px",
+                    minHeight:
+                      "180px",
+
+                    display:
+                      "grid",
+
+                    placeItems:
+                      "center",
+
+                    textAlign:
+                      "center",
+
+                    color:
+                      "#8994a2",
+
+                    fontSize:
+                      "13px",
                   }}
                 >
                   Henüz kayıtlı tahminin yok.
@@ -471,49 +770,81 @@ export default async function ProfilePage() {
               ) : (
                 <div
                   style={{
-                    display: "grid",
+                    display:
+                      "grid",
+
                     gap: "9px",
                   }}
                 >
                   {recentPredictions.map(
-                    (prediction) => (
+                    (
+                      prediction
+                    ) => (
                       <div
-                        key={prediction.id}
+                        key={
+                          prediction.id
+                        }
                         style={{
-                          padding: "16px",
-                          borderRadius: "12px",
+                          padding:
+                            "16px",
+
+                          borderRadius:
+                            "12px",
+
                           border:
                             "1px solid rgba(255,255,255,.07)",
+
                           background:
                             "rgba(255,255,255,.025)",
-                          display: "flex",
+
+                          display:
+                            "flex",
+
                           justifyContent:
                             "space-between",
-                          alignItems: "center",
-                          gap: "20px",
+
+                          alignItems:
+                            "center",
+
+                          gap:
+                            "20px",
                         }}
                       >
                         <div>
                           <div
                             style={{
-                              fontWeight: 900,
-                              fontSize: "14px",
+                              fontWeight:
+                                900,
+
+                              fontSize:
+                                "14px",
                             }}
                           >
-                            {prediction.race_name}
+                            {
+                              prediction.race_name
+                            }
                           </div>
 
                           <div
                             style={{
-                              color: "#7f8b99",
-                              fontSize: "10px",
-                              marginTop: "5px",
+                              color:
+                                "#7f8b99",
+
+                              fontSize:
+                                "10px",
+
+                              marginTop:
+                                "5px",
                             }}
                           >
-                            {prediction.season}
-                            {" · "}
-                            Round {prediction.round}
-                            {" · "}
+                            {
+                              prediction.season
+                            }{" "}
+                            · Round{" "}
+                            {
+                              prediction.round
+                            }{" "}
+                            ·{" "}
                             {prediction.prediction_type ===
                             "sprint"
                               ? "Sprint"
@@ -522,22 +853,25 @@ export default async function ProfilePage() {
 
                           <div
                             style={{
-                              color: "#aeb8c4",
-                              fontSize: "11px",
-                              marginTop: "8px",
+                              color:
+                                "#aeb8c4",
+
+                              fontSize:
+                                "11px",
+
+                              marginTop:
+                                "8px",
                             }}
                           >
                             P1 #
                             {
                               prediction.p1_driver_number
-                            }
-                            {" · "}
-                            P2 #
+                            }{" "}
+                            · P2 #
                             {
                               prediction.p2_driver_number
-                            }
-                            {" · "}
-                            P3 #
+                            }{" "}
+                            · P3 #
                             {
                               prediction.p3_driver_number
                             }
@@ -546,27 +880,40 @@ export default async function ProfilePage() {
 
                         <div
                           style={{
-                            textAlign: "right",
-                            flexShrink: 0,
+                            textAlign:
+                              "right",
+
+                            flexShrink:
+                              0,
                           }}
                         >
                           <strong
                             style={{
-                              fontSize: "28px",
+                              fontSize:
+                                "28px",
+
                               color:
-                                prediction.points > 0
+                                prediction.points >
+                                0
                                   ? "#35d477"
                                   : "#f5f7fa",
                             }}
                           >
-                            {prediction.points}
+                            {
+                              prediction.points
+                            }
                           </strong>
 
                           <div
                             style={{
-                              color: "#7e8997",
-                              fontSize: "9px",
-                              fontWeight: 900,
+                              color:
+                                "#7e8997",
+
+                              fontSize:
+                                "9px",
+
+                              fontWeight:
+                                900,
                             }}
                           >
                             PUAN
@@ -593,8 +940,11 @@ export default async function ProfilePage() {
 
               <h2
                 style={{
-                  margin: "7px 0 20px",
-                  fontSize: "25px",
+                  margin:
+                    "7px 0 20px",
+
+                  fontSize:
+                    "25px",
                 }}
               >
                 Profil Bilgileri
@@ -603,14 +953,17 @@ export default async function ProfilePage() {
               <div
                 style={{
                   display: "grid",
-                  gap: "15px",
+                  gap: "17px",
                 }}
               >
                 <div>
                   <small
                     style={{
-                      color: "#7e8997",
-                      fontWeight: 900,
+                      color:
+                        "#7e8997",
+
+                      fontWeight:
+                        900,
                     }}
                   >
                     GÖRÜNEN AD
@@ -618,40 +971,149 @@ export default async function ProfilePage() {
 
                   <div
                     style={{
-                      fontWeight: 900,
-                      marginTop: "4px",
+                      fontWeight:
+                        900,
+
+                      marginTop:
+                        "4px",
                     }}
                   >
                     {displayName}
                   </div>
                 </div>
 
+                {/* FAVORİ TAKIM */}
+
                 <div>
                   <small
                     style={{
-                      color: "#7e8997",
-                      fontWeight: 900,
+                      color:
+                        "#7e8997",
+
+                      fontWeight:
+                        900,
                     }}
                   >
                     FAVORİ TAKIM
                   </small>
 
-                  <div
-                    style={{
-                      fontWeight: 900,
-                      marginTop: "4px",
-                    }}
-                  >
-                    {profile?.favorite_team ||
-                      "Henüz seçilmedi"}
-                  </div>
+                  {teamBrand ? (
+                    <div
+                      style={{
+                        marginTop:
+                          "8px",
+
+                        display:
+                          "flex",
+
+                        alignItems:
+                          "center",
+
+                        gap: "10px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width:
+                            "38px",
+
+                          height:
+                            "38px",
+
+                          borderRadius:
+                            "9px",
+
+                          background:
+                            "white",
+
+                          display:
+                            "grid",
+
+                          placeItems:
+                            "center",
+
+                          overflow:
+                            "hidden",
+                        }}
+                      >
+                        <img
+                          src={
+                            teamBrand.logoUrl
+                          }
+                          alt={
+                            teamBrand.name
+                          }
+                          style={{
+                            width:
+                              "28px",
+
+                            height:
+                              "28px",
+
+                            objectFit:
+                              "contain",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <div
+                          style={{
+                            fontWeight:
+                              1000,
+
+                            color:
+                              teamBrand.color,
+                          }}
+                        >
+                          {
+                            teamBrand.name
+                          }
+                        </div>
+
+                        <div
+                          style={{
+                            width:
+                              "70px",
+
+                            height:
+                              "3px",
+
+                            marginTop:
+                              "5px",
+
+                            borderRadius:
+                              "999px",
+
+                            background:
+                              teamBrand.color,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      style={{
+                        fontWeight:
+                          900,
+
+                        marginTop:
+                          "4px",
+                      }}
+                    >
+                      Henüz seçilmedi
+                    </div>
+                  )}
                 </div>
 
                 <div>
                   <small
                     style={{
-                      color: "#7e8997",
-                      fontWeight: 900,
+                      color:
+                        "#7e8997",
+
+                      fontWeight:
+                        900,
                     }}
                   >
                     ÜYELİK
@@ -659,9 +1121,14 @@ export default async function ProfilePage() {
 
                   <div
                     style={{
-                      fontWeight: 900,
-                      marginTop: "4px",
-                      color: "#35d477",
+                      fontWeight:
+                        900,
+
+                      marginTop:
+                        "4px",
+
+                      color:
+                        "#35d477",
                     }}
                   >
                     AKTİF
@@ -669,22 +1136,51 @@ export default async function ProfilePage() {
                 </div>
               </div>
 
-              {/* TAHMİN BUTONU */}
+              {/* PROFİL DÜZENLE */}
+
+              <Link
+                href="/profile/edit"
+                className="btn"
+                style={{
+                  marginTop:
+                    "25px",
+
+                  display:
+                    "flex",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
+                }}
+              >
+                Profili Düzenle
+              </Link>
+
+              {/* TAHMİN */}
 
               <Link
                 href="/predict"
                 className="btn btn-red"
                 style={{
-                  marginTop: "25px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  marginTop:
+                    "10px",
+
+                  display:
+                    "flex",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
                 }}
               >
                 Tahmin Merkezine Git →
               </Link>
 
-              {/* ÇIKIŞ BUTONU */}
+              {/* ÇIKIŞ */}
 
               <ProfileActions />
             </aside>
