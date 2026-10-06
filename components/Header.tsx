@@ -44,6 +44,11 @@ export default function Header() {
     },
 
     {
+      label: "Liderlik",
+      href: "/leaderboard",
+    },
+
+    {
       label: "Etkinlikler",
       href: "/events",
     },
