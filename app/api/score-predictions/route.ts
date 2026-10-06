@@ -18,7 +18,9 @@ type JolpicaRace = {
   season: string;
   round: string;
   raceName: string;
+
   Results?: JolpicaResult[];
+  SprintResults?: JolpicaResult[];
 };
 
 type JolpicaResponse = {
@@ -29,18 +31,417 @@ type JolpicaResponse = {
   };
 };
 
+type PredictionType =
+  | "race"
+  | "sprint";
+
+/*
+  JOLPICA'DAN SONUÇ AL
+*/
+
+async function fetchResult(
+  type: PredictionType
+) {
+  /*
+    RACE:
+    Son tamamlanan yarış.
+
+    SPRINT:
+    Bu sezondaki tamamlanmış
+    Sprint sonuçlarının tamamını al.
+    Daha sonra en sonuncuyu seçeceğiz.
+  */
+
+  const url =
+    type === "race"
+      ? "https://api.jolpi.ca/ergast/f1/current/last/results/"
+      : "https://api.jolpi.ca/ergast/f1/current/sprint/";
+
+  try {
+    const response =
+      await fetch(url, {
+        cache: "no-store",
+
+        headers: {
+          "User-Agent":
+            "F1-Medipol-Website/1.0",
+        },
+      });
+
+    if (!response.ok) {
+      return {
+        ok: false as const,
+        skipped: true,
+        type,
+        reason:
+          type === "sprint"
+            ? "Sprint sonuçları alınamadı."
+            : "Yarış sonucu alınamadı.",
+      };
+    }
+
+    const data =
+      (await response.json()) as JolpicaResponse;
+
+    const races =
+      data.MRData?.RaceTable
+        ?.Races ?? [];
+
+    /*
+      NORMAL YARIŞ:
+      last/results zaten tek yarış döndürür.
+
+      SPRINT:
+      sezon içindeki Sprint yarışlarından
+      en sonuncuyu kullan.
+    */
+
+    const race =
+      type === "race"
+        ? races[0]
+        : races.length > 0
+        ? races[
+            races.length - 1
+          ]
+        : undefined;
+
+    if (!race) {
+      return {
+        ok: false as const,
+        skipped: true,
+        type,
+        reason:
+          type === "sprint"
+            ? "Bu sezon tamamlanmış Sprint sonucu henüz yok."
+            : "Sonuç verisi bulunamadı.",
+      };
+    }
+
+    const rawResults =
+      type === "race"
+        ? race.Results ?? []
+        : race.SprintResults ?? [];
+
+    const podium =
+      getPodiumFromResults(
+        rawResults.map(
+          (result) => ({
+            driver_number:
+              Number(
+                result.number
+              ),
+
+            position:
+              Number(
+                result.position
+              ),
+          })
+        )
+      );
+
+    if (!podium) {
+      return {
+        ok: false as const,
+        skipped: true,
+        type,
+        reason:
+          type === "sprint"
+            ? "Sprint podyumu henüz hazır değil."
+            : "Yarış podyumu henüz hazır değil.",
+      };
+    }
+
+    return {
+      ok: true as const,
+
+      type,
+
+      race,
+
+      podium,
+
+      season:
+        Number(
+          race.season
+        ),
+
+      round:
+        Number(
+          race.round
+        ),
+    };
+  } catch (error) {
+    return {
+      ok: false as const,
+
+      skipped: true,
+
+      type,
+
+      reason:
+        error instanceof Error
+          ? error.message
+          : "Sonuç alınırken bilinmeyen hata oluştu.",
+    };
+  }
+}
+
+/*
+  TEK EVENT PUANLA
+*/
+
+async function scoreEvent(
+  type: PredictionType
+) {
+  const result =
+    await fetchResult(type);
+
+  /*
+    Sprint sonucu yoksa
+    tüm cron'u hata saymıyoruz.
+  */
+
+  if (!result.ok) {
+    return {
+      type,
+
+      ok: true,
+
+      skipped: true,
+
+      reason:
+        result.reason,
+
+      scored: 0,
+    };
+  }
+
+  const supabase =
+    createAdminClient();
+
+  const {
+    data: predictions,
+    error:
+      predictionsError,
+  } = await supabase
+    .from("predictions")
+    .select(
+      `
+      id,
+      p1_driver_number,
+      p2_driver_number,
+      p3_driver_number
+      `
+    )
+    .eq(
+      "season",
+      result.season
+    )
+    .eq(
+      "round",
+      result.round
+    )
+    .eq(
+      "prediction_type",
+      type
+    );
+
+  if (predictionsError) {
+    return {
+      type,
+
+      ok: false,
+
+      skipped: false,
+
+      error:
+        predictionsError.message,
+
+      scored: 0,
+    };
+  }
+
+  if (
+    !predictions ||
+    predictions.length === 0
+  ) {
+    return {
+      type,
+
+      ok: true,
+
+      skipped: false,
+
+      message:
+        type === "sprint"
+          ? "Bu Sprint için kayıtlı tahmin yok."
+          : "Bu yarış için kayıtlı tahmin yok.",
+
+      event: {
+        season:
+          result.season,
+
+        round:
+          result.round,
+
+        raceName:
+          result.race
+            .raceName,
+      },
+
+      podium:
+        result.podium,
+
+      scored: 0,
+    };
+  }
+
+  /*
+    PUANLARI HESAPLA
+  */
+
+  const scoredPredictions =
+    predictions.map(
+      (prediction) => {
+        const score =
+          calculatePredictionScore(
+            {
+              P1:
+                Number(
+                  prediction
+                    .p1_driver_number
+                ),
+
+              P2:
+                Number(
+                  prediction
+                    .p2_driver_number
+                ),
+
+              P3:
+                Number(
+                  prediction
+                    .p3_driver_number
+                ),
+            },
+
+            result.podium
+          );
+
+        return {
+          id:
+            prediction.id,
+
+          points:
+            score.total,
+
+          detail:
+            score,
+        };
+      }
+    );
+
+  /*
+    VERİTABANINI GÜNCELLE
+  */
+
+  const updates =
+    await Promise.all(
+      scoredPredictions.map(
+        async (
+          prediction
+        ) => {
+          const {
+            error,
+          } =
+            await supabase
+              .from(
+                "predictions"
+              )
+              .update({
+                points:
+                  prediction.points,
+              })
+              .eq(
+                "id",
+                prediction.id
+              );
+
+          return {
+            ...prediction,
+
+            error:
+              error?.message ??
+              null,
+          };
+        }
+      )
+    );
+
+  const failed =
+    updates.filter(
+      (update) =>
+        update.error
+    );
+
+  if (
+    failed.length > 0
+  ) {
+    return {
+      type,
+
+      ok: false,
+
+      skipped: false,
+
+      error:
+        "Bazı tahminlerin puanı güncellenemedi.",
+
+      failed,
+
+      scored:
+        updates.length -
+        failed.length,
+    };
+  }
+
+  return {
+    type,
+
+    ok: true,
+
+    skipped: false,
+
+    event: {
+      season:
+        result.season,
+
+      round:
+        result.round,
+
+      raceName:
+        result.race
+          .raceName,
+    },
+
+    podium:
+      result.podium,
+
+    scored:
+      updates.length,
+
+    results:
+      updates,
+  };
+}
+
+/*
+  CRON ENDPOINT
+*/
+
 export async function GET(
   request: Request
 ) {
-  /*
-    GÜVENLİK
-
-    Bu endpoint admin yetkisiyle
-    tüm kullanıcıların puanlarını
-    değiştirebildiği için dışarıdan
-    serbestçe çalıştırılamaz.
-  */
-
   const cronSecret =
     process.env.CRON_SECRET;
 
@@ -48,6 +449,7 @@ export async function GET(
     return NextResponse.json(
       {
         ok: false,
+
         error:
           "CRON_SECRET tanımlı değil.",
       },
@@ -69,6 +471,7 @@ export async function GET(
     return NextResponse.json(
       {
         ok: false,
+
         error:
           "Yetkisiz istek.",
       },
@@ -80,293 +483,52 @@ export async function GET(
 
   try {
     /*
-      EN SON TAMAMLANAN
-      F1 YARIŞININ SONUCUNU AL
+      RACE + SPRINT
+      AYNI CRON'DA
     */
 
-    const response = await fetch(
-      "https://api.jolpi.ca/ergast/f1/current/last/results/",
-      {
-        cache: "no-store",
-      }
-    );
+    const [
+      raceResult,
+      sprintResult,
+    ] =
+      await Promise.all([
+        scoreEvent("race"),
+        scoreEvent("sprint"),
+      ]);
 
-    if (!response.ok) {
+    const hasError =
+      !raceResult.ok ||
+      !sprintResult.ok;
+
+    if (hasError) {
       return NextResponse.json(
         {
           ok: false,
-          error:
-            "Yarış sonucu alınamadı.",
-        },
-        {
-          status: 502,
-        }
-      );
-    }
 
-    const data =
-      (await response.json()) as JolpicaResponse;
+          race:
+            raceResult,
 
-    const race =
-      data.MRData?.RaceTable
-        ?.Races?.[0];
-
-    if (!race) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Tamamlanmış yarış bulunamadı.",
-        },
-        {
-          status: 404,
-        }
-      );
-    }
-
-    const results =
-      race.Results ?? [];
-
-    /*
-      JOLPICA VERİSİNİ
-      PUANLAMA MOTORUMUZUN
-      FORMATINA ÇEVİR
-    */
-
-    const podium =
-      getPodiumFromResults(
-        results.map(
-          (result) => ({
-            driver_number:
-              Number(
-                result.number
-              ),
-
-            position:
-              Number(
-                result.position
-              ),
-          })
-        )
-      );
-
-    if (!podium) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            "Podyum sonucu henüz hazır değil.",
-        },
-        {
-          status: 409,
-        }
-      );
-    }
-
-    const season =
-      Number(race.season);
-
-    const round =
-      Number(race.round);
-
-    /*
-      BU YARIŞ İÇİN
-      TÜM TAHMİNLERİ AL
-    */
-
-    const supabase =
-      createAdminClient();
-
-    const {
-      data: predictions,
-      error:
-        predictionsError,
-    } = await supabase
-      .from("predictions")
-      .select(
-        `
-        id,
-        p1_driver_number,
-        p2_driver_number,
-        p3_driver_number
-        `
-      )
-      .eq(
-        "season",
-        season
-      )
-      .eq(
-        "round",
-        round
-      )
-      .eq(
-        "prediction_type",
-        "race"
-      );
-
-    if (predictionsError) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error:
-            predictionsError.message,
+          sprint:
+            sprintResult,
         },
         {
           status: 500,
         }
       );
     }
-
-    /*
-      BU YARIŞ İÇİN TAHMİN
-      YOKSA HATA DEĞİL.
-    */
-
-    if (
-      !predictions ||
-      predictions.length === 0
-    ) {
-      return NextResponse.json({
-        ok: true,
-
-        message:
-          "Bu yarış için kayıtlı tahmin yok.",
-
-        race: {
-          season,
-          round,
-          raceName:
-            race.raceName,
-        },
-
-        podium,
-
-        scored: 0,
-      });
-    }
-
-    /*
-      HER KULLANICININ
-      PUANINI HESAPLA
-    */
-
-    const scoredPredictions =
-      predictions.map(
-        (prediction) => {
-          const score =
-            calculatePredictionScore(
-              {
-                P1:
-                  prediction.p1_driver_number,
-
-                P2:
-                  prediction.p2_driver_number,
-
-                P3:
-                  prediction.p3_driver_number,
-              },
-
-              podium
-            );
-
-          return {
-            id:
-              prediction.id,
-
-            points:
-              score.total,
-
-            detail:
-              score,
-          };
-        }
-      );
-
-    /*
-      SUPABASE'DEKİ
-      POINTS ALANLARINI GÜNCELLE
-    */
-
-    const updateResults =
-      await Promise.all(
-        scoredPredictions.map(
-          async (prediction) => {
-            const {
-              error,
-            } =
-              await supabase
-                .from(
-                  "predictions"
-                )
-                .update({
-                  points:
-                    prediction.points,
-
-                  updated_at:
-                    new Date().toISOString(),
-                })
-                .eq(
-                  "id",
-                  prediction.id
-                );
-
-            return {
-              ...prediction,
-              error:
-                error?.message ??
-                null,
-            };
-          }
-        )
-      );
-
-    const failed =
-      updateResults.filter(
-        (result) =>
-          result.error
-      );
-
-    if (
-      failed.length > 0
-    ) {
-      return NextResponse.json(
-        {
-          ok: false,
-
-          error:
-            "Bazı tahminler güncellenemedi.",
-
-          failed,
-        },
-        {
-          status: 500,
-        }
-      );
-    }
-
-    /*
-      BAŞARILI
-    */
 
     return NextResponse.json({
       ok: true,
 
-      race: {
-        season,
+      race:
+        raceResult,
 
-        round,
+      sprint:
+        sprintResult,
 
-        raceName:
-          race.raceName,
-      },
-
-      podium,
-
-      scored:
-        updateResults.length,
-
-      results:
-        updateResults,
+      totalScored:
+        raceResult.scored +
+        sprintResult.scored,
     });
   } catch (error) {
     return NextResponse.json(
@@ -374,8 +536,7 @@ export async function GET(
         ok: false,
 
         error:
-          error instanceof
-          Error
+          error instanceof Error
             ? error.message
             : "Bilinmeyen sunucu hatası.",
       },
