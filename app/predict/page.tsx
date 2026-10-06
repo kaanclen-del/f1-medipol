@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import Header from "@/components/Header";
 import PredictionSelector from "@/components/PredictionSelector";
 
@@ -8,7 +10,17 @@ import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function PredictPage() {
+type PredictPageProps = {
+  searchParams: Promise<{
+    mode?: string | string[];
+  }>;
+};
+
+export default async function PredictPage({
+  searchParams,
+}: PredictPageProps) {
+  const params = await searchParams;
+
   const race =
     await getCurrentRaceWeekend();
 
@@ -24,16 +36,54 @@ export default async function PredictPage() {
 
   const season = race?.raceDate
     ? Number(
-        race.raceDate.slice(0, 4)
+        race.raceDate.slice(
+          0,
+          4
+        )
       )
     : new Date().getFullYear();
 
   /*
-    YARIŞ BAŞLAMA ZAMANI
+    HANGİ TAHMİN MODUNDAYIZ?
+  */
+
+  const requestedMode =
+    Array.isArray(params.mode)
+      ? params.mode[0]
+      : params.mode;
+
+  const predictionType:
+    | "race"
+    | "sprint" =
+    requestedMode ===
+      "sprint" &&
+    race?.sprint
+      ? "sprint"
+      : "race";
+
+  const isSprint =
+    predictionType ===
+    "sprint";
+
+  /*
+    KİLİT ZAMANI
+
+    Race tahmini:
+    yarış başladığında kilitlenir.
+
+    Sprint tahmini:
+    Sprint başladığında kilitlenir.
   */
 
   const lockAt =
-    race?.raceDate
+    isSprint
+      ? race?.sprintDate
+        ? `${race.sprintDate}T${
+            race.sprintTime ||
+            "12:00:00Z"
+          }`
+        : null
+      : race?.raceDate
       ? `${race.raceDate}T${
           race.raceTime ||
           "12:00:00Z"
@@ -51,8 +101,7 @@ export default async function PredictPage() {
   } | null = null;
 
   /*
-    KULLANICININ BU YARIŞTAN
-    KAZANDIĞI PUAN
+    BU MODDAN KAZANILAN PUAN
   */
 
   let predictionPoints:
@@ -86,7 +135,7 @@ export default async function PredictPage() {
       )
       .eq(
         "prediction_type",
-        "race"
+        predictionType
       )
       .maybeSingle();
 
@@ -122,21 +171,29 @@ export default async function PredictPage() {
           className="site-container"
           style={{
             paddingTop: "28px",
-            paddingBottom: "70px",
+            paddingBottom:
+              "70px",
           }}
         >
+          {/* SAYFA BAŞLIĞI */}
+
           <div className="eyebrow">
-            F1 MEDİPOL · PREDICTION CENTER
+            F1 MEDİPOL ·
+            PREDICTION CENTER
           </div>
 
           <h1
             style={{
               fontSize: "50px",
-              margin: "8px 0 5px",
-              letterSpacing: "-.04em",
+              margin:
+                "8px 0 5px",
+              letterSpacing:
+                "-.04em",
             }}
           >
-            YARIŞ TAHMİNİ
+            {isSprint
+              ? "SPRINT TAHMİNİ"
+              : "YARIŞ TAHMİNİ"}
           </h1>
 
           <p
@@ -151,9 +208,119 @@ export default async function PredictPage() {
               : "Sıradaki Formula 1 yarışı"}
           </p>
 
+          {/* RACE / SPRINT SEKMELERİ */}
+
+          <div
+            style={{
+              marginTop: "22px",
+              display: "flex",
+              gap: "8px",
+              alignItems:
+                "center",
+            }}
+          >
+            <Link
+              href="/predict"
+              style={{
+                minWidth: "130px",
+                height: "42px",
+
+                display: "flex",
+                alignItems:
+                  "center",
+                justifyContent:
+                  "center",
+
+                borderRadius:
+                  "10px",
+
+                border:
+                  predictionType ===
+                  "race"
+                    ? "1px solid rgba(255,80,72,.55)"
+                    : "1px solid rgba(255,255,255,.08)",
+
+                background:
+                  predictionType ===
+                  "race"
+                    ? "linear-gradient(135deg,rgba(225,6,0,.24),rgba(225,6,0,.08))"
+                    : "rgba(255,255,255,.025)",
+
+                color:
+                  predictionType ===
+                  "race"
+                    ? "#ffffff"
+                    : "#929dab",
+
+                fontSize: "11px",
+                fontWeight: 1000,
+                letterSpacing:
+                  ".06em",
+              }}
+            >
+              🏁 YARIŞ
+            </Link>
+
+            {race?.sprint && (
+              <Link
+                href="/predict?mode=sprint"
+                style={{
+                  minWidth:
+                    "130px",
+
+                  height:
+                    "42px",
+
+                  display:
+                    "flex",
+
+                  alignItems:
+                    "center",
+
+                  justifyContent:
+                    "center",
+
+                  borderRadius:
+                    "10px",
+
+                  border:
+                    predictionType ===
+                    "sprint"
+                      ? "1px solid rgba(255,145,70,.60)"
+                      : "1px solid rgba(255,255,255,.08)",
+
+                  background:
+                    predictionType ===
+                    "sprint"
+                      ? "linear-gradient(135deg,rgba(255,115,55,.24),rgba(255,115,55,.07))"
+                      : "rgba(255,255,255,.025)",
+
+                  color:
+                    predictionType ===
+                    "sprint"
+                      ? "#ff9a6f"
+                      : "#929dab",
+
+                  fontSize:
+                    "11px",
+
+                  fontWeight:
+                    1000,
+
+                  letterSpacing:
+                    ".06em",
+                }}
+              >
+                ⚡ SPRINT
+              </Link>
+            )}
+          </div>
+
+          {/* ANA ALAN */}
+
           <section
             style={{
-              marginTop: "25px",
+              marginTop: "14px",
 
               display: "grid",
 
@@ -169,51 +336,60 @@ export default async function PredictPage() {
               className="card"
               style={{
                 padding: "28px",
-                minHeight: "580px",
+                minHeight:
+                  "580px",
               }}
             >
               <div className="eyebrow">
-                PODIUM PREDICTION
+                {isSprint
+                  ? "SPRINT PODIUM"
+                  : "PODIUM PREDICTION"}
               </div>
 
               <h2
                 style={{
-                  fontSize: "30px",
-                  margin: "8px 0 25px",
+                  fontSize:
+                    "30px",
+
+                  margin:
+                    "8px 0 25px",
                 }}
               >
-                Podyumunu Oluştur
+                {isSprint
+                  ? "Sprint Podyumunu Oluştur"
+                  : "Podyumunu Oluştur"}
               </h2>
 
               {race &&
-              drivers.length > 0 ? (
-                <PredictionSelector
-                  drivers={drivers}
-                  season={season}
-                  round={race.round}
-                  raceName={
-                    race.raceName
-                  }
-                  predictionType="race"
-                  initialPrediction={
-                    initialPrediction
-                  }
-                  lockAt={
-                    lockAt
-                  }
-                />
+              drivers.length >
+                0 ? (
+       <PredictionSelector
+  key={`${season}-${race.round}-${predictionType}`}
+  drivers={drivers}
+  season={season}
+  round={race.round}
+  raceName={race.raceName}
+  predictionType={predictionType}
+  initialPrediction={initialPrediction}
+  lockAt={lockAt}
+/>
               ) : (
                 <div
                   style={{
-                    minHeight: "420px",
+                    minHeight:
+                      "420px",
 
-                    display: "grid",
+                    display:
+                      "grid",
 
-                    placeItems: "center",
+                    placeItems:
+                      "center",
 
-                    color: "#929dab",
+                    color:
+                      "#929dab",
 
-                    textAlign: "center",
+                    textAlign:
+                      "center",
                   }}
                 >
                   Yarış veya pilot
@@ -227,7 +403,8 @@ export default async function PredictPage() {
             <aside
               style={{
                 display: "flex",
-                flexDirection: "column",
+                flexDirection:
+                  "column",
                 gap: "14px",
               }}
             >
@@ -239,11 +416,15 @@ export default async function PredictPage() {
                   padding: "22px",
 
                   background:
-                    "linear-gradient(145deg,rgba(225,6,0,.15),rgba(27,34,44,.96))",
+                    isSprint
+                      ? "linear-gradient(145deg,rgba(255,105,45,.14),rgba(27,34,44,.96))"
+                      : "linear-gradient(145deg,rgba(225,6,0,.15),rgba(27,34,44,.96))",
                 }}
               >
                 <div className="eyebrow">
-                  BU YARIŞ
+                  {isSprint
+                    ? "BU SPRINT"
+                    : "BU YARIŞ"}
                 </div>
 
                 <div
@@ -255,12 +436,14 @@ export default async function PredictPage() {
 
                     gap: "8px",
 
-                    marginTop: "8px",
+                    marginTop:
+                      "8px",
                   }}
                 >
                   <strong
                     style={{
-                      fontSize: "52px",
+                      fontSize:
+                        "52px",
 
                       lineHeight: 1,
 
@@ -276,13 +459,17 @@ export default async function PredictPage() {
 
                   <span
                     style={{
-                      color: "#929dab",
+                      color:
+                        "#929dab",
 
-                      fontSize: "12px",
+                      fontSize:
+                        "12px",
 
-                      fontWeight: 900,
+                      fontWeight:
+                        900,
 
-                      marginBottom: "6px",
+                      marginBottom:
+                        "6px",
                     }}
                   >
                     PUAN
@@ -291,19 +478,30 @@ export default async function PredictPage() {
 
                 <p
                   style={{
-                    color: "#929dab",
+                    color:
+                      "#929dab",
 
-                    fontSize: "11px",
+                    fontSize:
+                      "11px",
 
-                    lineHeight: 1.6,
+                    lineHeight:
+                      1.6,
 
                     margin:
                       "12px 0 0",
                   }}
                 >
                   {initialPrediction
-                    ? "Yarış sonucu işlendiğinde kazandığın puan burada otomatik güncellenir."
-                    : "Bu yarış için henüz kayıtlı tahminin yok."}
+                    ? `${
+                        isSprint
+                          ? "Sprint"
+                          : "Yarış"
+                      } sonucu işlendiğinde kazandığın puan burada otomatik güncellenir.`
+                    : `${
+                        isSprint
+                          ? "Bu Sprint"
+                          : "Bu yarış"
+                      } için henüz kayıtlı tahminin yok.`}
                 </p>
               </div>
 
@@ -321,11 +519,15 @@ export default async function PredictPage() {
 
                 <h3
                   style={{
-                    fontSize: "22px",
-                    margin: "8px 0 18px",
+                    fontSize:
+                      "22px",
+
+                    margin:
+                      "8px 0 18px",
                   }}
                 >
-                  Nasıl Puan Kazanılır?
+                  Nasıl Puan
+                  Kazanılır?
                 </h3>
 
                 {[
@@ -333,32 +535,36 @@ export default async function PredictPage() {
                     "P1 doğru",
                     "+50",
                   ],
-
                   [
                     "P2 doğru",
                     "+35",
                   ],
-
                   [
                     "P3 doğru",
                     "+25",
                   ],
-
                   [
                     "Podyumda ama yanlış sıra",
                     "+10",
                   ],
                 ].map(
-                  ([label, value]) => (
+                  ([
+                    label,
+                    value,
+                  ]) => (
                     <div
-                      key={label}
+                      key={
+                        label
+                      }
                       style={{
-                        display: "flex",
+                        display:
+                          "flex",
 
                         justifyContent:
                           "space-between",
 
-                        gap: "20px",
+                        gap:
+                          "20px",
 
                         padding:
                           "13px 0",
@@ -376,10 +582,16 @@ export default async function PredictPage() {
                             "12px",
                         }}
                       >
-                        {label}
+                        {
+                          label
+                        }
                       </span>
 
-                      <b>{value}</b>
+                      <b>
+                        {
+                          value
+                        }
+                      </b>
                     </div>
                   )
                 )}
@@ -399,11 +611,14 @@ export default async function PredictPage() {
 
                 <h3
                   style={{
-                    margin: "8px 0",
+                    margin:
+                      "8px 0",
 
-                    fontSize: "22px",
+                    fontSize:
+                      "22px",
 
-                    color: "#35d477",
+                    color:
+                      "#35d477",
                   }}
                 >
                   OTOMATİK
@@ -411,21 +626,22 @@ export default async function PredictPage() {
 
                 <p
                   style={{
-                    color: "#929dab",
+                    color:
+                      "#929dab",
 
-                    fontSize: "12px",
+                    fontSize:
+                      "12px",
 
-                    lineHeight: 1.7,
+                    lineHeight:
+                      1.7,
 
-                    marginBottom: 0,
+                    marginBottom:
+                      0,
                   }}
                 >
-                  Yarış başladığında
-                  tahminler otomatik
-                  kilitlenir. Yarış
-                  sonucu açıklandıktan
-                  sonra puanlar sistem
-                  tarafından hesaplanır.
+                  {isSprint
+                    ? "Sprint başladığında Sprint tahminleri otomatik kilitlenir."
+                    : "Yarış başladığında yarış tahminleri otomatik kilitlenir."}
                 </p>
               </div>
 
@@ -446,7 +662,8 @@ export default async function PredictPage() {
                     margin:
                       "8px 0 10px",
 
-                    fontSize: "20px",
+                    fontSize:
+                      "20px",
                   }}
                 >
                   {user
@@ -456,24 +673,35 @@ export default async function PredictPage() {
 
                 <p
                   style={{
-                    color: "#929dab",
+                    color:
+                      "#929dab",
 
-                    fontSize: "12px",
+                    fontSize:
+                      "12px",
 
-                    lineHeight: 1.7,
+                    lineHeight:
+                      1.7,
 
                     margin: 0,
                   }}
                 >
                   {user
                     ? initialPrediction
-                      ? "Kayıtlı tahmin bulundu ve otomatik yüklendi."
-                      : "Bu yarış için henüz tahmin kaydetmedin."
+                      ? `${
+                          isSprint
+                            ? "Sprint"
+                            : "Yarış"
+                        } tahminin kayıtlı ve otomatik yüklendi.`
+                      : `${
+                          isSprint
+                            ? "Bu Sprint"
+                            : "Bu yarış"
+                        } için henüz tahmin kaydetmedin.`
                     : "Tahmin kaydetmek için giriş yapmalısın."}
                 </p>
               </div>
 
-              {/* RACE WEEKEND */}
+              {/* WEEKEND */}
 
               <div
                 className="card"
@@ -490,7 +718,8 @@ export default async function PredictPage() {
                     margin:
                       "8px 0 14px",
 
-                    fontSize: "20px",
+                    fontSize:
+                      "20px",
                   }}
                 >
                   {race?.raceName ||
@@ -499,16 +728,19 @@ export default async function PredictPage() {
 
                 <div
                   style={{
-                    display: "grid",
+                    display:
+                      "grid",
 
                     gap: "10px",
 
-                    fontSize: "12px",
+                    fontSize:
+                      "12px",
                   }}
                 >
                   <div
                     style={{
-                      display: "flex",
+                      display:
+                        "flex",
 
                       justifyContent:
                         "space-between",
@@ -523,12 +755,15 @@ export default async function PredictPage() {
                       Sezon
                     </span>
 
-                    <b>{season}</b>
+                    <b>
+                      {season}
+                    </b>
                   </div>
 
                   <div
                     style={{
-                      display: "flex",
+                      display:
+                        "flex",
 
                       justifyContent:
                         "space-between",
@@ -558,7 +793,8 @@ export default async function PredictPage() {
 
                   <div
                     style={{
-                      display: "flex",
+                      display:
+                        "flex",
 
                       justifyContent:
                         "space-between",
@@ -581,7 +817,8 @@ export default async function PredictPage() {
 
                   <div
                     style={{
-                      display: "flex",
+                      display:
+                        "flex",
 
                       justifyContent:
                         "space-between",
@@ -593,59 +830,24 @@ export default async function PredictPage() {
                           "#8793a1",
                       }}
                     >
-                      Format
+                      Mod
                     </span>
 
-                    <b>
-                      {race?.sprint
+                    <b
+                      style={{
+                        color:
+                          isSprint
+                            ? "#ff9368"
+                            : "white",
+                      }}
+                    >
+                      {isSprint
                         ? "Sprint"
-                        : "Normal"}
+                        : "Race"}
                     </b>
                   </div>
                 </div>
               </div>
-
-              {/* SPRINT */}
-
-              {race?.sprint && (
-                <div
-                  className="card"
-                  style={{
-                    padding: "22px",
-
-                    border:
-                      "1px solid rgba(255,110,70,.18)",
-                  }}
-                >
-                  <div className="eyebrow">
-                    SPRINT WEEKEND
-                  </div>
-
-                  <h3
-                    style={{
-                      margin: "8px 0",
-                    }}
-                  >
-                    Sprint Tahmini
-                  </h3>
-
-                  <p
-                    style={{
-                      color: "#929dab",
-
-                      fontSize: "12px",
-
-                      lineHeight: 1.7,
-
-                      margin: 0,
-                    }}
-                  >
-                    Sprint için ayrı
-                    P1 / P2 / P3 tahmini
-                    de ekleyeceğiz.
-                  </p>
-                </div>
-              )}
             </aside>
           </section>
         </div>
