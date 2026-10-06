@@ -1,8 +1,11 @@
 import Header from "@/components/Header";
 import RaceHeroBackground from "@/components/RaceHeroBackground";
 import RaceCountdown from "@/components/RaceCountdown";
+
 import { getCurrentRaceWeekend } from "@/lib/race-data";
 import { getRaceHeroImages } from "@/lib/race-image";
+
+export const dynamic = "force-dynamic";
 
 function formatRaceDate(date?: string) {
   if (!date) {
@@ -20,12 +23,18 @@ function formatRaceDate(date?: string) {
 export default async function Home() {
   const race = await getCurrentRaceWeekend();
 
+  /*
+    O HAFTAKİ YARIŞA GÖRE
+    OTOMATİK PİST / GP FOTOĞRAFLARI
+  */
+
   const heroImages = race
-    ? await getRaceHeroImages(
-        race.raceName,
-        race.circuitName,
-        race.city
-      )
+    ? await getRaceHeroImages({
+        raceName: race.raceName,
+        circuitName: race.circuitName,
+        city: race.city,
+        country: race.country,
+      })
     : [];
 
   const raceTitle =
@@ -141,6 +150,8 @@ export default async function Home() {
                   "linear-gradient(135deg,#351d25,#1a2330 65%,#12171f)",
               }}
             >
+              {/* İNTERNETTEN OTOMATİK GELEN GÖRSELLER */}
+
               <RaceHeroBackground
                 images={heroImages}
               />
@@ -275,7 +286,7 @@ export default async function Home() {
                     : "SIRADAKİ F1 HAFTA SONU"}
                 </p>
 
-                {/* GERÇEK GERİ SAYIM */}
+                {/* GERİ SAYIM */}
 
                 {race && (
                   <RaceCountdown
@@ -412,6 +423,8 @@ export default async function Home() {
               marginTop: "14px",
             }}
           >
+            {/* CANLI */}
+
             <article
               className="card"
               style={{
@@ -443,6 +456,8 @@ export default async function Home() {
                 Canlı Merkezi Aç →
               </a>
             </article>
+
+            {/* TAHMİN */}
 
             <article
               className="card"
@@ -477,6 +492,8 @@ export default async function Home() {
                 Tahmin Yap →
               </a>
             </article>
+
+            {/* PADDOCK */}
 
             <article
               className="card"
