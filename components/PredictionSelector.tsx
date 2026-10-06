@@ -4,15 +4,22 @@ import { useState } from "react";
 import type { OpenF1Driver } from "@/lib/openf1";
 import { createClient } from "@/utils/supabase/client";
 
+type PodiumSlot = "P1" | "P2" | "P3";
+
+type SelectedPrediction = {
+  P1: number | null;
+  P2: number | null;
+  P3: number | null;
+};
+
 type Props = {
   drivers: OpenF1Driver[];
   season: number;
   round: number;
   raceName: string;
   predictionType?: "race" | "sprint";
+  initialPrediction?: SelectedPrediction | null;
 };
-
-type PodiumSlot = "P1" | "P2" | "P3";
 
 export default function PredictionSelector({
   drivers,
@@ -20,27 +27,33 @@ export default function PredictionSelector({
   round,
   raceName,
   predictionType = "race",
+  initialPrediction = null,
 }: Props) {
-  const supabase = createClient();
+  const [supabase] = useState(() =>
+    createClient()
+  );
 
   const [activeSlot, setActiveSlot] =
     useState<PodiumSlot>("P1");
 
-  const [selected, setSelected] = useState<{
-    P1: number | null;
-    P2: number | null;
-    P3: number | null;
-  }>({
-    P1: null,
-    P2: null,
-    P3: null,
-  });
+  const [selected, setSelected] =
+    useState<SelectedPrediction>(
+      initialPrediction ?? {
+        P1: null,
+        P2: null,
+        P3: null,
+      }
+    );
 
   const [saving, setSaving] =
     useState(false);
 
   const [message, setMessage] =
-    useState("");
+    useState(
+      initialPrediction
+        ? "✅ Kayıtlı tahminin yüklendi."
+        : ""
+    );
 
   function selectDriver(
     driverNumber: number
@@ -95,7 +108,6 @@ export default function PredictionSelector({
       setMessage(
         "Önce P1, P2 ve P3 pilotlarını seç."
       );
-
       return;
     }
 
@@ -104,15 +116,10 @@ export default function PredictionSelector({
 
     const {
       data: { user },
-      error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
-      setSaving(false);
-
-      window.location.href =
-        "/login";
-
+    if (!user) {
+      window.location.href = "/login";
       return;
     }
 
@@ -127,12 +134,16 @@ export default function PredictionSelector({
             race_name: raceName,
             prediction_type:
               predictionType,
+
             p1_driver_number:
               selected.P1,
+
             p2_driver_number:
               selected.P2,
+
             p3_driver_number:
               selected.P3,
+
             updated_at:
               new Date().toISOString(),
           },
@@ -148,7 +159,6 @@ export default function PredictionSelector({
       );
 
       setSaving(false);
-
       return;
     }
 
@@ -214,12 +224,15 @@ export default function PredictionSelector({
               style={{
                 minHeight: "270px",
                 borderRadius: "16px",
+
                 border: isActive
                   ? "1px solid rgba(255,75,68,.75)"
                   : "1px solid rgba(255,255,255,.09)",
+
                 background: isActive
                   ? "linear-gradient(145deg,rgba(225,6,0,.12),rgba(255,255,255,.025))"
                   : "rgba(255,255,255,.025)",
+
                 color: "white",
                 padding: "18px",
                 textAlign: "left",
@@ -280,7 +293,7 @@ export default function PredictionSelector({
                     marginTop: "28px",
                   }}
                 >
-                  {driver.headshot_url && (
+                  {driver.headshot_url ? (
                     <img
                       src={
                         driver.headshot_url
@@ -299,6 +312,23 @@ export default function PredictionSelector({
                         marginBottom: "14px",
                       }}
                     />
+                  ) : (
+                    <div
+                      style={{
+                        width: "90px",
+                        height: "90px",
+                        borderRadius: "50%",
+                        background:
+                          "#252c36",
+                        display: "grid",
+                        placeItems: "center",
+                        marginBottom: "14px",
+                        fontWeight: 1000,
+                      }}
+                    >
+                      {driver.name_acronym ||
+                        "F1"}
+                    </div>
                   )}
 
                   <div
@@ -312,8 +342,8 @@ export default function PredictionSelector({
                       style={{
                         width: "4px",
                         height: "34px",
-                        borderRadius:
-                          "999px",
+                        borderRadius: "999px",
+
                         background:
                           driver.team_colour
                             ? `#${driver.team_colour}`
@@ -337,7 +367,8 @@ export default function PredictionSelector({
                           color: "#8d98a6",
                         }}
                       >
-                        {driver.team_name}
+                        {driver.team_name ||
+                          "Formula 1"}
                       </small>
                     </div>
                   </div>
@@ -362,7 +393,7 @@ export default function PredictionSelector({
         })}
       </div>
 
-      {/* PİLOT LİSTESİ */}
+      {/* PİLOT SEÇ */}
 
       <div
         style={{
@@ -412,12 +443,15 @@ export default function PredictionSelector({
                 }
                 style={{
                   borderRadius: "13px",
+
                   border: isSelected
                     ? "1px solid rgba(255,80,72,.65)"
                     : "1px solid rgba(255,255,255,.07)",
+
                   background: isSelected
                     ? "rgba(225,6,0,.09)"
                     : "rgba(255,255,255,.025)",
+
                   color: "white",
                   padding: "12px",
                   display: "flex",
@@ -475,8 +509,7 @@ export default function PredictionSelector({
                     style={{
                       fontSize: "12px",
                       fontWeight: 900,
-                      whiteSpace:
-                        "nowrap",
+                      whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow:
                         "ellipsis",
@@ -491,14 +524,14 @@ export default function PredictionSelector({
                       color: "#7f8a98",
                       fontSize: "9px",
                       marginTop: "2px",
-                      whiteSpace:
-                        "nowrap",
+                      whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow:
                         "ellipsis",
                     }}
                   >
-                    {driver.team_name}
+                    {driver.team_name ||
+                      "Formula 1"}
                   </div>
                 </div>
               </button>
@@ -554,6 +587,7 @@ export default function PredictionSelector({
               !saving
                 ? 1
                 : 0.45,
+
             cursor:
               predictionComplete &&
               !saving
