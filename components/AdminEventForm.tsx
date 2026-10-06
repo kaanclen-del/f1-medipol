@@ -1,127 +1,265 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import {
+  useState,
+  type CSSProperties,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+
 import { useRouter } from "next/navigation";
+
+type ApiResult = {
+  ok?: boolean;
+  url?: string;
+  path?: string;
+  error?: string;
+};
+
+async function readResponse(
+  response: Response
+): Promise<ApiResult> {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text) as ApiResult;
+  } catch {
+    return {
+      error: text,
+    };
+  }
+}
 
 export default function AdminEventForm() {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [success, setSuccess] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const [imageFile, setImageFile] =
+    useState<File | null>(null);
+
+  const [imageUrl, setImageUrl] =
+    useState("");
+
+  const [message, setMessage] =
+    useState("");
+
+  const [success, setSuccess] =
+    useState(false);
+
+  async function uploadImage() {
+    if (!imageFile) {
+      return imageUrl.trim();
+    }
+
+    const uploadData = new FormData();
+
+    uploadData.append(
+      "file",
+      imageFile
+    );
+
+    const response = await fetch(
+      "/api/admin/event-image-upload",
+      {
+        method: "POST",
+        body: uploadData,
+      }
+    );
+
+    const result =
+      await readResponse(response);
+
+    if (!response.ok) {
+      throw new Error(
+        result.error ||
+          `Görsel yüklenemedi. HTTP ${response.status}`
+      );
+    }
+
+    if (!result.url) {
+      throw new Error(
+        "Görsel yüklendi ancak görsel adresi alınamadı."
+      );
+    }
+
+    return result.url;
+  }
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setLoading(true);
     setMessage("");
     setSuccess(false);
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+    const form =
+      event.currentTarget;
 
-    const payload = {
-      title: String(formData.get("title") || ""),
-      description: String(formData.get("description") || ""),
-
-      eventType: String(formData.get("eventType") || "other"),
-
-      locationName: String(formData.get("locationName") || ""),
-      locationAddress: String(formData.get("locationAddress") || ""),
-
-      startAt: String(formData.get("startAt") || ""),
-      endAt: String(formData.get("endAt") || ""),
-
-      coverImageUrl: String(formData.get("coverImageUrl") || ""),
-      registrationUrl: String(formData.get("registrationUrl") || ""),
-
-      featured: formData.get("featured") === "on",
-      isPublished: formData.get("isPublished") === "on",
-    };
+    const formData =
+      new FormData(form);
 
     try {
-      const response = await fetch("/api/admin/events", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const coverImageUrl =
+        await uploadImage();
 
-      const result = await response.json();
+      const body = {
+        title: String(
+          formData.get("title") || ""
+        ).trim(),
+
+        description: String(
+          formData.get(
+            "description"
+          ) || ""
+        ).trim(),
+
+        eventType: String(
+          formData.get(
+            "eventType"
+          ) || "other"
+        ),
+
+        locationName: String(
+          formData.get(
+            "locationName"
+          ) || ""
+        ).trim(),
+
+        locationAddress: String(
+          formData.get(
+            "locationAddress"
+          ) || ""
+        ).trim(),
+
+        startAt: String(
+          formData.get(
+            "startAt"
+          ) || ""
+        ),
+
+        endAt: String(
+          formData.get(
+            "endAt"
+          ) || ""
+        ),
+
+        coverImageUrl,
+
+        registrationUrl: String(
+          formData.get(
+            "registrationUrl"
+          ) || ""
+        ).trim(),
+
+        featured:
+          formData.get(
+            "featured"
+          ) === "on",
+
+        isPublished:
+          formData.get(
+            "isPublished"
+          ) === "on",
+      };
+
+      const response =
+        await fetch(
+          "/api/admin/events",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify(
+              body
+            ),
+          }
+        );
+
+      const result =
+        await readResponse(
+          response
+        );
 
       if (!response.ok) {
-        setMessage(result.error || "Etkinlik oluşturulamadı.");
-        setSuccess(false);
-        return;
+        throw new Error(
+          result.error ||
+            `Etkinlik oluşturulamadı. HTTP ${response.status}`
+        );
       }
-
-      setMessage("Etkinlik başarıyla oluşturuldu.");
-      setSuccess(true);
 
       form.reset();
 
+      setImageFile(null);
+      setImageUrl("");
+
+      setSuccess(true);
+
+      setMessage(
+        "Etkinlik başarıyla oluşturuldu."
+      );
+
       router.refresh();
     } catch (error) {
-      console.error(error);
-
-      setMessage("Sunucuya bağlanırken bir hata oluştu.");
       setSuccess(false);
+
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Beklenmeyen bir hata oluştu."
+      );
     } finally {
       setLoading(false);
     }
   }
 
-  const inputStyle = {
-    width: "100%",
-    minHeight: "44px",
-    padding: "0 12px",
-    borderRadius: "10px",
-    border: "1px solid rgba(255,255,255,.10)",
-    background: "rgba(255,255,255,.04)",
-    color: "white",
-    outline: "none",
-  };
-
-  const labelStyle = {
-    display: "block",
-    marginBottom: "7px",
-    color: "#aeb7c3",
-    fontSize: "10px",
-    fontWeight: 900,
-  };
-
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: "grid",
+        gap: "16px",
+      }}
+    >
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(2,minmax(0,1fr))",
+          gridTemplateColumns:
+            "repeat(2, minmax(0, 1fr))",
           gap: "14px",
         }}
       >
-        {/* BAŞLIK */}
-
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>ETKİNLİK BAŞLIĞI *</label>
+        <label>
+          <FieldTitle>
+            ETKİNLİK ADI
+          </FieldTitle>
 
           <input
             name="title"
-            type="text"
             required
-            placeholder="Örn: Japonya GP Yarış İzleme"
+            placeholder="Örn. Singapore GP İzleme Etkinliği"
             style={inputStyle}
           />
-        </div>
+        </label>
 
-        {/* TÜR */}
-
-        <div>
-          <label style={labelStyle}>ETKİNLİK TÜRÜ</label>
+        <label>
+          <FieldTitle>
+            ETKİNLİK TÜRÜ
+          </FieldTitle>
 
           <select
             name="eventType"
-            defaultValue="watch_party"
+            defaultValue="other"
             style={inputStyle}
           >
             <option value="watch_party">
@@ -129,7 +267,7 @@ export default function AdminEventForm() {
             </option>
 
             <option value="karting">
-              Karting
+              Go-Kart
             </option>
 
             <option value="talk">
@@ -144,25 +282,71 @@ export default function AdminEventForm() {
               Diğer
             </option>
           </select>
-        </div>
+        </label>
+      </div>
 
-        {/* MEKAN */}
+      <label>
+        <FieldTitle>
+          AÇIKLAMA
+        </FieldTitle>
 
-        <div>
-          <label style={labelStyle}>MEKAN ADI</label>
+        <textarea
+          name="description"
+          rows={5}
+          placeholder="Etkinlik hakkında kısa açıklama..."
+          style={{
+            ...inputStyle,
+            paddingTop: "12px",
+            resize: "vertical",
+          }}
+        />
+      </label>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(2, minmax(0, 1fr))",
+          gap: "14px",
+        }}
+      >
+        <label>
+          <FieldTitle>
+            KONUM
+          </FieldTitle>
 
           <input
             name="locationName"
-            type="text"
-            placeholder="Örn: Güney Kampüs"
+            placeholder="Örn. Güney Kampüs"
             style={inputStyle}
           />
-        </div>
+        </label>
 
-        {/* BAŞLANGIÇ */}
+        <label>
+          <FieldTitle>
+            ADRES
+          </FieldTitle>
 
-        <div>
-          <label style={labelStyle}>BAŞLANGIÇ *</label>
+          <input
+            name="locationAddress"
+            placeholder="Etkinliğin açık adresi"
+            style={inputStyle}
+          />
+        </label>
+      </div>
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(2, minmax(0, 1fr))",
+          gap: "14px",
+        }}
+      >
+        <label>
+          <FieldTitle>
+            BAŞLANGIÇ
+          </FieldTitle>
 
           <input
             name="startAt"
@@ -170,174 +354,262 @@ export default function AdminEventForm() {
             required
             style={inputStyle}
           />
-        </div>
+        </label>
 
-        {/* BİTİŞ */}
-
-        <div>
-          <label style={labelStyle}>BİTİŞ</label>
+        <label>
+          <FieldTitle>
+            BİTİŞ
+          </FieldTitle>
 
           <input
             name="endAt"
             type="datetime-local"
             style={inputStyle}
           />
+        </label>
+      </div>
+
+      <div
+        className="card"
+        style={{
+          padding: "18px",
+          background:
+            "rgba(255,255,255,.025)",
+        }}
+      >
+        <div className="eyebrow">
+          ETKİNLİK GÖRSELİ
         </div>
 
-        {/* ADRES */}
+        <p
+          style={{
+            color: "#8d98a6",
+            fontSize: "11px",
+            margin: "6px 0 0",
+          }}
+        >
+          Bilgisayarından JPG,
+          PNG veya WEBP
+          seçebilirsin.
+          Maksimum 5 MB.
+        </p>
 
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>ADRES</label>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={(event) => {
+            const file =
+              event.target
+                .files?.[0] ??
+              null;
 
-          <input
-            name="locationAddress"
-            type="text"
-            placeholder="Etkinlik adresi"
-            style={inputStyle}
-          />
-        </div>
+            setImageFile(file);
+          }}
+          style={{
+            ...inputStyle,
+            marginTop: "14px",
+            paddingTop: "9px",
+          }}
+        />
 
-        {/* KAPAK FOTOĞRAFI */}
-
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>KAPAK GÖRSELİ URL</label>
-
-          <input
-            name="coverImageUrl"
-            type="url"
-            placeholder="https://..."
-            style={inputStyle}
-          />
-        </div>
-
-        {/* KAYIT LINKI */}
-
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>KAYIT / DETAY LİNKİ</label>
-
-          <input
-            name="registrationUrl"
-            type="url"
-            placeholder="https://..."
-            style={inputStyle}
-          />
-        </div>
-
-        {/* AÇIKLAMA */}
-
-        <div style={{ gridColumn: "1 / -1" }}>
-          <label style={labelStyle}>AÇIKLAMA</label>
-
-          <textarea
-            name="description"
-            rows={5}
-            placeholder="Etkinlik hakkında kısa açıklama..."
+        {imageFile && (
+          <div
             style={{
-              ...inputStyle,
-              minHeight: "120px",
-              padding: "12px",
-              resize: "vertical",
+              marginTop: "9px",
+              padding: "8px 10px",
+              borderRadius: "8px",
+              background:
+                "rgba(53,212,119,.08)",
+              border:
+                "1px solid rgba(53,212,119,.15)",
+              color: "#65df96",
+              fontSize: "11px",
             }}
-          />
-        </div>
-
-        {/* AYARLAR */}
+          >
+            ✓ Seçildi:{" "}
+            {imageFile.name}
+          </div>
+        )}
 
         <div
           style={{
-            gridColumn: "1 / -1",
-            display: "flex",
-            gap: "12px",
-            flexWrap: "wrap",
+            margin: "16px 0 8px",
+            color: "#737f8d",
+            fontSize: "10px",
+            fontWeight: 900,
           }}
         >
-          <label
-            style={{
-              minHeight: "46px",
-              padding: "0 14px",
-              display: "flex",
-              alignItems: "center",
-              gap: "9px",
-              borderRadius: "10px",
-              border: "1px solid rgba(255,255,255,.10)",
-              background: "rgba(255,255,255,.035)",
-              fontSize: "10px",
-              fontWeight: 900,
-              cursor: "pointer",
-            }}
-          >
-            <input
-              name="isPublished"
-              type="checkbox"
-            />
-
-            Hemen yayınla
-          </label>
-
-          <label
-            style={{
-              minHeight: "46px",
-              padding: "0 14px",
-              display: "flex",
-              alignItems: "center",
-              gap: "9px",
-              borderRadius: "10px",
-              border: "1px solid rgba(255,255,255,.10)",
-              background: "rgba(255,255,255,.035)",
-              fontSize: "10px",
-              fontWeight: 900,
-              cursor: "pointer",
-            }}
-          >
-            <input
-              name="featured"
-              type="checkbox"
-            />
-
-            Öne çıkan etkinlik
-          </label>
+          VEYA GÖRSEL URL
         </div>
+
+        <input
+          type="url"
+          value={imageUrl}
+          onChange={(event) =>
+            setImageUrl(
+              event.target.value
+            )
+          }
+          placeholder="https://..."
+          style={inputStyle}
+        />
+
+        <p
+          style={{
+            color: "#66717e",
+            fontSize: "10px",
+            margin: "7px 0 0",
+          }}
+        >
+          Dosya seçersen URL
+          yerine seçtiğin dosya
+          kullanılacaktır.
+        </p>
       </div>
 
-      {/* MESAJ */}
+      <label>
+        <FieldTitle>
+          KAYIT LİNKİ
+        </FieldTitle>
+
+        <input
+          name="registrationUrl"
+          type="url"
+          placeholder="https://..."
+          style={inputStyle}
+        />
+      </label>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "24px",
+          alignItems: "center",
+          flexWrap: "wrap",
+          padding: "4px 0",
+        }}
+      >
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            name="featured"
+          />
+
+          <span
+            style={{
+              fontSize: "12px",
+              fontWeight: 800,
+            }}
+          >
+            Öne çıkar
+          </span>
+        </label>
+
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+          }}
+        >
+          <input
+            type="checkbox"
+            name="isPublished"
+          />
+
+          <span
+            style={{
+              fontSize: "12px",
+              fontWeight: 800,
+            }}
+          >
+            Hemen yayınla
+          </span>
+        </label>
+      </div>
 
       {message && (
         <div
           style={{
-            marginTop: "16px",
             padding: "12px 14px",
             borderRadius: "10px",
+
             background: success
-              ? "rgba(53,212,119,.10)"
-              : "rgba(225,6,0,.10)",
+              ? "rgba(53,212,119,.08)"
+              : "rgba(225,6,0,.08)",
+
             border: success
-              ? "1px solid rgba(53,212,119,.25)"
-              : "1px solid rgba(225,6,0,.25)",
-            color: success ? "#65df96" : "#ff706a",
-            fontSize: "11px",
-            fontWeight: 800,
+              ? "1px solid rgba(53,212,119,.18)"
+              : "1px solid rgba(225,6,0,.20)",
+
+            color: success
+              ? "#65df96"
+              : "#ff7772",
+
+            fontSize: "12px",
+            fontWeight: 700,
           }}
         >
           {message}
         </div>
       )}
 
-      {/* BUTON */}
-
       <button
         type="submit"
         className="btn btn-red"
         disabled={loading}
         style={{
-          marginTop: "18px",
-          minWidth: "180px",
-          opacity: loading ? 0.6 : 1,
+          minHeight: "48px",
+          justifySelf: "start",
+          minWidth: "190px",
+          opacity:
+            loading ? 0.6 : 1,
         }}
       >
         {loading
           ? "Oluşturuluyor..."
-          : "Etkinlik Oluştur"}
+          : "Etkinliği Oluştur"}
       </button>
     </form>
   );
 }
+
+function FieldTitle({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        fontSize: "11px",
+        fontWeight: 900,
+        marginBottom: "7px",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+const inputStyle: CSSProperties =
+  {
+    width: "100%",
+    minHeight: "44px",
+    borderRadius: "9px",
+    border:
+      "1px solid rgba(255,255,255,.10)",
+    background:
+      "rgba(10,14,20,.50)",
+    color: "#fff",
+    padding: "0 12px",
+    outline: "none",
+  };

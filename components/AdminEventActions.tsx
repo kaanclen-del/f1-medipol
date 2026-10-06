@@ -9,6 +9,22 @@ type Props = {
   isPublished: boolean;
 };
 
+async function readResponse(response: Response) {
+  const text = await response.text();
+
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {
+      error: text,
+    };
+  }
+}
+
 export default function AdminEventActions({
   eventId,
   eventTitle,
@@ -19,28 +35,6 @@ export default function AdminEventActions({
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  async function readResponse(response: Response) {
-    const text = await response.text();
-
-    if (!text) {
-      return {
-        ok: response.ok,
-        error: response.ok
-          ? ""
-          : `Sunucu hatası (${response.status})`,
-      };
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch {
-      return {
-        ok: false,
-        error: `Geçersiz sunucu yanıtı (${response.status})`,
-      };
-    }
-  }
-
   async function togglePublished() {
     setLoading(true);
     setMessage("");
@@ -50,11 +44,9 @@ export default function AdminEventActions({
         `/api/admin/events/${eventId}`,
         {
           method: "PATCH",
-
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify({
             isPublished: !isPublished,
           }),
@@ -63,13 +55,11 @@ export default function AdminEventActions({
 
       const result = await readResponse(response);
 
-      if (!response.ok || !result.ok) {
-        setMessage(
-          result.error ||
-            "Etkinliğin yayın durumu değiştirilemedi."
+      if (!response.ok) {
+        throw new Error(
+          (result as { error?: string }).error ||
+            `İşlem başarısız. HTTP ${response.status}`
         );
-
-        return;
       }
 
       setMessage(
@@ -80,10 +70,10 @@ export default function AdminEventActions({
 
       router.refresh();
     } catch (error) {
-      console.error(error);
-
       setMessage(
-        "Sunucuya bağlanırken bir hata oluştu."
+        error instanceof Error
+          ? error.message
+          : "Bir hata oluştu."
       );
     } finally {
       setLoading(false);
@@ -92,7 +82,7 @@ export default function AdminEventActions({
 
   async function deleteEvent() {
     const confirmed = window.confirm(
-      `"${eventTitle}" etkinliğini kalıcı olarak silmek istiyor musun?`
+      `"${eventTitle}" etkinliğini silmek istediğine emin misin?`
     );
 
     if (!confirmed) {
@@ -112,23 +102,19 @@ export default function AdminEventActions({
 
       const result = await readResponse(response);
 
-      if (!response.ok || !result.ok) {
-        setMessage(
-          result.error ||
-            "Etkinlik silinemedi."
+      if (!response.ok) {
+        throw new Error(
+          (result as { error?: string }).error ||
+            `Silme başarısız. HTTP ${response.status}`
         );
-
-        return;
       }
-
-      setMessage("Etkinlik silindi.");
 
       router.refresh();
     } catch (error) {
-      console.error(error);
-
       setMessage(
-        "Sunucuya bağlanırken bir hata oluştu."
+        error instanceof Error
+          ? error.message
+          : "Bir hata oluştu."
       );
     } finally {
       setLoading(false);
@@ -139,80 +125,48 @@ export default function AdminEventActions({
     <div
       style={{
         display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
+        alignItems: "center",
         gap: "8px",
+        flexWrap: "wrap",
+        justifyContent: "flex-end",
       }}
     >
-      <div
+      <button
+        type="button"
+        className={isPublished ? "btn" : "btn btn-red"}
+        onClick={togglePublished}
+        disabled={loading}
+      >
+        {loading
+          ? "Bekle..."
+          : isPublished
+          ? "Taslağa Çek"
+          : "Yayınla"}
+      </button>
+
+      <button
+        type="button"
+        className="btn"
+        onClick={deleteEvent}
+        disabled={loading}
         style={{
-          display: "flex",
-          gap: "7px",
-          flexWrap: "wrap",
-          justifyContent: "flex-end",
+          borderColor: "rgba(255,80,80,.25)",
         }}
       >
-        <button
-          type="button"
-          className="btn"
-          disabled={loading}
-          onClick={togglePublished}
-          style={{
-            minHeight: "34px",
-            padding: "0 11px",
-            fontSize: "9px",
-            opacity: loading ? 0.55 : 1,
-          }}
-        >
-          {loading
-            ? "İşleniyor..."
-            : isPublished
-              ? "Taslağa Çek"
-              : "Yayınla"}
-        </button>
-
-        <button
-          type="button"
-          disabled={loading}
-          onClick={deleteEvent}
-          style={{
-            minHeight: "34px",
-            padding: "0 11px",
-            borderRadius: "9px",
-
-            border:
-              "1px solid rgba(225,6,0,.25)",
-
-            background:
-              "rgba(225,6,0,.08)",
-
-            color: "#ff625b",
-
-            fontSize: "9px",
-            fontWeight: 900,
-
-            cursor: loading
-              ? "not-allowed"
-              : "pointer",
-
-            opacity: loading ? 0.55 : 1,
-          }}
-        >
-          Sil
-        </button>
-      </div>
+        Sil
+      </button>
 
       {message && (
-        <div
+        <span
           style={{
-            maxWidth: "260px",
+            width: "100%",
+            fontSize: "10px",
             color: "#aab4c0",
-            fontSize: "9px",
             textAlign: "right",
           }}
         >
           {message}
-        </div>
+        </span>
       )}
     </div>
   );

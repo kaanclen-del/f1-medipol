@@ -9,54 +9,41 @@ const EVENT_TYPES = [
   "talk",
   "club",
   "other",
-] as const;
+];
 
-type EventType = (typeof EVENT_TYPES)[number];
+function parseTurkeyDate(value?: string) {
+  if (!value) {
+    return null;
+  }
 
-type CreateEventBody = {
-  title?: string;
-  description?: string;
-  eventType?: string;
+  const date = new Date(`${value}:00+03:00`);
 
-  locationName?: string;
-  locationAddress?: string;
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
 
-  startAt?: string;
-  endAt?: string;
+  return date.toISOString();
+}
 
-  coverImageUrl?: string;
-  registrationUrl?: string;
-
-  featured?: boolean;
-  isPublished?: boolean;
-};
-
-/* API kontrolü */
 export async function GET() {
   return NextResponse.json({
     ok: true,
-    message: "Admin events API çalışıyor",
+    message: "Admin events API çalışıyor.",
   });
 }
 
-/* Etkinlik oluştur */
 export async function POST(request: Request) {
   try {
     const supabase = await createClient();
 
-    /*
-     * Giriş yapan kullanıcı
-     */
     const {
       data: { user },
-      error: userError,
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+    if (!user) {
       return NextResponse.json(
         {
-          ok: false,
-          error: "Giriş yapman gerekiyor.",
+          error: "Giriş yapılmamış.",
         },
         {
           status: 401,
@@ -64,23 +51,16 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Admin kontrolü
-     */
-    const {
-      data: profile,
-      error: profileError,
-    } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("is_admin")
       .eq("id", user.id)
       .single();
 
-    if (profileError || !profile?.is_admin) {
+    if (!profile?.is_admin) {
       return NextResponse.json(
         {
-          ok: false,
-          error: "Bu işlem için admin yetkisi gerekiyor.",
+          error: "Admin yetkisi gerekiyor.",
         },
         {
           status: 403,
@@ -88,18 +68,47 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Form verisi
-     */
-    const body = (await request.json()) as CreateEventBody;
+    const body = await request.json();
 
-    const title = body.title?.trim();
+    const title =
+      typeof body.title === "string"
+        ? body.title.trim()
+        : "";
+
+    const description =
+      typeof body.description === "string"
+        ? body.description.trim()
+        : "";
+
+    const eventType =
+      typeof body.eventType === "string"
+        ? body.eventType
+        : "other";
+
+    const locationName =
+      typeof body.locationName === "string"
+        ? body.locationName.trim()
+        : "";
+
+    const locationAddress =
+      typeof body.locationAddress === "string"
+        ? body.locationAddress.trim()
+        : "";
+
+    const coverImageUrl =
+      typeof body.coverImageUrl === "string"
+        ? body.coverImageUrl.trim()
+        : "";
+
+    const registrationUrl =
+      typeof body.registrationUrl === "string"
+        ? body.registrationUrl.trim()
+        : "";
 
     if (!title) {
       return NextResponse.json(
         {
-          ok: false,
-          error: "Etkinlik başlığı zorunlu.",
+          error: "Etkinlik adı zorunlu.",
         },
         {
           status: 400,
@@ -107,27 +116,9 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!body.startAt) {
+    if (!EVENT_TYPES.includes(eventType)) {
       return NextResponse.json(
         {
-          ok: false,
-          error: "Başlangıç tarihi zorunlu.",
-        },
-        {
-          status: 400,
-        }
-      );
-    }
-
-    /*
-     * Etkinlik türü
-     */
-    const eventType = body.eventType || "other";
-
-    if (!EVENT_TYPES.includes(eventType as EventType)) {
-      return NextResponse.json(
-        {
-          ok: false,
           error: "Geçersiz etkinlik türü.",
         },
         {
@@ -136,17 +127,12 @@ export async function POST(request: Request) {
       );
     }
 
-    /*
-     * Tarihler
-     * Formdaki saatleri Türkiye saati olarak kaydediyoruz.
-     */
-    const startDate = new Date(`${body.startAt}:00+03:00`);
+    const startAt = parseTurkeyDate(body.startAt);
 
-    if (Number.isNaN(startDate.getTime())) {
+    if (!startAt) {
       return NextResponse.json(
         {
-          ok: false,
-          error: "Başlangıç tarihi geçersiz.",
+          error: "Geçerli bir başlangıç tarihi seç.",
         },
         {
           status: 400,
@@ -154,45 +140,40 @@ export async function POST(request: Request) {
       );
     }
 
-    let endAt: string | null = null;
+    const endAt = body.endAt
+      ? parseTurkeyDate(body.endAt)
+      : null;
 
-    if (body.endAt) {
-      const endDate = new Date(`${body.endAt}:00+03:00`);
+    if (body.endAt && !endAt) {
+      return NextResponse.json(
+        {
+          error: "Bitiş tarihi geçersiz.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
-      if (Number.isNaN(endDate.getTime())) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Bitiş tarihi geçersiz.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      if (endDate.getTime() < startDate.getTime()) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error:
-              "Bitiş tarihi başlangıç tarihinden önce olamaz.",
-          },
-          {
-            status: 400,
-          }
-        );
-      }
-
-      endAt = endDate.toISOString();
+    if (
+      endAt &&
+      new Date(endAt).getTime() <
+        new Date(startAt).getTime()
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Bitiş tarihi başlangıç tarihinden önce olamaz.",
+        },
+        {
+          status: 400,
+        }
+      );
     }
 
     const admin = createAdminClient();
 
-    /*
-     * Tek bir öne çıkan etkinlik olsun.
-     */
-    if (body.featured) {
+    if (body.featured === true) {
       const { error: featuredError } = await admin
         .from("events")
         .update({
@@ -201,70 +182,57 @@ export async function POST(request: Request) {
         .eq("featured", true);
 
       if (featuredError) {
-        console.error("Featured error:", featuredError);
-
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Öne çıkan etkinlik güncellenemedi.",
-          },
-          {
-            status: 500,
-          }
+        console.error(
+          "FEATURED RESET ERROR:",
+          featuredError
         );
       }
     }
 
-    /*
-     * Etkinliği oluştur
-     */
-    const { data: createdEvent, error: insertError } =
-      await admin
-        .from("events")
-        .insert({
-          title,
+    const { data, error } = await admin
+      .from("events")
+      .insert({
+        title,
+        description:
+          description || null,
 
-          description:
-            body.description?.trim() || null,
+        event_type: eventType,
 
-          event_type: eventType,
+        location_name:
+          locationName || null,
 
-          location_name:
-            body.locationName?.trim() || null,
+        location_address:
+          locationAddress || null,
 
-          location_address:
-            body.locationAddress?.trim() || null,
+        start_at: startAt,
+        end_at: endAt,
 
-          start_at:
-            startDate.toISOString(),
+        cover_image_url:
+          coverImageUrl || null,
 
-          end_at: endAt,
+        registration_url:
+          registrationUrl || null,
 
-          cover_image_url:
-            body.coverImageUrl?.trim() || null,
+        featured:
+          body.featured === true,
 
-          registration_url:
-            body.registrationUrl?.trim() || null,
+        is_published:
+          body.isPublished === true,
+      })
+      .select()
+      .single();
 
-          featured:
-            Boolean(body.featured),
-
-          is_published:
-            Boolean(body.isPublished),
-
-          updated_at:
-            new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-    if (insertError) {
-      console.error("Insert error:", insertError);
+    if (error) {
+      console.error(
+        "EVENT INSERT ERROR:",
+        error
+      );
 
       return NextResponse.json(
         {
-          ok: false,
-          error: "Etkinlik oluşturulamadı.",
+          error:
+            error.message ||
+            "Etkinlik oluşturulamadı.",
         },
         {
           status: 500,
@@ -274,15 +242,20 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      event: createdEvent,
+      event: data,
     });
   } catch (error) {
-    console.error("Admin events API error:", error);
+    console.error(
+      "ADMIN EVENTS API ERROR:",
+      error
+    );
 
     return NextResponse.json(
       {
-        ok: false,
-        error: "Beklenmeyen bir sunucu hatası oluştu.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Beklenmeyen bir hata oluştu.",
       },
       {
         status: 500,
