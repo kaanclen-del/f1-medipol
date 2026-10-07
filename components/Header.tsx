@@ -61,7 +61,7 @@ export default function Header() {
     {
       label:
         "Yönetim Kurulu",
-      href: "/team",
+      href: "/board",
     },
 
     {
