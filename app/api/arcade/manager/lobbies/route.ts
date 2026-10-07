@@ -2,18 +2,23 @@ import { NextResponse } from "next/server";
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { cleanupManagerLobbies } from "@/utils/cleanupManagerLobbies";
 
 export const runtime = "nodejs";
 
 function createJoinCode() {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const chars =
+    "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
   let code = "";
 
   for (let i = 0; i < 6; i += 1) {
-    code += chars[
-      Math.floor(Math.random() * chars.length)
-    ];
+    code +=
+      chars[
+        Math.floor(
+          Math.random() * chars.length
+        )
+      ];
   }
 
   return code;
@@ -21,9 +26,18 @@ function createJoinCode() {
 
 export async function GET() {
   try {
+    /*
+      Önce eski / bağlantısı kopmuş
+      oyuncuları ve boş lobileri temizle.
+    */
+    await cleanupManagerLobbies();
+
     const admin = createAdminClient();
 
-    const { data: lobbies, error } = await admin
+    const {
+      data: lobbies,
+      error,
+    } = await admin
       .from("manager_lobbies")
       .select(`
         id,
@@ -56,12 +70,15 @@ export async function GET() {
     }
 
     const lobbyIds =
-      lobbies?.map((lobby) => lobby.id) ?? [];
+      lobbies?.map(
+        (lobby) => lobby.id
+      ) ?? [];
 
     const creatorIds = [
       ...new Set(
         (lobbies ?? []).map(
-          (lobby) => lobby.created_by
+          (lobby) =>
+            lobby.created_by
         )
       ),
     ];
@@ -76,14 +93,22 @@ export async function GET() {
 
     if (lobbyIds.length > 0) {
       const { data } = await admin
-        .from("manager_lobby_members")
+        .from(
+          "manager_lobby_members"
+        )
         .select(`
           lobby_id,
           user_id,
           status
         `)
-        .in("lobby_id", lobbyIds)
-        .eq("status", "active");
+        .in(
+          "lobby_id",
+          lobbyIds
+        )
+        .eq(
+          "status",
+          "active"
+        );
 
       members = data ?? [];
     }
@@ -91,9 +116,15 @@ export async function GET() {
     let profiles:
       | {
           id: string;
-          display_name: string | null;
-          username: string | null;
-          avatar_url: string | null;
+          display_name:
+            | string
+            | null;
+          username:
+            | string
+            | null;
+          avatar_url:
+            | string
+            | null;
         }[]
       = [];
 
@@ -106,31 +137,41 @@ export async function GET() {
           username,
           avatar_url
         `)
-        .in("id", creatorIds);
+        .in(
+          "id",
+          creatorIds
+        );
 
       profiles = data ?? [];
     }
 
-    const result = (lobbies ?? []).map(
-      (lobby) => {
-        const creator =
-          profiles.find(
-            (profile) =>
-              profile.id === lobby.created_by
-          ) ?? null;
+    const result =
+      (lobbies ?? []).map(
+        (lobby) => {
+          const creator =
+            profiles.find(
+              (profile) =>
+                profile.id ===
+                lobby.created_by
+            ) ?? null;
 
-        const memberCount = members.filter(
-          (member) =>
-            member.lobby_id === lobby.id
-        ).length;
+          const memberCount =
+            members.filter(
+              (member) =>
+                member.lobby_id ===
+                lobby.id
+            ).length;
 
-        return {
-          ...lobby,
-          member_count: memberCount,
-          creator,
-        };
-      }
-    );
+          return {
+            ...lobby,
+
+            member_count:
+              memberCount,
+
+            creator,
+          };
+        }
+      );
 
     return NextResponse.json({
       ok: true,
@@ -154,13 +195,17 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+) {
   try {
-    const supabase = await createClient();
+    const supabase =
+      await createClient();
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json(
@@ -172,26 +217,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const name =
-      typeof body?.name === "string"
+      typeof body?.name ===
+      "string"
         ? body.name.trim()
         : "";
 
     const visibility =
-      body?.visibility === "private"
+      body?.visibility ===
+      "private"
         ? "private"
         : "public";
 
     const mode =
-      body?.mode === "ranked"
+      body?.mode ===
+      "ranked"
         ? "ranked"
         : "casual";
 
-    const maxPlayers = Number(
-      body?.maxPlayers ?? 8
-    );
+    const maxPlayers =
+      Number(
+        body?.maxPlayers ?? 8
+      );
 
     if (name.length < 3) {
       return NextResponse.json(
@@ -214,7 +264,9 @@ export async function POST(request: Request) {
     }
 
     if (
-      !Number.isInteger(maxPlayers) ||
+      !Number.isInteger(
+        maxPlayers
+      ) ||
       maxPlayers < 2 ||
       maxPlayers > 20
     ) {
@@ -227,13 +279,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const admin = createAdminClient();
+    const admin =
+      createAdminClient();
 
-    const { data: profile } = await admin
-      .from("profiles")
-      .select("id")
-      .eq("id", user.id)
-      .maybeSingle();
+    const { data: profile } =
+      await admin
+        .from("profiles")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
 
     if (!profile) {
       return NextResponse.json(
@@ -252,22 +306,39 @@ export async function POST(request: Request) {
         }
       | null = null;
 
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const joinCode = createJoinCode();
+    for (
+      let attempt = 0;
+      attempt < 5;
+      attempt += 1
+    ) {
+      const joinCode =
+        createJoinCode();
 
       const {
         data,
         error: lobbyError,
       } = await admin
-        .from("manager_lobbies")
+        .from(
+          "manager_lobbies"
+        )
         .insert({
-          created_by: user.id,
+          created_by:
+            user.id,
+
           name,
-          join_code: joinCode,
+
+          join_code:
+            joinCode,
+
           visibility,
+
           mode,
-          status: "waiting",
-          max_players: maxPlayers,
+
+          status:
+            "waiting",
+
+          max_players:
+            maxPlayers,
         })
         .select(`
           id,
@@ -275,7 +346,10 @@ export async function POST(request: Request) {
         `)
         .single();
 
-      if (!lobbyError && data) {
+      if (
+        !lobbyError &&
+        data
+      ) {
         createdLobby = data;
         break;
       }
@@ -284,7 +358,9 @@ export async function POST(request: Request) {
         lobbyError &&
         !lobbyError.message
           .toLowerCase()
-          .includes("duplicate")
+          .includes(
+            "duplicate"
+          )
       ) {
         console.error(
           "MANAGER LOBBY CREATE ERROR:",
@@ -312,21 +388,42 @@ export async function POST(request: Request) {
       );
     }
 
-    const { error: memberError } =
-      await admin
-        .from("manager_lobby_members")
-        .insert({
-          lobby_id: createdLobby.id,
-          user_id: user.id,
-          role: "owner",
-          status: "active",
-        });
+    const {
+      error: memberError,
+    } = await admin
+      .from(
+        "manager_lobby_members"
+      )
+      .insert({
+        lobby_id:
+          createdLobby.id,
+
+        user_id:
+          user.id,
+
+        role:
+          "owner",
+
+        status:
+          "active",
+
+        is_ready:
+          false,
+
+        last_seen:
+          new Date().toISOString(),
+      });
 
     if (memberError) {
       await admin
-        .from("manager_lobbies")
+        .from(
+          "manager_lobbies"
+        )
         .delete()
-        .eq("id", createdLobby.id);
+        .eq(
+          "id",
+          createdLobby.id
+        );
 
       console.error(
         "MANAGER LOBBY OWNER ERROR:",
@@ -344,8 +441,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      lobbyId: createdLobby.id,
-      joinCode: createdLobby.join_code,
+
+      lobbyId:
+        createdLobby.id,
+
+      joinCode:
+        createdLobby.join_code,
     });
   } catch (error) {
     console.error(
