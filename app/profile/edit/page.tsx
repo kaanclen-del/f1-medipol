@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import Header from "@/components/Header";
+import ProfileAvatarUploader from "@/components/ProfileAvatarUploader";
 import { createClient } from "@/utils/supabase/client";
 
-const F1_TEAMS = [
+const favoriteTeams = [
   "McLaren",
   "Ferrari",
-  "Mercedes",
   "Red Bull Racing",
+  "Mercedes",
   "Aston Martin",
   "Williams",
   "Racing Bulls",
@@ -46,14 +47,12 @@ export default function EditProfilePage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select(
-          `
+        .select(`
           display_name,
           username,
           bio,
           favorite_team
-          `
-        )
+        `)
         .eq("id", user.id)
         .maybeSingle();
 
@@ -95,30 +94,25 @@ export default function EditProfilePage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
+      setSaving(false);
       window.location.href = "/login";
       return;
     }
 
-    /*
-      PROFİLES TABLOSUNU GÜNCELLE
-    */
+    const cleanUsername = username.trim()
+      ? username
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, "")
+      : null;
 
     const { error: profileError } = await supabase
       .from("profiles")
       .update({
         display_name: displayName.trim(),
-
-        username: username.trim()
-          ? username
-              .trim()
-              .toLowerCase()
-              .replace(/\s+/g, "")
-          : null,
-
+        username: cleanUsername,
         bio: bio.trim() || null,
-
-        favorite_team:
-          favoriteTeam || null,
+        favorite_team: favoriteTeam || null,
       })
       .eq("id", user.id);
 
@@ -142,12 +136,6 @@ export default function EditProfilePage() {
       return;
     }
 
-    /*
-      HEADER'DA KULLANDIĞIMIZ
-      DISPLAY NAME BİLGİSİNİ DE
-      AUTH METADATA İÇİNDE GÜNCELLE
-    */
-
     const { error: authError } =
       await supabase.auth.updateUser({
         data: {
@@ -165,6 +153,7 @@ export default function EditProfilePage() {
       return;
     }
 
+    setSaving(false);
     setMessage("✅ Profil başarıyla güncellendi.");
 
     setTimeout(() => {
@@ -205,8 +194,6 @@ export default function EditProfilePage() {
             paddingBottom: "80px",
           }}
         >
-          {/* BAŞLIK */}
-
           <div className="eyebrow">
             F1 MEDİPOL · DRIVER PROFILE
           </div>
@@ -232,8 +219,6 @@ export default function EditProfilePage() {
             düzenle.
           </p>
 
-          {/* ANA KART */}
-
           <section
             className="card"
             style={{
@@ -242,23 +227,23 @@ export default function EditProfilePage() {
               padding: "30px",
             }}
           >
+            <ProfileAvatarUploader />
+
             <div
               style={{
                 display: "grid",
                 gap: "22px",
               }}
             >
-              {/* GÖRÜNEN AD */}
-
               <div>
                 <label
                   style={{
                     display: "block",
                     marginBottom: "8px",
-                    color: "#aeb7c2",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                    letterSpacing: ".08em",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    color: "#c7ced8",
+                    letterSpacing: ".04em",
                   }}
                 >
                   GÖRÜNEN AD
@@ -267,108 +252,80 @@ export default function EditProfilePage() {
                 <input
                   type="text"
                   value={displayName}
-                  maxLength={50}
                   onChange={(event) =>
                     setDisplayName(event.target.value)
                   }
-                  placeholder="Ad Soyad"
+                  maxLength={60}
+                  placeholder="Görünen ad"
                   style={{
                     width: "100%",
-                    minHeight: "48px",
-                    padding: "0 14px",
+                    minHeight: "46px",
                     borderRadius: "10px",
                     border:
                       "1px solid rgba(255,255,255,.10)",
-                    background: "#151b23",
-                    color: "white",
+                    background: "rgba(255,255,255,.04)",
+                    color: "#fff",
+                    padding: "0 14px",
                     outline: "none",
                   }}
                 />
               </div>
 
-              {/* USERNAME */}
-
               <div>
                 <label
                   style={{
                     display: "block",
                     marginBottom: "8px",
-                    color: "#aeb7c2",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                    letterSpacing: ".08em",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    color: "#c7ced8",
+                    letterSpacing: ".04em",
                   }}
                 >
                   KULLANICI ADI
                 </label>
 
-                <div
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(event) =>
+                    setUsername(event.target.value)
+                  }
+                  maxLength={30}
+                  placeholder="kullaniciadi"
                   style={{
-                    display: "flex",
-                    alignItems: "center",
+                    width: "100%",
+                    minHeight: "46px",
+                    borderRadius: "10px",
                     border:
                       "1px solid rgba(255,255,255,.10)",
-                    borderRadius: "10px",
-                    background: "#151b23",
-                    overflow: "hidden",
+                    background: "rgba(255,255,255,.04)",
+                    color: "#fff",
+                    padding: "0 14px",
+                    outline: "none",
                   }}
-                >
-                  <span
-                    style={{
-                      paddingLeft: "14px",
-                      color: "#687483",
-                      fontWeight: 900,
-                    }}
-                  >
-                    @
-                  </span>
+                />
 
-                  <input
-                    type="text"
-                    value={username}
-                    maxLength={30}
-                    onChange={(event) =>
-                      setUsername(
-                        event.target.value
-                          .toLowerCase()
-                          .replace(/\s+/g, "")
-                      )
-                    }
-                    placeholder="kullaniciadi"
-                    style={{
-                      width: "100%",
-                      minHeight: "48px",
-                      padding: "0 14px 0 5px",
-                      border: 0,
-                      background: "transparent",
-                      color: "white",
-                      outline: "none",
-                    }}
-                  />
-                </div>
-
-                <small
+                <div
                   style={{
-                    display: "block",
-                    color: "#707c8a",
                     marginTop: "7px",
+                    color: "#707985",
+                    fontSize: "11px",
                   }}
                 >
-                  Kullanıcı adı benzersiz olmalıdır.
-                </small>
+                  En az 3 karakter.
+                </div>
               </div>
-
-              {/* BİYOGRAFİ */}
 
               <div>
                 <label
                   style={{
                     display: "block",
                     marginBottom: "8px",
-                    color: "#aeb7c2",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                    letterSpacing: ".08em",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    color: "#c7ced8",
+                    letterSpacing: ".04em",
                   }}
                 >
                   BİYOGRAFİ
@@ -376,48 +333,48 @@ export default function EditProfilePage() {
 
                 <textarea
                   value={bio}
-                  maxLength={220}
                   onChange={(event) =>
                     setBio(event.target.value)
                   }
-                  placeholder="F1 ilgin veya kulüple ilgili kısa bir şey yazabilirsin."
+                  maxLength={300}
+                  rows={5}
+                  placeholder="Kendinden biraz bahset..."
                   style={{
                     width: "100%",
-                    minHeight: "120px",
-                    padding: "14px",
                     resize: "vertical",
                     borderRadius: "10px",
                     border:
                       "1px solid rgba(255,255,255,.10)",
-                    background: "#151b23",
-                    color: "white",
+                    background: "rgba(255,255,255,.04)",
+                    color: "#fff",
+                    padding: "14px",
                     outline: "none",
+                    fontFamily: "inherit",
+                    lineHeight: 1.6,
                   }}
                 />
 
                 <div
                   style={{
+                    marginTop: "7px",
+                    color: "#707985",
+                    fontSize: "11px",
                     textAlign: "right",
-                    marginTop: "5px",
-                    color: "#687483",
-                    fontSize: "10px",
                   }}
                 >
-                  {bio.length}/220
+                  {bio.length}/300
                 </div>
               </div>
-
-              {/* FAVORİ TAKIM */}
 
               <div>
                 <label
                   style={{
                     display: "block",
                     marginBottom: "8px",
-                    color: "#aeb7c2",
-                    fontSize: "11px",
-                    fontWeight: 900,
-                    letterSpacing: ".08em",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    color: "#c7ced8",
+                    letterSpacing: ".04em",
                   }}
                 >
                   FAVORİ F1 TAKIMI
@@ -430,85 +387,92 @@ export default function EditProfilePage() {
                   }
                   style={{
                     width: "100%",
-                    minHeight: "48px",
-                    padding: "0 14px",
+                    minHeight: "46px",
                     borderRadius: "10px",
                     border:
                       "1px solid rgba(255,255,255,.10)",
-                    background: "#151b23",
-                    color: "white",
+                    background: "#11151b",
+                    color: "#fff",
+                    padding: "0 14px",
                     outline: "none",
                   }}
                 >
                   <option value="">
-                    Takım seç
+                    Takım seçilmedi
                   </option>
 
-                  {F1_TEAMS.map((team) => (
-                    <option key={team} value={team}>
+                  {favoriteTeams.map((team) => (
+                    <option
+                      key={team}
+                      value={team}
+                    >
                       {team}
                     </option>
                   ))}
                 </select>
               </div>
-            </div>
 
-            {/* MESAJ */}
+              {message && (
+                <div
+                  style={{
+                    padding: "13px 15px",
+                    borderRadius: "10px",
+                    background: message.startsWith("✅")
+                      ? "rgba(47, 160, 84, .10)"
+                      : "rgba(210, 38, 61, .10)",
+                    border: message.startsWith("✅")
+                      ? "1px solid rgba(80, 200, 120, .22)"
+                      : "1px solid rgba(210, 38, 61, .25)",
+                    color: message.startsWith("✅")
+                      ? "#8de3a5"
+                      : "#ff9ca9",
+                    fontSize: "12px",
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {message}
+                </div>
+              )}
 
-            {message && (
               <div
                 style={{
-                  marginTop: "22px",
-                  padding: "13px 15px",
-                  borderRadius: "10px",
-                  border:
-                    "1px solid rgba(255,255,255,.08)",
-                  background:
-                    "rgba(255,255,255,.035)",
-                  color: "#cbd2da",
-                  fontSize: "12px",
-                }}
-              >
-                {message}
-              </div>
-            )}
-
-            {/* BUTONLAR */}
-
-            <div
-              style={{
-                marginTop: "26px",
-                display: "flex",
-                justifyContent: "flex-end",
-                gap: "10px",
-              }}
-            >
-              <Link
-                href="/profile"
-                className="btn"
-                style={{
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "flex-end",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  paddingTop: "6px",
                 }}
               >
-                İptal
-              </Link>
+                <Link
+                  href="/profile"
+                  className="btn"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  İptal
+                </Link>
 
-              <button
-                type="button"
-                onClick={saveProfile}
-                disabled={saving}
-                className="btn btn-red"
-                style={{
-                  minWidth: "155px",
-                  opacity: saving ? 0.6 : 1,
-                }}
-              >
-                {saving
-                  ? "Kaydediliyor..."
-                  : "Profili Kaydet"}
-              </button>
+                <button
+                  type="button"
+                  onClick={saveProfile}
+                  disabled={saving}
+                  className="btn btn-red"
+                  style={{
+                    minWidth: "155px",
+                    opacity: saving ? 0.6 : 1,
+                    cursor: saving
+                      ? "wait"
+                      : "pointer",
+                  }}
+                >
+                  {saving
+                    ? "Kaydediliyor..."
+                    : "Profili Kaydet"}
+                </button>
+              </div>
             </div>
           </section>
         </div>
