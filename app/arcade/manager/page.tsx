@@ -1,6 +1,11 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import {
+  FormEvent,
+  ReactNode,
+  useEffect,
+  useState,
+} from "react";
 
 import Header from "@/components/Header";
 
@@ -14,6 +19,7 @@ type Lobby = {
   max_players: number;
   member_count: number;
   created_at: string;
+
   creator: {
     id: string;
     display_name: string | null;
@@ -24,18 +30,22 @@ type Lobby = {
 
 export default function ManagerPage() {
   const [lobbies, setLobbies] = useState<Lobby[]>([]);
+
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [joining, setJoining] = useState(false);
 
   const [name, setName] = useState("");
+
   const [visibility, setVisibility] =
     useState<"public" | "private">("public");
+
   const [mode, setMode] =
     useState<"casual" | "ranked">("casual");
+
   const [maxPlayers, setMaxPlayers] = useState(8);
 
   const [joinCode, setJoinCode] = useState("");
-  const [createdCode, setCreatedCode] = useState("");
 
   const [message, setMessage] = useState("");
 
@@ -59,7 +69,9 @@ export default function ManagerPage() {
 
       setLobbies(data.lobbies ?? []);
     } catch {
-      setMessage("Lobiler yüklenirken hata oluştu.");
+      setMessage(
+        "Lobiler yüklenirken hata oluştu."
+      );
     } finally {
       setLoading(false);
     }
@@ -75,7 +87,6 @@ export default function ManagerPage() {
     event.preventDefault();
 
     setMessage("");
-    setCreatedCode("");
 
     if (name.trim().length < 3) {
       setMessage(
@@ -91,9 +102,11 @@ export default function ManagerPage() {
         "/api/arcade/manager/lobbies",
         {
           method: "POST",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             name,
             visibility,
@@ -112,21 +125,71 @@ export default function ManagerPage() {
         return;
       }
 
-      setCreatedCode(data.joinCode);
-      setMessage("✅ Lobi başarıyla oluşturuldu.");
+      if (!data?.lobbyId) {
+        setMessage(
+          "Lobi oluşturuldu fakat lobi ID bilgisi alınamadı."
+        );
+        return;
+      }
 
-      setName("");
-      setVisibility("public");
-      setMode("casual");
-      setMaxPlayers(8);
-
-      await loadLobbies();
+      window.location.href =
+        `/arcade/manager/lobbies/${data.lobbyId}`;
     } catch {
       setMessage(
         "Lobi oluşturulurken hata oluştu."
       );
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function joinLobby(options: {
+    lobbyId?: string;
+    joinCode?: string;
+  }) {
+    setMessage("");
+    setJoining(true);
+
+    try {
+      const response = await fetch(
+        "/api/arcade/manager/lobbies/join",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify(options),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setMessage(
+          data?.error || "Lobiye katılınamadı."
+        );
+        return;
+      }
+
+      if (!data?.lobbyId) {
+        setMessage(
+          "Lobiye katıldın fakat lobi ID bilgisi alınamadı."
+        );
+        return;
+      }
+
+      setJoinCode("");
+
+      window.location.href =
+        `/arcade/manager/lobbies/${data.lobbyId}`;
+    } catch {
+      setMessage(
+        "Lobiye katılırken hata oluştu."
+      );
+    } finally {
+      setJoining(false);
     }
   }
 
@@ -150,6 +213,8 @@ export default function ManagerPage() {
             margin: "0 auto",
           }}
         >
+          {/* BAŞLIK */}
+
           <div
             style={{
               marginBottom: "38px",
@@ -170,7 +235,8 @@ export default function ManagerPage() {
             <h1
               style={{
                 margin: 0,
-                fontSize: "clamp(42px, 7vw, 76px)",
+                fontSize:
+                  "clamp(42px, 7vw, 76px)",
                 letterSpacing: "-3px",
                 lineHeight: 0.95,
               }}
@@ -186,11 +252,13 @@ export default function ManagerPage() {
                 marginTop: "18px",
               }}
             >
-              Kendi lobini oluştur, diğer menajerlerle
-              eşleş ve sezon boyunca şampiyonluk için
-              mücadele et.
+              Kendi lobini oluştur, diğer
+              menajerlerle eşleş ve sezon boyunca
+              şampiyonluk için mücadele et.
             </p>
           </div>
+
+          {/* ÜST KARTLAR */}
 
           <div
             style={{
@@ -270,16 +338,23 @@ export default function ManagerPage() {
                     }
                     style={inputStyle}
                   >
-                    {[2, 4, 6, 8, 10, 12, 16, 20].map(
-                      (count) => (
-                        <option
-                          key={count}
-                          value={count}
-                        >
-                          {count} Oyuncu
-                        </option>
-                      )
-                    )}
+                    {[
+                      2,
+                      4,
+                      6,
+                      8,
+                      10,
+                      12,
+                      16,
+                      20,
+                    ].map((count) => (
+                      <option
+                        key={count}
+                        value={count}
+                      >
+                        {count} Oyuncu
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -291,7 +366,8 @@ export default function ManagerPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
+                      gridTemplateColumns:
+                        "1fr 1fr",
                       gap: "8px",
                     }}
                   >
@@ -329,7 +405,8 @@ export default function ManagerPage() {
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
+                      gridTemplateColumns:
+                        "1fr 1fr",
                       gap: "8px",
                     }}
                   >
@@ -372,7 +449,9 @@ export default function ManagerPage() {
                     cursor: creating
                       ? "wait"
                       : "pointer",
-                    opacity: creating ? 0.6 : 1,
+                    opacity: creating
+                      ? 0.6
+                      : 1,
                     marginTop: "5px",
                   }}
                 >
@@ -381,40 +460,6 @@ export default function ManagerPage() {
                     : "Lobiyi Oluştur"}
                 </button>
               </form>
-
-              {createdCode && (
-                <div
-                  style={{
-                    marginTop: "18px",
-                    padding: "17px",
-                    borderRadius: "12px",
-                    border:
-                      "1px solid rgba(80,200,120,.25)",
-                    background:
-                      "rgba(80,200,120,.07)",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "11px",
-                      color: "#8de3a5",
-                      marginBottom: "7px",
-                    }}
-                  >
-                    DAVET KODUN
-                  </div>
-
-                  <div
-                    style={{
-                      fontSize: "26px",
-                      fontWeight: 900,
-                      letterSpacing: "5px",
-                    }}
-                  >
-                    {createdCode}
-                  </div>
-                </div>
-              )}
             </section>
 
             {/* KODA KATIL */}
@@ -457,8 +502,8 @@ export default function ManagerPage() {
                   marginBottom: "20px",
                 }}
               >
-                Arkadaşının gönderdiği 6 haneli lobi
-                kodunu gir.
+                Arkadaşının gönderdiği 6
+                haneli lobi kodunu gir.
               </p>
 
               <input
@@ -467,6 +512,10 @@ export default function ManagerPage() {
                   setJoinCode(
                     event.target.value
                       .toUpperCase()
+                      .replace(
+                        /[^A-Z0-9]/g,
+                        ""
+                      )
                       .slice(0, 6)
                   )
                 }
@@ -483,34 +532,45 @@ export default function ManagerPage() {
 
               <button
                 type="button"
-                disabled
+                disabled={
+                  joining ||
+                  joinCode.length !== 6
+                }
+                onClick={() =>
+                  joinLobby({
+                    joinCode,
+                  })
+                }
                 style={{
                   width: "100%",
                   minHeight: "48px",
                   marginTop: "12px",
                   borderRadius: "11px",
                   border:
-                    "1px solid rgba(255,255,255,.10)",
+                    "1px solid rgba(210,38,61,.35)",
                   background:
-                    "rgba(255,255,255,.04)",
-                  color: "#777",
+                    joinCode.length === 6
+                      ? "#d2263d"
+                      : "rgba(255,255,255,.04)",
+                  color:
+                    joinCode.length === 6
+                      ? "#fff"
+                      : "#777",
                   fontWeight: 800,
-                  cursor: "not-allowed",
+                  cursor:
+                    joining ||
+                    joinCode.length !== 6
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity: joining
+                    ? 0.6
+                    : 1,
                 }}
               >
-                Koda Katıl
+                {joining
+                  ? "Katılınıyor..."
+                  : "Koda Katıl"}
               </button>
-
-              <div
-                style={{
-                  marginTop: "10px",
-                  fontSize: "11px",
-                  color: "#606874",
-                }}
-              >
-                Katılma sistemi bir sonraki adımda aktif
-                olacak.
-              </div>
             </section>
           </div>
 
@@ -524,7 +584,8 @@ export default function ManagerPage() {
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
+                justifyContent:
+                  "space-between",
                 alignItems: "center",
                 gap: "20px",
                 marginBottom: "18px",
@@ -576,8 +637,8 @@ export default function ManagerPage() {
               </div>
             ) : lobbies.length === 0 ? (
               <div style={emptyStyle}>
-                Şu anda açık bir lobi yok. İlk lobiyi sen
-                oluşturabilirsin.
+                Şu anda açık bir lobi yok.
+                İlk lobiyi sen oluşturabilirsin.
               </div>
             ) : (
               <div
@@ -588,103 +649,148 @@ export default function ManagerPage() {
                   gap: "14px",
                 }}
               >
-                {lobbies.map((lobby) => (
-                  <div
-                    key={lobby.id}
-                    style={{
-                      border:
-                        "1px solid rgba(255,255,255,.08)",
-                      borderRadius: "17px",
-                      padding: "20px",
-                      background:
-                        "rgba(255,255,255,.025)",
-                    }}
-                  >
+                {lobbies.map((lobby) => {
+                  const isFull =
+                    lobby.member_count >=
+                    lobby.max_players;
+
+                  return (
                     <div
+                      key={lobby.id}
                       style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        gap: "12px",
+                        border:
+                          "1px solid rgba(255,255,255,.08)",
+                        borderRadius:
+                          "17px",
+                        padding: "20px",
+                        background:
+                          "rgba(255,255,255,.025)",
                       }}
                     >
-                      <div>
-                        <div
-                          style={{
-                            fontSize: "18px",
-                            fontWeight: 900,
-                          }}
-                        >
-                          {lobby.name}
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent:
+                            "space-between",
+                          gap: "12px",
+                        }}
+                      >
+                        <div>
+                          <div
+                            style={{
+                              fontSize:
+                                "18px",
+                              fontWeight:
+                                900,
+                            }}
+                          >
+                            {lobby.name}
+                          </div>
+
+                          <div
+                            style={{
+                              color:
+                                "#747d89",
+                              fontSize:
+                                "12px",
+                              marginTop:
+                                "5px",
+                            }}
+                          >
+                            {lobby.creator
+                              ?.display_name ||
+                              lobby.creator
+                                ?.username ||
+                              "Menajer"}
+                          </div>
                         </div>
 
-                        <div
-                          style={{
-                            color: "#747d89",
-                            fontSize: "12px",
-                            marginTop: "5px",
-                          }}
-                        >
-                          {lobby.creator?.display_name ||
-                            lobby.creator?.username ||
-                            "Menajer"}
-                        </div>
+                        <LobbyBadge
+                          mode={lobby.mode}
+                        />
                       </div>
 
                       <div
                         style={{
-                          color:
-                            lobby.mode === "ranked"
-                              ? "#d2263d"
-                              : "#9299a3",
-                          fontSize: "10px",
-                          fontWeight: 900,
-                          letterSpacing: "1px",
+                          marginTop:
+                            "20px",
+                          display: "flex",
+                          justifyContent:
+                            "space-between",
+                          alignItems:
+                            "center",
+                          gap: "12px",
                         }}
                       >
-                        {lobby.mode.toUpperCase()}
+                        <span
+                          style={{
+                            color:
+                              isFull
+                                ? "#d86a79"
+                                : "#aab1ba",
+                            fontSize:
+                              "13px",
+                          }}
+                        >
+                          {lobby.member_count}/
+                          {lobby.max_players}{" "}
+                          oyuncu
+                        </span>
+
+                        <button
+                          type="button"
+                          disabled={
+                            joining ||
+                            isFull
+                          }
+                          onClick={() =>
+                            joinLobby({
+                              lobbyId:
+                                lobby.id,
+                            })
+                          }
+                          style={{
+                            border: 0,
+                            borderRadius:
+                              "9px",
+                            padding:
+                              "9px 13px",
+                            background:
+                              isFull
+                                ? "rgba(255,255,255,.04)"
+                                : "#d2263d",
+                            color:
+                              isFull
+                                ? "#666"
+                                : "#fff",
+                            fontWeight:
+                              800,
+                            cursor:
+                              joining ||
+                              isFull
+                                ? "not-allowed"
+                                : "pointer",
+                            opacity:
+                              joining
+                                ? 0.6
+                                : 1,
+                          }}
+                        >
+                          {isFull
+                            ? "Dolu"
+                            : joining
+                            ? "..."
+                            : "Katıl"}
+                        </button>
                       </div>
                     </div>
-
-                    <div
-                      style={{
-                        marginTop: "20px",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                    >
-                      <span
-                        style={{
-                          color: "#aab1ba",
-                          fontSize: "13px",
-                        }}
-                      >
-                        {lobby.member_count}/
-                        {lobby.max_players} oyuncu
-                      </span>
-
-                      <button
-                        type="button"
-                        disabled
-                        style={{
-                          border: 0,
-                          borderRadius: "9px",
-                          padding: "9px 13px",
-                          background:
-                            "rgba(210,38,61,.15)",
-                          color: "#d86a79",
-                          fontWeight: 800,
-                          cursor: "not-allowed",
-                        }}
-                      >
-                        Katıl
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
+
+          {/* MESAJ */}
 
           {message && (
             <div
@@ -692,15 +798,11 @@ export default function ManagerPage() {
                 marginTop: "22px",
                 padding: "14px 16px",
                 borderRadius: "11px",
-                border: message.startsWith("✅")
-                  ? "1px solid rgba(80,200,120,.22)"
-                  : "1px solid rgba(210,38,61,.28)",
-                background: message.startsWith("✅")
-                  ? "rgba(80,200,120,.07)"
-                  : "rgba(210,38,61,.08)",
-                color: message.startsWith("✅")
-                  ? "#8de3a5"
-                  : "#ff9ca9",
+                border:
+                  "1px solid rgba(210,38,61,.28)",
+                background:
+                  "rgba(210,38,61,.08)",
+                color: "#ff9ca9",
                 fontSize: "13px",
               }}
             >
@@ -710,6 +812,28 @@ export default function ManagerPage() {
         </div>
       </main>
     </>
+  );
+}
+
+function LobbyBadge({
+  mode,
+}: {
+  mode: "casual" | "ranked";
+}) {
+  return (
+    <div
+      style={{
+        color:
+          mode === "ranked"
+            ? "#d2263d"
+            : "#9299a3",
+        fontSize: "10px",
+        fontWeight: 900,
+        letterSpacing: "1px",
+      }}
+    >
+      {mode.toUpperCase()}
+    </div>
   );
 }
 
@@ -726,7 +850,8 @@ const inputStyle = {
   width: "100%",
   minHeight: "46px",
   borderRadius: "10px",
-  border: "1px solid rgba(255,255,255,.10)",
+  border:
+    "1px solid rgba(255,255,255,.10)",
   background: "#11151a",
   color: "#fff",
   padding: "0 13px",
@@ -736,8 +861,10 @@ const inputStyle = {
 const emptyStyle = {
   padding: "30px",
   borderRadius: "16px",
-  border: "1px solid rgba(255,255,255,.07)",
-  background: "rgba(255,255,255,.02)",
+  border:
+    "1px solid rgba(255,255,255,.07)",
+  background:
+    "rgba(255,255,255,.02)",
   color: "#727b86",
   fontSize: "13px",
   textAlign: "center" as const,
@@ -747,13 +874,19 @@ function choiceButton(active: boolean) {
   return {
     minHeight: "43px",
     borderRadius: "9px",
+
     border: active
       ? "1px solid rgba(210,38,61,.65)"
       : "1px solid rgba(255,255,255,.08)",
+
     background: active
       ? "rgba(210,38,61,.15)"
       : "rgba(255,255,255,.025)",
-    color: active ? "#fff" : "#858d98",
+
+    color: active
+      ? "#fff"
+      : "#858d98",
+
     fontWeight: 800,
     cursor: "pointer",
   };
