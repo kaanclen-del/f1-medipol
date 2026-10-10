@@ -1,3 +1,5 @@
+import { openF1Request } from "@/lib/openf1-auth";
+
 export type OpenF1Session = {
   session_key: number;
   meeting_key: number;
@@ -96,7 +98,7 @@ export type OpenF1SessionResult = {
 export async function getLatestF1Session():
   Promise<OpenF1Session | null> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/sessions?session_key=latest",
       {
         cache: "no-store",
@@ -130,7 +132,7 @@ export async function getLatestF1Session():
 export async function getLatestF1Drivers():
   Promise<OpenF1Driver[]> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/drivers?session_key=latest",
       {
         cache: "no-store",
@@ -161,7 +163,7 @@ export async function getLatestF1Drivers():
 export async function getLatestF1Positions():
   Promise<OpenF1Position[]> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/position?session_key=latest",
       {
         cache: "no-store",
@@ -219,7 +221,7 @@ export async function getLatestF1Positions():
 export async function getLatestF1Intervals():
   Promise<OpenF1Interval[]> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/intervals?session_key=latest",
       {
         cache: "no-store",
@@ -273,7 +275,7 @@ export async function getLatestF1Intervals():
 export async function getLatestF1Laps():
   Promise<OpenF1Lap[]> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/laps?session_key=latest",
       {
         cache: "no-store",
@@ -327,7 +329,7 @@ export async function getLatestF1Laps():
 export async function getLatestF1Stints():
   Promise<OpenF1Stint[]> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/stints?session_key=latest",
       {
         cache: "no-store",
@@ -382,7 +384,7 @@ export async function getLatestF1Stints():
 export async function getLatestF1SessionResult():
   Promise<OpenF1SessionResult[]> {
   try {
-    const response = await fetch(
+    const response = await openF1Request(
       "https://api.openf1.org/v1/session_result?session_key=latest",
       {
         cache: "no-store",
