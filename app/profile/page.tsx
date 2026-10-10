@@ -2,1187 +2,1978 @@ import Link from "next/link";
 
 import Header from "@/components/Header";
 import ProfileActions from "@/components/ProfileActions";
+import ProfileAchievements from "@/components/ProfileAchievements";
 
-import { createClient } from "@/utils/supabase/server";
-import { getTeamBranding } from "@/lib/team-branding";
+import {
+  createClient,
+} from "@/utils/supabase/server";
 
-export const dynamic = "force-dynamic";
+import {
+  createAdminClient,
+} from "@/utils/supabase/admin";
+
+import {
+  getTeamBranding,
+} from "@/lib/team-branding";
+
+import {
+  getProfileWallpaper,
+  getWallpaperBackground,
+} from "@/lib/profile-wallpapers";
+
+import {
+  getProfileAccent,
+} from "@/lib/profile-accents";
+
+import {
+  getLatestF1Drivers,
+  type OpenF1Driver,
+} from "@/lib/openf1";
+
+export const dynamic =
+  "force-dynamic";
+
+/* =========================================================
+   TYPES
+   ========================================================= */
 
 type Prediction = {
   id: string;
+
   season: number;
+
   round: number;
+
   race_name: string;
-  prediction_type: "race" | "sprint";
+
+  prediction_type:
+    | "race"
+    | "sprint";
+
   p1_driver_number: number;
+
   p2_driver_number: number;
+
   p3_driver_number: number;
+
   points: number;
+
   created_at: string;
 };
 
+type PaddockPost = {
+  id: string;
+
+  user_id: string;
+
+  content:
+    | string
+    | null;
+
+  is_admin_post: boolean;
+
+  is_pinned: boolean;
+
+  created_at: string;
+};
+
+type PaddockMedia = {
+  id: string;
+
+  post_id: string;
+
+  media_url: string;
+
+  media_type:
+    | "image"
+    | "video";
+
+  sort_order: number;
+};
+
+type Achievement = {
+  id: string;
+
+  slug: string;
+
+  name: string;
+
+  description:
+    | string
+    | null;
+
+  image_url:
+    | string
+    | null;
+
+  category: string;
+
+  rarity:
+    | "common"
+    | "rare"
+    | "epic"
+    | "legendary";
+
+  xp_reward: number;
+
+  is_automatic: boolean;
+
+  condition_type: string;
+
+  condition_value:
+    | number
+    | null;
+
+  is_published: boolean;
+
+  sort_order: number;
+};
+
+type UserAchievement = {
+  achievement_id: string;
+
+  award_source: string;
+
+  awarded_at: string;
+
+  xp_awarded: number;
+};
+
+/* =========================================================
+   DATE
+   ========================================================= */
+
+function formatPaddockDate(
+  value: string
+) {
+  try {
+    return new Intl.DateTimeFormat(
+      "tr-TR",
+      {
+        day:
+          "2-digit",
+
+        month:
+          "short",
+
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit",
+
+        timeZone:
+          "Europe/Istanbul",
+      }
+    ).format(
+      new Date(
+        value
+      )
+    );
+  } catch {
+    return value;
+  }
+}
+
+/* =========================================================
+   DRIVER
+   ========================================================= */
+
+function driverInitials(
+  driver?:
+    | string
+    | null
+) {
+  if (!driver) {
+    return "—";
+  }
+
+  return driver
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(
+      (
+        part
+      ) =>
+        part.charAt(
+          0
+        )
+    )
+    .join("")
+    .toUpperCase();
+}
+
+function normalizeDriverName(
+  value?:
+    | string
+    | null
+) {
+  return (
+    value ||
+    ""
+  )
+    .normalize(
+      "NFD"
+    )
+    .replace(
+      /[\u0300-\u036f]/g,
+      ""
+    )
+    .toLowerCase()
+    .replace(
+      /[^a-z0-9]/g,
+      ""
+    );
+}
+
+function findFavoriteDriver(
+  drivers: OpenF1Driver[],
+  favoriteDriver?:
+    | string
+    | null
+) {
+  if (
+    !favoriteDriver
+  ) {
+    return null;
+  }
+
+  const target =
+    normalizeDriverName(
+      favoriteDriver
+    );
+
+  const exactMatch =
+    drivers.find(
+      (
+        driver
+      ) => {
+        const names = [
+          driver.full_name,
+
+          driver.broadcast_name,
+
+          [
+            driver.first_name,
+            driver.last_name,
+          ]
+            .filter(
+              Boolean
+            )
+            .join(
+              " "
+            ),
+        ];
+
+        return names.some(
+          (
+            name
+          ) =>
+            normalizeDriverName(
+              name
+            ) ===
+            target
+        );
+      }
+    );
+
+  if (
+    exactMatch
+  ) {
+    return exactMatch;
+  }
+
+  const parts =
+    favoriteDriver
+      .trim()
+      .split(/\s+/);
+
+  const lastName =
+    normalizeDriverName(
+      parts[
+        parts.length -
+          1
+      ]
+    );
+
+  return (
+    drivers.find(
+      (
+        driver
+      ) =>
+        normalizeDriverName(
+          driver.last_name
+        ) ===
+        lastName
+    ) ??
+    null
+  );
+}
+
+/* =========================================================
+   LEVEL SYSTEM
+   ========================================================= */
+
+/*
+  LEVEL 1 = 0 XP
+  LEVEL 2 = 100 XP
+  LEVEL 3 = 300 XP
+  LEVEL 4 = 600 XP
+  LEVEL 5 = 1000 XP
+  LEVEL 6 = 1500 XP
+*/
+
+function xpRequiredForLevel(
+  level: number
+) {
+  if (
+    level <=
+    1
+  ) {
+    return 0;
+  }
+
+  return (
+    50 *
+    level *
+    (
+      level -
+      1
+    )
+  );
+}
+
+function calculateLevel(
+  xp: number
+) {
+  const safeXp =
+    Math.max(
+      0,
+      xp
+    );
+
+  let level =
+    1;
+
+  while (
+    safeXp >=
+    xpRequiredForLevel(
+      level +
+        1
+    )
+  ) {
+    level +=
+      1;
+  }
+
+  return level;
+}
+
+/* =========================================================
+   PAGE
+   ========================================================= */
+
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: {
+      user,
+    },
+  } =
+    await supabase.auth.getUser();
 
-  /*
-    GİRİŞ YAPILMAMIŞSA
-  */
+  /* =======================================================
+     NOT LOGGED IN
+     ======================================================= */
 
   if (!user) {
     return (
       <>
         <Header />
 
-        <main>
-          <div
-            className="site-container"
-            style={{
-              paddingTop: "70px",
-              paddingBottom: "80px",
-            }}
-          >
-            <div
-              className="card"
-              style={{
-                maxWidth: "600px",
-                margin: "0 auto",
-                padding: "45px",
-                textAlign: "center",
-              }}
+        <main className="profile-login">
+          <style>
+            {styles}
+          </style>
+
+          <div className="login-card">
+            <span className="profile-kicker">
+              F1 MEDİPOL · DRIVER PROFILE
+            </span>
+
+            <h1>
+              Profiline giriş yap
+            </h1>
+
+            <p>
+              Profilini,
+              seviyeni,
+              başarımlarını ve
+              yarış istatistiklerini
+              görmek için giriş yap.
+            </p>
+
+            <Link
+              href="/login"
+              className="profile-red-button"
             >
-              <div className="eyebrow">
-                F1 MEDİPOL · PROFILE
-              </div>
-
-              <h1
-                style={{
-                  fontSize: "38px",
-                  margin: "10px 0 12px",
-                }}
-              >
-                Profiline giriş yap
-              </h1>
-
-              <p
-                style={{
-                  color: "#929dab",
-                  lineHeight: 1.7,
-                  fontSize: "13px",
-                }}
-              >
-                Tahminlerini, puanlarını ve profil
-                bilgilerini görmek için hesabına giriş
-                yapmalısın.
-              </p>
-
-              <Link
-                href="/login"
-                className="btn btn-red"
-                style={{
-                  marginTop: "15px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                Giriş Yap →
-              </Link>
-            </div>
+              Giriş Yap →
+            </Link>
           </div>
         </main>
       </>
     );
   }
 
-  /*
-    PROFİL BİLGİLERİ
-  */
+  /* =======================================================
+     PROFILE
+     ======================================================= */
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(
-      `
-      display_name,
-      username,
-      avatar_url,
-      bio,
-      favorite_team
-      `
-    )
-    .eq("id", user.id)
-    .maybeSingle();
+  const {
+    data:
+      profile,
+  } =
+    await supabase
+      .from(
+        "profiles"
+      )
+      .select(`
+        display_name,
+        username,
+        avatar_url,
+        bio,
+        favorite_team,
+        favorite_driver,
+        profile_wallpaper,
+        profile_accent,
+        xp,
+        level
+      `)
+      .eq(
+        "id",
+        user.id
+      )
+      .maybeSingle();
 
-  /*
-    TAHMİNLER
-  */
+  /* =======================================================
+     PREDICTIONS
+     ======================================================= */
 
-  const { data: predictionData } = await supabase
-    .from("predictions")
-    .select(
-      `
-      id,
-      season,
-      round,
-      race_name,
-      prediction_type,
-      p1_driver_number,
-      p2_driver_number,
-      p3_driver_number,
-      points,
-      created_at
-      `
-    )
-    .eq("user_id", user.id)
-    .order("created_at", {
-      ascending: false,
-    });
+  const {
+    data:
+      predictionData,
+  } =
+    await supabase
+      .from(
+        "predictions"
+      )
+      .select(`
+        id,
+        season,
+        round,
+        race_name,
+        prediction_type,
+        p1_driver_number,
+        p2_driver_number,
+        p3_driver_number,
+        points,
+        created_at
+      `)
+      .eq(
+        "user_id",
+        user.id
+      )
+      .order(
+        "created_at",
+        {
+          ascending:
+            false,
+        }
+      );
 
   const predictions =
-    (predictionData ?? []) as Prediction[];
+    (
+      predictionData ??
+      []
+    ) as Prediction[];
+
+  const totalPoints =
+    predictions.reduce(
+      (
+        total,
+        prediction
+      ) =>
+        total +
+        Math.max(
+          Number(
+            prediction.points ??
+              0
+          ),
+          0
+        ),
+      0
+    );
 
   /*
-    İSTATİSTİKLER
+    1 prediction point
+    =
+    1 XP
   */
 
-  const totalPoints = predictions.reduce(
-    (total, prediction) =>
-      total + (prediction.points ?? 0),
-    0
-  );
+  const predictionXp =
+    totalPoints;
 
   const predictionCount =
     predictions.length;
 
   const bestScore =
-    predictionCount > 0
+    predictionCount >
+    0
       ? Math.max(
           ...predictions.map(
-            (prediction) =>
-              prediction.points ?? 0
+            (
+              prediction
+            ) =>
+              Math.max(
+                Number(
+                  prediction.points ??
+                    0
+                ),
+                0
+              )
           )
         )
       : 0;
 
   const recentPredictions =
-    predictions.slice(0, 5);
+    predictions.slice(
+      0,
+      5
+    );
 
-  /*
-    PROFİL ADI
-  */
+  /* =======================================================
+     ADMIN CLIENT
+     ======================================================= */
+
+  const admin =
+    createAdminClient();
+
+  /* =======================================================
+     PADDOCK
+     ======================================================= */
+
+  const [
+    paddockPostsResult,
+    paddockCountResult,
+  ] =
+    await Promise.all([
+      admin
+        .from(
+          "paddock_posts"
+        )
+        .select(`
+          id,
+          user_id,
+          content,
+          is_admin_post,
+          is_pinned,
+          created_at
+        `)
+        .eq(
+          "user_id",
+          user.id
+        )
+        .eq(
+          "is_published",
+          true
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              false,
+          }
+        )
+        .limit(
+          4
+        ),
+
+      admin
+        .from(
+          "paddock_posts"
+        )
+        .select(
+          "id",
+          {
+            count:
+              "exact",
+
+            head:
+              true,
+          }
+        )
+        .eq(
+          "user_id",
+          user.id
+        )
+        .eq(
+          "is_published",
+          true
+        ),
+    ]);
+
+  const paddockPosts =
+    (
+      paddockPostsResult.data ??
+      []
+    ) as PaddockPost[];
+
+  const paddockPostCount =
+    paddockCountResult.count ??
+    0;
+
+  const paddockPostIds =
+    paddockPosts.map(
+      (
+        post
+      ) =>
+        post.id
+    );
+
+  let paddockMedia:
+    PaddockMedia[] =
+      [];
+
+  if (
+    paddockPostIds.length >
+    0
+  ) {
+    const {
+      data:
+        mediaData,
+    } =
+      await admin
+        .from(
+          "paddock_post_media"
+        )
+        .select(`
+          id,
+          post_id,
+          media_url,
+          media_type,
+          sort_order
+        `)
+        .in(
+          "post_id",
+          paddockPostIds
+        )
+        .order(
+          "sort_order",
+          {
+            ascending:
+              true,
+          }
+        );
+
+    paddockMedia =
+      (
+        mediaData ??
+        []
+      ) as PaddockMedia[];
+  }
+
+  const mediaByPost =
+    new Map<
+      string,
+      PaddockMedia[]
+    >();
+
+  paddockMedia.forEach(
+    (
+      media
+    ) => {
+      const existing =
+        mediaByPost.get(
+          media.post_id
+        ) ??
+        [];
+
+      existing.push(
+        media
+      );
+
+      mediaByPost.set(
+        media.post_id,
+        existing
+      );
+    }
+  );
+
+  /* =======================================================
+     ACHIEVEMENTS
+     ======================================================= */
+
+  const [
+    achievementsResult,
+    userAchievementsResult,
+  ] =
+    await Promise.all([
+      admin
+        .from(
+          "achievements"
+        )
+        .select(`
+          id,
+          slug,
+          name,
+          description,
+          image_url,
+          category,
+          rarity,
+          xp_reward,
+          is_automatic,
+          condition_type,
+          condition_value,
+          is_published,
+          sort_order
+        `)
+        .eq(
+          "is_published",
+          true
+        )
+        .order(
+          "sort_order",
+          {
+            ascending:
+              true,
+          }
+        )
+        .order(
+          "created_at",
+          {
+            ascending:
+              true,
+          }
+        ),
+
+      admin
+        .from(
+          "user_achievements"
+        )
+        .select(`
+          achievement_id,
+          award_source,
+          awarded_at,
+          xp_awarded
+        `)
+        .eq(
+          "user_id",
+          user.id
+        ),
+    ]);
+
+  const achievements =
+    (
+      achievementsResult.data ??
+      []
+    ) as Achievement[];
+
+  const userAchievements =
+    (
+      userAchievementsResult.data ??
+      []
+    ) as UserAchievement[];
+
+  const unlockedAchievementCount =
+    achievements.filter(
+      (
+        achievement
+      ) =>
+        userAchievements.some(
+          (
+            award
+          ) =>
+            award.achievement_id ===
+            achievement.id
+        )
+    ).length;
+
+  const totalAchievementCount =
+    achievements.length;
+
+  /* =======================================================
+     ACHIEVEMENT XP
+     ======================================================= */
+
+  const achievementXp =
+    userAchievements.reduce(
+      (
+        total,
+        award
+      ) =>
+        total +
+        Math.max(
+          Number(
+            award.xp_awarded ??
+              0
+          ),
+          0
+        ),
+      0
+    );
+
+  /* =======================================================
+     TOTAL XP
+     ======================================================= */
+
+  const totalXp =
+    predictionXp +
+    achievementXp;
+
+  const currentLevel =
+    calculateLevel(
+      totalXp
+    );
+
+  const nextLevel =
+    currentLevel +
+    1;
+
+  const currentLevelStartXp =
+    xpRequiredForLevel(
+      currentLevel
+    );
+
+  const nextLevelTotalXp =
+    xpRequiredForLevel(
+      nextLevel
+    );
+
+  const levelXpNeeded =
+    nextLevelTotalXp -
+    currentLevelStartXp;
+
+  const levelXpProgress =
+    Math.max(
+      0,
+      totalXp -
+        currentLevelStartXp
+    );
+
+  const xpRemaining =
+    Math.max(
+      0,
+      nextLevelTotalXp -
+        totalXp
+    );
+
+  const levelProgressPercentage =
+    levelXpNeeded >
+    0
+      ? Math.min(
+          100,
+          Math.max(
+            0,
+            (
+              levelXpProgress /
+              levelXpNeeded
+            ) *
+              100
+          )
+        )
+      : 100;
+
+  /* =======================================================
+     BASIC INFO
+     ======================================================= */
 
   const displayName =
     profile?.display_name ||
-    user.user_metadata?.display_name ||
-    user.email?.split("@")[0] ||
+    user.user_metadata
+      ?.display_name ||
+    user.email?.split(
+      "@"
+    )[0] ||
     "F1 Medipol Üyesi";
 
   const initial =
     displayName
-      .charAt(0)
+      .charAt(
+        0
+      )
       .toUpperCase();
 
-  /*
-    FAVORİ TAKIM BRANDING
-  */
+  /* =======================================================
+     TEAM
+     ======================================================= */
 
   const teamBrand =
     getTeamBranding(
       profile?.favorite_team
     );
 
+  /* =======================================================
+     DRIVER
+     ======================================================= */
+
+  let latestDrivers:
+    OpenF1Driver[] =
+      [];
+
+  try {
+    latestDrivers =
+      await getLatestF1Drivers();
+  } catch {
+    latestDrivers =
+      [];
+  }
+
+  const favoriteDriverData =
+    findFavoriteDriver(
+      latestDrivers,
+      profile?.favorite_driver
+    );
+
+  const favoriteDriverImage =
+    favoriteDriverData
+      ?.headshot_url ||
+    null;
+
+  const favoriteDriverTeamColor =
+    favoriteDriverData
+      ?.team_colour
+      ? `#${favoriteDriverData.team_colour.replace(
+          "#",
+          ""
+        )}`
+      : null;
+
+  /* =======================================================
+     THEME
+     ======================================================= */
+
+  const wallpaper =
+    getProfileWallpaper(
+      profile?.profile_wallpaper
+    );
+
+  const profileAccent =
+    getProfileAccent(
+      profile?.profile_accent
+    );
+
+  const background =
+    getWallpaperBackground(
+      wallpaper
+    );
+
+  /* =======================================================
+     PAGE
+     ======================================================= */
+
   return (
     <>
       <Header />
 
-      <main>
-        <div
-          className="site-container"
-          style={{
-            paddingTop: "30px",
-            paddingBottom: "80px",
-          }}
-        >
-          {/* PROFİL HERO */}
+      <main
+        className="steam-profile"
+        style={{
+          backgroundImage:
+            background,
 
-          <section
-            className="card"
-            style={{
-              minHeight: "285px",
-              padding: "35px",
-              position: "relative",
-              overflow: "hidden",
+          ["--profile-accent" as string]:
+            profileAccent.primary,
 
-              background: teamBrand
-                ? `
-                  radial-gradient(
-                    circle at 85% 25%,
-                    ${teamBrand.color}35,
-                    transparent 35%
-                  ),
-                  linear-gradient(
-                    145deg,
-                    #262e39,
-                    #171d26
-                  )
-                `
-                : `
-                  radial-gradient(
-                    circle at 85% 20%,
-                    rgba(225,6,0,.18),
-                    transparent 32%
-                  ),
-                  linear-gradient(
-                    145deg,
-                    #262e39,
-                    #171d26
-                  )
-                `,
-            }}
-          >
-            {/* ARKA PLAN F1 */}
+          ["--profile-accent-2" as string]:
+            profileAccent.secondary,
 
-            <div
-              style={{
-                position: "absolute",
-                right: "-20px",
-                top: "-70px",
+          ["--profile-accent-soft" as string]:
+            profileAccent.soft,
 
-                fontSize: "250px",
-                fontWeight: 1000,
+          ["--profile-accent-glow" as string]:
+            profileAccent.glow,
+        }}
+      >
+        <style>
+          {styles}
+        </style>
 
-                color:
-                  "rgba(255,255,255,.025)",
+        <div className="profile-page-shade" />
 
-                fontStyle: "italic",
+        <div className="profile-container">
 
-                pointerEvents: "none",
-              }}
-            >
-              F1
+          {/* =================================================
+              TOP BAR
+              ================================================= */}
+
+          <div className="profile-top-strip">
+            <div>
+              <span>
+                F1 MEDİPOL
+              </span>
+
+              <strong>
+                DRIVER PROFILE
+              </strong>
             </div>
 
-            {/* TAKIM RENK ÇİZGİSİ */}
-
-            {teamBrand && (
-              <div
-                style={{
-                  position: "absolute",
-
-                  top: 0,
-                  left: 0,
-                  right: 0,
-
-                  height: "4px",
-
-                  background:
-                    `linear-gradient(
-                      90deg,
-                      ${teamBrand.color},
-                      ${teamBrand.secondaryColor}
-                    )`,
-                }}
-              />
-            )}
-
-            <div
-              style={{
-                position: "relative",
-                zIndex: 2,
-
-                display: "flex",
-                alignItems: "center",
-                justifyContent:
-                  "space-between",
-
-                gap: "30px",
-              }}
+            <Link
+              href="/profile/edit"
+              className="edit-profile-button"
             >
-              {/* SOL PROFİL */}
+              PROFİLİ DÜZENLE
+            </Link>
+          </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "24px",
-                }}
-              >
-                {/* AVATAR */}
+          {/* =================================================
+              HERO
+              ================================================= */}
 
-                {profile?.avatar_url ? (
-                  <img
-                    src={
-                      profile.avatar_url
-                    }
-                    alt={displayName}
-                    style={{
-                      width: "105px",
-                      height: "105px",
+          <section className="profile-shell">
+            <div className="hero-accent-top" />
 
-                      borderRadius:
-                        "50%",
+            <div className="wallpaper-glow" />
 
-                      objectFit:
-                        "cover",
+            <div className="profile-header">
 
-                      border:
-                        "3px solid rgba(255,255,255,.12)",
-                    }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: "105px",
-                      height: "105px",
+              {/* AVATAR */}
 
-                      borderRadius:
-                        "50%",
-
-                      display: "grid",
-                      placeItems:
-                        "center",
-
-                      flexShrink: 0,
-
-                      background:
-                        teamBrand
-                          ? `linear-gradient(
-                              135deg,
-                              ${teamBrand.color},
-                              ${teamBrand.secondaryColor}
-                            )`
-                          : "linear-gradient(135deg,#e10600,#ff5149)",
-
-                      fontSize:
-                        "42px",
-
-                      fontWeight:
-                        1000,
-
-                      boxShadow:
-                        teamBrand
-                          ? `0 15px 45px ${teamBrand.color}35`
-                          : "0 15px 45px rgba(225,6,0,.22)",
-                    }}
-                  >
-                    {initial}
-                  </div>
-                )}
-
-                {/* İSİM */}
-
-                <div>
-                  <div className="eyebrow">
-                    F1 MEDİPOL · DRIVER PROFILE
-                  </div>
-
-                  <h1
-                    style={{
-                      margin:
-                        "7px 0 5px",
-
-                      fontSize:
-                        "42px",
-
-                      letterSpacing:
-                        "-.04em",
-                    }}
-                  >
-                    {displayName}
-                  </h1>
-
-                  <div
-                    style={{
-                      display: "flex",
-
-                      gap: "10px",
-
-                      flexWrap:
-                        "wrap",
-
-                      color:
-                        "#9da8b5",
-
-                      fontSize:
-                        "12px",
-                    }}
-                  >
-                    {profile?.username && (
-                      <span>
-                        @
-                        {
-                          profile.username
-                        }
-                      </span>
-                    )}
-
-                    {user.email && (
-                      <span>
-                        {user.email}
-                      </span>
-                    )}
-                  </div>
-
-                  {profile?.bio && (
-                    <p
-                      style={{
-                        margin:
-                          "13px 0 0",
-
-                        color:
-                          "#b7c0ca",
-
-                        fontSize:
-                          "13px",
-
-                        maxWidth:
-                          "650px",
-
-                        lineHeight:
-                          1.6,
-                      }}
-                    >
-                      {profile.bio}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* TAKIM LOGOSU */}
-
-              {teamBrand && (
-                <div
-                  style={{
-                    minWidth: "180px",
-
-                    padding:
-                      "20px",
-
-                    borderRadius:
-                      "16px",
-
-                    border:
-                      `1px solid ${teamBrand.color}40`,
-
-                    background:
-                      "rgba(10,14,20,.45)",
-
-                    backdropFilter:
-                      "blur(14px)",
-
-                    textAlign:
-                      "center",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: "90px",
-                      height: "90px",
-
-                      margin:
-                        "0 auto 12px",
-
-                      display: "grid",
-
-                      placeItems:
-                        "center",
-
-                      borderRadius:
-                        "18px",
-
-                      background:
-                        "rgba(255,255,255,.95)",
-
-                      overflow:
-                        "hidden",
-                    }}
-                  >
+              <div className="avatar-column">
+                <div className="profile-avatar-frame">
+                  {profile?.avatar_url ? (
                     <img
                       src={
-                        teamBrand.logoUrl
+                        profile.avatar_url
                       }
                       alt={
+                        displayName
+                      }
+                    />
+                  ) : (
+                    <div className="avatar-fallback">
+                      {
+                        initial
+                      }
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* IDENTITY */}
+
+              <div className="profile-identity">
+                <div className="identity-line">
+                  <span className="profile-kicker">
+                    F1 MEDİPOL MEMBER
+                  </span>
+
+                  <span className="member-badge">
+                    LEVEL{" "}
+                    {
+                      currentLevel
+                    }
+                  </span>
+                </div>
+
+                <h1>
+                  {
+                    displayName
+                  }
+                </h1>
+
+                <div className="identity-meta">
+                  {profile?.username && (
+                    <span>
+                      @
+                      {
+                        profile.username
+                      }
+                    </span>
+                  )}
+
+                  <span>
+                    F1 MEDİPOL
+                  </span>
+
+                  <span className="identity-level">
+                    LEVEL{" "}
+                    {
+                      currentLevel
+                    }
+                  </span>
+
+                  {teamBrand && (
+                    <span
+                      style={{
+                        color:
+                          teamBrand.color,
+                      }}
+                    >
+                      {
                         teamBrand.name
                       }
-                      style={{
-                        width: "65px",
-                        height: "65px",
-
-                        objectFit:
-                          "contain",
-                      }}
-                    />
-                  </div>
-
-                  <div
-                    style={{
-                      color:
-                        "#7f8b99",
-
-                      fontSize:
-                        "9px",
-
-                      fontWeight:
-                        1000,
-
-                      letterSpacing:
-                        ".1em",
-                    }}
-                  >
-                    FAVORİ TAKIM
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop:
-                        "4px",
-
-                      fontSize:
-                        "15px",
-
-                      fontWeight:
-                        1000,
-
-                      color:
-                        teamBrand.color,
-                    }}
-                  >
-                    {teamBrand.name}
-                  </div>
+                    </span>
+                  )}
                 </div>
-              )}
+
+                <p className="profile-bio">
+                  {profile?.bio ||
+                    "Bu kullanıcı henüz profil açıklaması eklemedi."}
+                </p>
+
+                <div className="identity-accent">
+                  <span />
+
+                  <small>
+                    {
+                      totalXp
+                    }{" "}
+                    XP · LEVEL{" "}
+                    {
+                      currentLevel
+                    }
+                  </small>
+                </div>
+              </div>
+
+              {/* SUMMARY */}
+
+              <aside className="profile-summary">
+                <div className="summary-title">
+                  DRIVER SUMMARY
+                </div>
+
+                <SummaryRow
+                  label="Seviye"
+                  value={`LEVEL ${currentLevel}`}
+                />
+
+                <SummaryRow
+                  label="Toplam XP"
+                  value={`${totalXp} XP`}
+                />
+
+                <SummaryRow
+                  label="Tahmin Puanı"
+                  value={`${totalPoints}`}
+                />
+
+                <SummaryRow
+                  label="Başarım"
+                  value={`${unlockedAchievementCount}/${totalAchievementCount}`}
+                />
+              </aside>
             </div>
           </section>
 
-          {/* İSTATİSTİKLER */}
+          {/* =================================================
+              LEVEL / XP
+              ================================================= */}
 
-          <section
-            style={{
-              display: "grid",
+          <section className="level-panel">
 
-              gridTemplateColumns:
-                "repeat(3,minmax(0,1fr))",
+            {/* LEVEL CIRCLE */}
 
-              gap: "14px",
+            <div className="level-badge-area">
+              <div className="level-ring">
+                <span>
+                  LEVEL
+                </span>
 
-              marginTop: "14px",
-            }}
-          >
-            <div
-              className="card"
-              style={{
-                padding: "24px",
-              }}
-            >
-              <div className="eyebrow">
-                TOPLAM PUAN
+                <strong>
+                  {
+                    currentLevel
+                  }
+                </strong>
               </div>
 
-              <div
-                style={{
-                  fontSize:
-                    "46px",
+              <div className="level-total-xp">
+                <strong>
+                  {
+                    totalXp
+                  }
+                </strong>
 
-                  fontWeight:
-                    1000,
-
-                  marginTop:
-                    "8px",
-
-                  letterSpacing:
-                    "-.05em",
-                }}
-              >
-                {totalPoints}
-              </div>
-
-              <div
-                style={{
-                  color:
-                    "#8894a2",
-
-                  fontSize:
-                    "11px",
-
-                  marginTop:
-                    "4px",
-                }}
-              >
-                Prediction Championship
+                <span>
+                  TOTAL XP
+                </span>
               </div>
             </div>
 
-            <div
-              className="card"
-              style={{
-                padding: "24px",
-              }}
-            >
-              <div className="eyebrow">
-                TAHMİN SAYISI
+            {/* PROGRESS */}
+
+            <div className="level-progress-area">
+              <div className="level-progress-title">
+                <div>
+                  <span>
+                    LEVEL{" "}
+                    {
+                      currentLevel
+                    }
+                  </span>
+
+                  <strong>
+                    Seviye İlerlemesi
+                  </strong>
+                </div>
+
+                <div className="next-level-label">
+                  LEVEL{" "}
+                  {
+                    nextLevel
+                  }
+                </div>
               </div>
 
-              <div
-                style={{
-                  fontSize:
-                    "46px",
-
-                  fontWeight:
-                    1000,
-
-                  marginTop:
-                    "8px",
-
-                  letterSpacing:
-                    "-.05em",
-                }}
-              >
-                {predictionCount}
+              <div className="level-big-track">
+                <div
+                  className="level-big-fill"
+                  style={{
+                    width:
+                      `${levelProgressPercentage}%`,
+                  }}
+                />
               </div>
 
-              <div
-                style={{
-                  color:
-                    "#8894a2",
+              <div className="level-progress-info">
+                <div>
+                  <strong>
+                    {
+                      levelXpProgress
+                    }{" "}
+                    /{" "}
+                    {
+                      levelXpNeeded
+                    }{" "}
+                    XP
+                  </strong>
 
-                  fontSize:
-                    "11px",
+                  <span>
+                    bu seviyede
+                  </span>
+                </div>
 
-                  marginTop:
-                    "4px",
-                }}
-              >
-                Kaydedilmiş yarış tahmini
+                <div className="level-remaining">
+                  <strong>
+                    {
+                      xpRemaining
+                    }{" "}
+                    XP
+                  </strong>
+
+                  <span>
+                    LEVEL{" "}
+                    {
+                      nextLevel
+                    }
+                    'E KALDI
+                  </span>
+                </div>
+              </div>
+
+              <div className="level-threshold-info">
+                Bir sonraki seviyeye
+                ulaşmak için toplam{" "}
+                <strong>
+                  {
+                    nextLevelTotalXp
+                  }{" "}
+                  XP
+                </strong>{" "}
+                gerekiyor.
               </div>
             </div>
 
-            <div
-              className="card"
-              style={{
-                padding: "24px",
-              }}
-            >
-              <div className="eyebrow">
-                EN İYİ YARIŞ
+            {/* XP SOURCES */}
+
+            <div className="xp-source-area">
+              <div className="xp-source-title">
+                XP SOURCES
               </div>
 
-              <div
-                style={{
-                  fontSize:
-                    "46px",
+              <div className="xp-source-card">
+                <div className="xp-source-icon">
+                  🏁
+                </div>
 
-                  fontWeight:
-                    1000,
+                <div>
+                  <span>
+                    TAHMİNLER
+                  </span>
 
-                  marginTop:
-                    "8px",
-
-                  letterSpacing:
-                    "-.05em",
-                }}
-              >
-                {bestScore}
+                  <strong>
+                    +
+                    {
+                      predictionXp
+                    }{" "}
+                    XP
+                  </strong>
+                </div>
               </div>
 
-              <div
-                style={{
-                  color:
-                    "#8894a2",
+              <div className="xp-source-card">
+                <div className="xp-source-icon">
+                  🏆
+                </div>
 
-                  fontSize:
-                    "11px",
+                <div>
+                  <span>
+                    ROZETLER
+                  </span>
 
-                  marginTop:
-                    "4px",
-                }}
-              >
-                Tek yarışta kazanılan en yüksek puan
+                  <strong>
+                    +
+                    {
+                      achievementXp
+                    }{" "}
+                    XP
+                  </strong>
+                </div>
               </div>
             </div>
           </section>
 
-          {/* ALT ALAN */}
+          {/* =================================================
+              STATS
+              ================================================= */}
 
-          <section
-            style={{
-              marginTop: "14px",
+          <section className="profile-stats">
+            <StatCard
+              label="LEVEL"
+              value={`${currentLevel}`}
+              description={`${xpRemaining} XP sonraki seviyeye`}
+              accent
+            />
 
-              display: "grid",
+            <StatCard
+              label="TOTAL XP"
+              value={`${totalXp}`}
+              description="Toplam profil deneyimi"
+              accent
+            />
 
-              gridTemplateColumns:
-                "minmax(0,1.35fr) minmax(280px,.65fr)",
+            <StatCard
+              label="CHAMPIONSHIP POINTS"
+              value={`${totalPoints}`}
+              description={`${predictionXp} XP katkısı`}
+            />
 
-              gap: "14px",
-            }}
-          >
-            {/* SON TAHMİNLER */}
+            <StatCard
+              label="ACHIEVEMENTS"
+              value={`${unlockedAchievementCount}/${totalAchievementCount}`}
+              description={`${achievementXp} XP kazanıldı`}
+            />
+          </section>
 
-            <div
-              className="card"
-              style={{
-                padding: "28px",
-              }}
-            >
-              <div className="eyebrow">
-                PREDICTION HISTORY
-              </div>
+          {/* =================================================
+              CONTENT GRID
+              ================================================= */}
 
-              <h2
-                style={{
-                  margin:
-                    "7px 0 22px",
+          <section className="profile-content-grid">
 
-                  fontSize:
-                    "27px",
-                }}
-              >
-                Son Tahminler
-              </h2>
+            {/* =================================================
+                LEFT
+                ================================================= */}
 
-              {recentPredictions.length ===
-              0 ? (
-                <div
-                  style={{
-                    minHeight:
-                      "180px",
+            <div className="profile-column">
 
-                    display:
-                      "grid",
+              {/* ===============================================
+                  SHOWCASE
+                  =============================================== */}
 
-                    placeItems:
-                      "center",
+              <section className="glass-panel">
+                <PanelHeader
+                  kicker="PROFILE SHOWCASE"
+                  title="Sürücü Vitrini"
+                />
 
-                    textAlign:
-                      "center",
+                <div className="showcase-grid">
+                  <ShowcaseItem
+                    icon="⚡"
+                    label="Level"
+                    title={`LEVEL ${currentLevel}`}
+                    text={`${xpRemaining} XP daha kazanarak Level ${nextLevel}'e ulaş.`}
+                  />
 
-                    color:
-                      "#8994a2",
+                  <ShowcaseItem
+                    icon="🏁"
+                    label="Prediction XP"
+                    title={`+${predictionXp} XP`}
+                    text="Tahmin puanlarından kazanılan deneyim."
+                  />
 
-                    fontSize:
-                      "13px",
-                  }}
-                >
-                  Henüz kayıtlı tahminin yok.
+                  <ShowcaseItem
+                    icon="🏆"
+                    label="Achievement XP"
+                    title={`+${achievementXp} XP`}
+                    text="Rozet ve başarımlardan kazanılan deneyim."
+                  />
                 </div>
-              ) : (
-                <div
-                  style={{
-                    display:
-                      "grid",
+              </section>
 
-                    gap: "9px",
-                  }}
-                >
-                  {recentPredictions.map(
-                    (
-                      prediction
-                    ) => (
-                      <div
-                        key={
-                          prediction.id
-                        }
-                        style={{
-                          padding:
-                            "16px",
+              {/* ===============================================
+                  NEW HORIZONTAL ACHIEVEMENTS
+                  =============================================== */}
 
-                          borderRadius:
-                            "12px",
+              <ProfileAchievements
+                achievements={
+                  achievements
+                }
+                userAchievements={
+                  userAchievements
+                }
+                stats={{
+                  paddockPostCount:
+                    paddockPostCount,
 
-                          border:
-                            "1px solid rgba(255,255,255,.07)",
+                  predictionCount:
+                    predictionCount,
 
-                          background:
-                            "rgba(255,255,255,.025)",
+                  totalPoints:
+                    totalPoints,
 
-                          display:
-                            "flex",
+                  bestScore:
+                    bestScore,
+                }}
+              />
 
-                          justifyContent:
-                            "space-between",
+              {/* ===============================================
+                  PADDOCK
+                  =============================================== */}
 
-                          alignItems:
-                            "center",
+              <section className="glass-panel">
+                <div className="panel-header-row">
+                  <PanelHeader
+                    kicker="PADDOCK ACTIVITY"
+                    title="Paddock Paylaşımları"
+                  />
 
-                          gap:
-                            "20px",
-                        }}
-                      >
-                        <div>
-                          <div
-                            style={{
-                              fontWeight:
-                                900,
+                  <Link
+                    href="/paddock"
+                    className="panel-link"
+                  >
+                    PADDOCK'A GİT →
+                  </Link>
+                </div>
 
-                              fontSize:
-                                "14px",
-                            }}
-                          >
-                            {
-                              prediction.race_name
+                {paddockPosts.length ===
+                0 ? (
+                  <div className="empty-history">
+                    Henüz Paddock paylaşımı yok.
+                  </div>
+                ) : (
+                  <div className="paddock-profile-grid">
+                    {paddockPosts.map(
+                      (
+                        post
+                      ) => {
+                        const media =
+                          mediaByPost.get(
+                            post.id
+                          ) ??
+                          [];
+
+                        const firstMedia =
+                          media[0];
+
+                        return (
+                          <Link
+                            href={`/paddock#post-${post.id}`}
+                            className="paddock-profile-post"
+                            key={
+                              post.id
                             }
-                          </div>
-
-                          <div
-                            style={{
-                              color:
-                                "#7f8b99",
-
-                              fontSize:
-                                "10px",
-
-                              marginTop:
-                                "5px",
-                            }}
                           >
-                            {
-                              prediction.season
-                            }{" "}
-                            · Round{" "}
-                            {
-                              prediction.round
-                            }{" "}
-                            ·{" "}
-                            {prediction.prediction_type ===
-                            "sprint"
-                              ? "Sprint"
-                              : "Race"}
-                          </div>
+                            {firstMedia && (
+                              <div className="paddock-profile-media">
+                                {firstMedia.media_type ===
+                                "image" ? (
+                                  <img
+                                    src={
+                                      firstMedia.media_url
+                                    }
+                                    alt=""
+                                  />
+                                ) : (
+                                  <video
+                                    src={
+                                      firstMedia.media_url
+                                    }
+                                    muted
+                                    preload="metadata"
+                                  />
+                                )}
 
-                          <div
-                            style={{
-                              color:
-                                "#aeb8c4",
+                                {media.length >
+                                  1 && (
+                                  <span className="media-count">
+                                    +
+                                    {media.length -
+                                      1}
+                                  </span>
+                                )}
+                              </div>
+                            )}
 
-                              fontSize:
-                                "11px",
+                            <div className="paddock-profile-copy">
+                              <div className="paddock-post-meta">
+                                <span>
+                                  {
+                                    formatPaddockDate(
+                                      post.created_at
+                                    )
+                                  }
+                                </span>
 
-                              marginTop:
-                                "8px",
-                            }}
-                          >
-                            P1 #
-                            {
-                              prediction.p1_driver_number
-                            }{" "}
-                            · P2 #
-                            {
-                              prediction.p2_driver_number
-                            }{" "}
-                            · P3 #
-                            {
-                              prediction.p3_driver_number
-                            }
-                          </div>
-                        </div>
+                                {post.is_pinned && (
+                                  <strong>
+                                    PINNED
+                                  </strong>
+                                )}
+                              </div>
 
-                        <div
-                          style={{
-                            textAlign:
-                              "right",
+                              <p>
+                                {post.content ||
+                                  "Medya paylaşımı"}
+                              </p>
 
-                            flexShrink:
-                              0,
-                          }}
-                        >
-                          <strong
-                            style={{
-                              fontSize:
-                                "28px",
+                              <div className="paddock-open">
+                                GÖNDERİYİ GÖR →
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      }
+                    )}
+                  </div>
+                )}
+              </section>
 
-                              color:
-                                prediction.points >
+              {/* ===============================================
+                  PREDICTIONS
+                  =============================================== */}
+
+              <section className="glass-panel">
+                <PanelHeader
+                  kicker="PREDICTION HISTORY"
+                  title="Son Tahminler"
+                />
+
+                <div className="prediction-xp-note">
+                  <div>
+                    ⚡
+                  </div>
+
+                  <p>
+                    Tahmin sisteminde
+                    kazanılan her{" "}
+                    <strong>
+                      1 puan = 1 XP
+                    </strong>.
+                    Tahmin sonuçların
+                    profil seviyene
+                    doğrudan katkı sağlar.
+                  </p>
+                </div>
+
+                {recentPredictions.length ===
+                0 ? (
+                  <div className="empty-history">
+                    Henüz kayıtlı tahminin yok.
+                  </div>
+                ) : (
+                  <div className="prediction-list">
+                    {recentPredictions.map(
+                      (
+                        prediction
+                      ) => {
+                        const score =
+                          Math.max(
+                            Number(
+                              prediction.points ??
                                 0
-                                  ? "#35d477"
-                                  : "#f5f7fa",
-                            }}
-                          >
-                            {
-                              prediction.points
-                            }
-                          </strong>
+                            ),
+                            0
+                          );
 
+                        return (
                           <div
-                            style={{
-                              color:
-                                "#7e8997",
-
-                              fontSize:
-                                "9px",
-
-                              fontWeight:
-                                900,
-                            }}
+                            className="prediction-row"
+                            key={
+                              prediction.id
+                            }
                           >
-                            PUAN
+                            <div className="prediction-info">
+                              <strong>
+                                {
+                                  prediction.race_name
+                                }
+                              </strong>
+
+                              <span>
+                                {
+                                  prediction.season
+                                }
+
+                                {" · ROUND "}
+
+                                {
+                                  prediction.round
+                                }
+
+                                {" · "}
+
+                                {prediction.prediction_type ===
+                                "sprint"
+                                  ? "SPRINT"
+                                  : "RACE"}
+                              </span>
+
+                              <small>
+                                P1 #
+                                {
+                                  prediction.p1_driver_number
+                                }
+
+                                {" · P2 #"}
+
+                                {
+                                  prediction.p2_driver_number
+                                }
+
+                                {" · P3 #"}
+
+                                {
+                                  prediction.p3_driver_number
+                                }
+                              </small>
+                            </div>
+
+                            <div className="prediction-result-area">
+                              <div
+                                className={[
+                                  "prediction-score",
+
+                                  score >
+                                  0
+                                    ? "positive"
+                                    : "",
+                                ].join(
+                                  " "
+                                )}
+                              >
+                                <strong>
+                                  {
+                                    score
+                                  }
+                                </strong>
+
+                                <span>
+                                  PTS
+                                </span>
+                              </div>
+
+                              <div className="prediction-xp-earned">
+                                +
+                                {
+                                  score
+                                }{" "}
+                                XP
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-                    )
-                  )}
-                </div>
-              )}
+                        );
+                      }
+                    )}
+                  </div>
+                )}
+              </section>
             </div>
 
-            {/* PROFİL BİLGİLERİ */}
+            {/* =================================================
+                RIGHT
+                ================================================= */}
 
-            <aside
-              className="card"
-              style={{
-                padding: "28px",
-              }}
-            >
-              <div className="eyebrow">
-                DRIVER INFO
-              </div>
+            <aside className="profile-sidebar">
 
-              <h2
-                style={{
-                  margin:
-                    "7px 0 20px",
+              {/* ===============================================
+                  MINI LEVEL
+                  =============================================== */}
 
-                  fontSize:
-                    "25px",
-                }}
-              >
-                Profil Bilgileri
-              </h2>
+              <section className="glass-panel mini-level-card">
+                <div className="mini-level-top">
+                  <div>
+                    <span>
+                      PROFILE LEVEL
+                    </span>
 
-              <div
-                style={{
-                  display: "grid",
-                  gap: "17px",
-                }}
-              >
-                <div>
-                  <small
-                    style={{
-                      color:
-                        "#7e8997",
+                    <strong>
+                      LEVEL{" "}
+                      {
+                        currentLevel
+                      }
+                    </strong>
+                  </div>
 
-                      fontWeight:
-                        900,
-                    }}
-                  >
-                    GÖRÜNEN AD
-                  </small>
-
-                  <div
-                    style={{
-                      fontWeight:
-                        900,
-
-                      marginTop:
-                        "4px",
-                    }}
-                  >
-                    {displayName}
+                  <div className="mini-level-number">
+                    {
+                      currentLevel
+                    }
                   </div>
                 </div>
 
-                {/* FAVORİ TAKIM */}
-
-                <div>
-                  <small
+                <div className="mini-level-track">
+                  <div
                     style={{
-                      color:
-                        "#7e8997",
+                      width:
+                        `${levelProgressPercentage}%`,
+                    }}
+                  />
+                </div>
 
-                      fontWeight:
-                        900,
+                <div className="mini-level-meta">
+                  <span>
+                    {
+                      totalXp
+                    }{" "}
+                    XP
+                  </span>
+
+                  <strong>
+                    {
+                      xpRemaining
+                    }{" "}
+                    XP KALDI
+                  </strong>
+                </div>
+              </section>
+
+              {/* ===============================================
+                  FAVORITES
+                  =============================================== */}
+
+              <section className="glass-panel">
+                <PanelHeader
+                  kicker="GRID PICKS"
+                  title="Favoriler"
+                />
+
+                <div className="favorites-grid">
+
+                  {/* TEAM */}
+
+                  <div
+                    className="favorite-pick"
+                    style={{
+                      ["--pick-accent" as string]:
+                        teamBrand?.color ||
+                        profileAccent.primary,
                     }}
                   >
-                    FAVORİ TAKIM
-                  </small>
+                    <div className="favorite-pick-glow" />
 
-                  {teamBrand ? (
-                    <div
-                      style={{
-                        marginTop:
-                          "8px",
+                    <span>
+                      FAVORİ TAKIM
+                    </span>
 
-                        display:
-                          "flex",
-
-                        alignItems:
-                          "center",
-
-                        gap: "10px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          width:
-                            "38px",
-
-                          height:
-                            "38px",
-
-                          borderRadius:
-                            "9px",
-
-                          background:
-                            "white",
-
-                          display:
-                            "grid",
-
-                          placeItems:
-                            "center",
-
-                          overflow:
-                            "hidden",
-                        }}
-                      >
-                        <img
-                          src={
-                            teamBrand.logoUrl
-                          }
-                          alt={
-                            teamBrand.name
-                          }
-                          style={{
-                            width:
-                              "28px",
-
-                            height:
-                              "28px",
-
-                            objectFit:
-                              "contain",
-                          }}
-                        />
-                      </div>
-
-                      <div>
-                        <div
-                          style={{
-                            fontWeight:
-                              1000,
-
-                            color:
-                              teamBrand.color,
-                          }}
-                        >
-                          {
-                            teamBrand.name
-                          }
+                    <div className="favorite-pick-main">
+                      {teamBrand ? (
+                        <div className="favorite-logo">
+                          <img
+                            src={
+                              teamBrand.logoUrl
+                            }
+                            alt={
+                              teamBrand.name
+                            }
+                          />
                         </div>
+                      ) : (
+                        <div className="favorite-monogram">
+                          F1
+                        </div>
+                      )}
 
-                        <div
-                          style={{
-                            width:
-                              "70px",
+                      <div className="favorite-pick-copy">
+                        <small>
+                          TEAM
+                        </small>
 
-                            height:
-                              "3px",
-
-                            marginTop:
-                              "5px",
-
-                            borderRadius:
-                              "999px",
-
-                            background:
-                              teamBrand.color,
-                          }}
-                        />
+                        <strong>
+                          {teamBrand
+                            ? teamBrand.name
+                            : "Seçilmedi"}
+                        </strong>
                       </div>
                     </div>
-                  ) : (
-                    <div
-                      style={{
-                        fontWeight:
-                          900,
 
-                        marginTop:
-                          "4px",
-                      }}
-                    >
-                      Henüz seçilmedi
-                    </div>
-                  )}
-                </div>
+                    <div className="favorite-line" />
+                  </div>
 
-                <div>
-                  <small
-                    style={{
-                      color:
-                        "#7e8997",
-
-                      fontWeight:
-                        900,
-                    }}
-                  >
-                    ÜYELİK
-                  </small>
+                  {/* DRIVER */}
 
                   <div
+                    className="favorite-pick"
                     style={{
-                      fontWeight:
-                        900,
-
-                      marginTop:
-                        "4px",
-
-                      color:
-                        "#35d477",
+                      ["--pick-accent" as string]:
+                        favoriteDriverTeamColor ||
+                        profileAccent.primary,
                     }}
                   >
-                    AKTİF
+                    <div className="favorite-pick-glow" />
+
+                    <span>
+                      FAVORİ PİLOT
+                    </span>
+
+                    <div className="favorite-pick-main">
+                      <div className="driver-visual">
+                        {favoriteDriverImage ? (
+                          <img
+                            src={
+                              favoriteDriverImage
+                            }
+                            alt={
+                              profile?.favorite_driver ||
+                              "Favori pilot"
+                            }
+                          />
+                        ) : (
+                          <div className="driver-monogram">
+                            {driverInitials(
+                              profile?.favorite_driver
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="favorite-pick-copy">
+                        <small>
+                          DRIVER
+                        </small>
+
+                        <strong>
+                          {profile?.favorite_driver ||
+                            "Seçilmedi"}
+                        </strong>
+
+                        {favoriteDriverData?.team_name && (
+                          <em>
+                            {
+                              favoriteDriverData.team_name
+                            }
+                          </em>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="favorite-line" />
                   </div>
                 </div>
-              </div>
+              </section>
 
-              {/* PROFİL DÜZENLE */}
+              {/* ===============================================
+                  INFO
+                  =============================================== */}
 
-              <Link
-                href="/profile/edit"
-                className="btn"
-                style={{
-                  marginTop:
-                    "25px",
+              <section className="glass-panel">
+                <PanelHeader
+                  kicker="DRIVER INFO"
+                  title="Profil"
+                />
 
-                  display:
-                    "flex",
+                <InfoRow
+                  label="Görünen Ad"
+                  value={
+                    displayName
+                  }
+                />
 
-                  alignItems:
-                    "center",
+                <InfoRow
+                  label="Kullanıcı Adı"
+                  value={
+                    profile?.username
+                      ? `@${profile.username}`
+                      : "Belirlenmedi"
+                  }
+                />
 
-                  justifyContent:
-                    "center",
-                }}
-              >
-                Profili Düzenle
-              </Link>
+                <InfoRow
+                  label="Seviye"
+                  value={`LEVEL ${currentLevel}`}
+                />
 
-              {/* TAHMİN */}
+                <InfoRow
+                  label="Toplam XP"
+                  value={`${totalXp} XP`}
+                />
 
-              <Link
-                href="/predict"
-                className="btn btn-red"
-                style={{
-                  marginTop:
-                    "10px",
+                <InfoRow
+                  label="Sonraki Level"
+                  value={`${xpRemaining} XP`}
+                />
 
-                  display:
-                    "flex",
+                <InfoRow
+                  label="Başarımlar"
+                  value={`${unlockedAchievementCount}/${totalAchievementCount}`}
+                />
 
-                  alignItems:
-                    "center",
+                <Link
+                  href="/profile/edit"
+                  className="side-button"
+                >
+                  Profili Düzenle
+                </Link>
 
-                  justifyContent:
-                    "center",
-                }}
-              >
-                Tahmin Merkezine Git →
-              </Link>
+                <Link
+                  href="/predict"
+                  className="side-button accent"
+                >
+                  Tahmin Merkezine Git →
+                </Link>
 
-              {/* ÇIKIŞ */}
+                <ProfileActions />
+              </section>
 
-              <ProfileActions />
+              {/* ===============================================
+                  WALLPAPER
+                  =============================================== */}
+
+              <section className="glass-panel wallpaper-info">
+                <span className="profile-kicker">
+                  PROFILE BACKGROUND
+                </span>
+
+                <div
+                  className="wallpaper-thumb"
+                  style={{
+                    backgroundImage:
+                      background,
+                  }}
+                />
+
+                <strong>
+                  {
+                    wallpaper.name
+                  }
+                </strong>
+
+                <p>
+                  {
+                    wallpaper.description
+                  }
+                </p>
+
+                <Link
+                  href="/profile/edit#wallpaper"
+                >
+                  ARKA PLANI DEĞİŞTİR →
+                </Link>
+              </section>
             </aside>
           </section>
         </div>
@@ -1190,3 +1981,2111 @@ export default async function ProfilePage() {
     </>
   );
 }
+
+/* =========================================================
+   COMPONENTS
+   ========================================================= */
+
+function SummaryRow({
+  label,
+  value,
+}: {
+  label: string;
+
+  value: string;
+}) {
+  return (
+    <div className="summary-row">
+      <span>
+        {
+          label
+        }
+      </span>
+
+      <strong>
+        {
+          value
+        }
+      </strong>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  description,
+  accent = false,
+}: {
+  label: string;
+
+  value: string;
+
+  description: string;
+
+  accent?: boolean;
+}) {
+  return (
+    <div className="stat-card">
+      <span>
+        {
+          label
+        }
+      </span>
+
+      <strong
+        className={
+          accent
+            ? "stat-accent"
+            : ""
+        }
+      >
+        {
+          value
+        }
+      </strong>
+
+      <small>
+        {
+          description
+        }
+      </small>
+    </div>
+  );
+}
+
+function PanelHeader({
+  kicker,
+  title,
+}: {
+  kicker: string;
+
+  title: string;
+}) {
+  return (
+    <div className="panel-header">
+      <span>
+        {
+          kicker
+        }
+      </span>
+
+      <h2>
+        {
+          title
+        }
+      </h2>
+    </div>
+  );
+}
+
+function ShowcaseItem({
+  icon,
+  label,
+  title,
+  text,
+}: {
+  icon: string;
+
+  label: string;
+
+  title: string;
+
+  text: string;
+}) {
+  return (
+    <div className="showcase-item">
+      <div className="showcase-icon">
+        {
+          icon
+        }
+      </div>
+
+      <span>
+        {
+          label
+        }
+      </span>
+
+      <strong>
+        {
+          title
+        }
+      </strong>
+
+      <p>
+        {
+          text
+        }
+      </p>
+    </div>
+  );
+}
+
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+
+  value: string;
+}) {
+  return (
+    <div className="info-row">
+      <span>
+        {
+          label
+        }
+      </span>
+
+      <strong>
+        {
+          value
+        }
+      </strong>
+    </div>
+  );
+}
+
+/* =========================================================
+   STYLES
+   ========================================================= */
+
+const styles = `
+  /* =====================================================
+     LOGIN
+     ===================================================== */
+
+  .profile-login {
+    min-height: calc(100vh - 70px);
+    padding: 90px 20px;
+    display: grid;
+    place-items: start center;
+    background: #080b10;
+    color: #fff;
+  }
+
+  .login-card {
+    width: min(620px,100%);
+    padding: 48px;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 20px;
+    background: #151a22;
+    text-align: center;
+  }
+
+  .login-card h1 {
+    margin: 10px 0;
+    font-size: 40px;
+  }
+
+  .login-card p {
+    color: #8e99a7;
+    line-height: 1.65;
+  }
+
+  .profile-red-button {
+    min-height: 44px;
+    margin-top: 15px;
+    padding: 0 19px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 8px;
+    background: #e10600;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+  }
+
+  /* =====================================================
+     PAGE
+     ===================================================== */
+
+  .steam-profile {
+    position: relative;
+    min-height: calc(100vh - 60px);
+    color: #f5f7fa;
+    background-size: cover,cover,cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  .steam-profile h1,
+  .steam-profile h2,
+  .steam-profile h3,
+  .steam-profile strong {
+    color: #f5f7fa;
+  }
+
+  :root[data-site-theme="light"]
+  .steam-profile,
+  :root[data-site-theme="light"]
+  .steam-profile h1,
+  :root[data-site-theme="light"]
+  .steam-profile h2,
+  :root[data-site-theme="light"]
+  .steam-profile h3,
+  :root[data-site-theme="light"]
+  .steam-profile strong {
+    color: #f5f7fa !important;
+  }
+
+  .profile-page-shade {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background:
+      linear-gradient(
+        90deg,
+        rgba(4,7,11,.36),
+        rgba(4,7,11,.05) 50%,
+        rgba(4,7,11,.36)
+      );
+  }
+
+  .profile-container {
+    position: relative;
+    z-index: 2;
+
+    width:
+      min(
+        1540px,
+        calc(100% - 48px)
+      );
+
+    margin: auto;
+    padding: 36px 0 100px;
+  }
+
+  /* =====================================================
+     TOP BAR
+     ===================================================== */
+
+  .profile-top-strip {
+    min-height: 50px;
+    margin-bottom: 10px;
+    padding: 0 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    border:
+      1px solid
+      rgba(255,255,255,.10);
+
+    border-radius: 10px;
+
+    background:
+      rgba(10,14,20,.77);
+
+    backdrop-filter:
+      blur(18px);
+  }
+
+  .profile-top-strip > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profile-top-strip span {
+    color:
+      var(--profile-accent);
+
+    font-size: 9px;
+    font-weight: 1000;
+  }
+
+  .profile-top-strip strong {
+    color: #87929e !important;
+    font-size: 9px;
+  }
+
+  .edit-profile-button {
+    color: #e0e5eb !important;
+    font-size: 9px;
+    font-weight: 900;
+  }
+
+  /* =====================================================
+     HERO
+     ===================================================== */
+
+  .profile-shell {
+    position: relative;
+    overflow: hidden;
+
+    border:
+      1px solid
+      color-mix(
+        in srgb,
+        var(--profile-accent),
+        transparent 82%
+      );
+
+    border-radius: 18px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(13,18,25,.91),
+        rgba(8,12,18,.82)
+      );
+
+    backdrop-filter:
+      blur(18px);
+
+    box-shadow:
+      0 26px 80px
+      rgba(0,0,0,.24),
+      0 0 45px
+      var(--profile-accent-glow);
+  }
+
+  .hero-accent-top {
+    position: absolute;
+    z-index: 4;
+
+    left: 0;
+    right: 0;
+    top: 0;
+
+    height: 4px;
+
+    background:
+      linear-gradient(
+        90deg,
+        var(--profile-accent),
+        var(--profile-accent-2),
+        transparent 78%
+      );
+  }
+
+  .wallpaper-glow {
+    position: absolute;
+
+    width: 620px;
+    height: 620px;
+
+    right: -220px;
+    top: -330px;
+
+    border-radius: 50%;
+
+    opacity: .22;
+
+    filter:
+      blur(105px);
+
+    background:
+      var(--profile-accent);
+  }
+
+  .profile-header {
+    position: relative;
+    z-index: 2;
+
+    min-height: 390px;
+
+    padding:
+      48px 52px;
+
+    display: grid;
+
+    grid-template-columns:
+      245px
+      minmax(0,1fr)
+      325px;
+
+    gap: 44px;
+
+    align-items: center;
+  }
+
+  /* =====================================================
+     AVATAR
+     ===================================================== */
+
+  .avatar-column {
+    display: flex;
+    justify-content: center;
+  }
+
+  .profile-avatar-frame {
+    width: 220px;
+    height: 220px;
+
+    overflow: hidden;
+
+    padding: 6px;
+
+    border:
+      3px solid
+      var(--profile-accent);
+
+    border-radius: 11px;
+
+    background: #fff;
+
+    box-shadow:
+      0 22px 60px rgba(0,0,0,.34),
+      0 0 38px var(--profile-accent-glow);
+  }
+
+  .profile-avatar-frame img,
+  .avatar-fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: 6px;
+  }
+
+  .profile-avatar-frame img {
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    background: #fff;
+  }
+
+  .avatar-fallback {
+    display: grid;
+    place-items: center;
+
+    color: #fff;
+
+    background:
+      linear-gradient(
+        135deg,
+        var(--profile-accent-2),
+        var(--profile-accent)
+      );
+
+    font-size: 68px;
+    font-weight: 1000;
+  }
+
+  /* =====================================================
+     IDENTITY
+     ===================================================== */
+
+  .identity-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .profile-kicker,
+  .panel-header span {
+    color:
+      var(--profile-accent);
+
+    font-size: 9px;
+    font-weight: 1000;
+    letter-spacing: .12em;
+  }
+
+  .member-badge {
+    padding: 5px 9px;
+
+    border:
+      1px solid
+      color-mix(
+        in srgb,
+        var(--profile-accent),
+        transparent 62%
+      );
+
+    border-radius: 999px;
+
+    color:
+      var(--profile-accent);
+
+    background:
+      var(--profile-accent-soft);
+
+    font-size: 7px;
+    font-weight: 1000;
+  }
+
+  .profile-identity h1 {
+    margin: 12px 0 8px;
+
+    font-size:
+      clamp(
+        48px,
+        4.7vw,
+        68px
+      );
+
+    line-height: .95;
+    letter-spacing: -.055em;
+  }
+
+  .identity-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 11px;
+
+    color: #9ba6b1;
+
+    font-size: 11px;
+    font-weight: 800;
+  }
+
+  .identity-meta
+  span + span::before {
+    content: "•";
+    margin-right: 11px;
+    color: #555f69;
+  }
+
+  .identity-level {
+    color:
+      var(--profile-accent);
+  }
+
+  .profile-bio {
+    max-width: 760px;
+
+    margin:
+      23px 0 0;
+
+    color:
+      #bac3cd !important;
+
+    font-size: 14px;
+    line-height: 1.7;
+  }
+
+  .identity-accent {
+    margin-top: 24px;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .identity-accent > span {
+    width: 75px;
+    height: 3px;
+
+    border-radius: 999px;
+
+    background:
+      linear-gradient(
+        90deg,
+        var(--profile-accent),
+        var(--profile-accent-2)
+      );
+  }
+
+  .identity-accent small {
+    color: #8a96a2;
+    font-size: 7px;
+    font-weight: 1000;
+    letter-spacing: .12em;
+  }
+
+  /* =====================================================
+     SUMMARY
+     ===================================================== */
+
+  .profile-summary {
+    padding: 22px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.085);
+
+    border-radius: 12px;
+
+    background:
+      rgba(5,8,12,.46);
+  }
+
+  .summary-title {
+    margin-bottom: 10px;
+
+    color:
+      var(--profile-accent);
+
+    font-size: 8px;
+    font-weight: 1000;
+  }
+
+  .summary-row {
+    min-height: 45px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+
+    border-top:
+      1px solid
+      rgba(255,255,255,.07);
+  }
+
+  .summary-row span {
+    color: #8c97a2;
+    font-size: 9px;
+  }
+
+  .summary-row strong {
+    font-size: 10px;
+  }
+
+  /* =====================================================
+     LEVEL
+     ===================================================== */
+
+  .level-panel {
+    margin-top: 10px;
+
+    min-height: 225px;
+
+    padding: 28px;
+
+    display: grid;
+
+    grid-template-columns:
+      230px
+      minmax(0,1fr)
+      260px;
+
+    gap: 30px;
+
+    align-items: center;
+
+    border:
+      1px solid
+      color-mix(
+        in srgb,
+        var(--profile-accent),
+        transparent 76%
+      );
+
+    border-radius: 16px;
+
+    background:
+      linear-gradient(
+        135deg,
+        rgba(8,12,18,.93),
+        rgba(14,18,25,.87)
+      );
+
+    backdrop-filter:
+      blur(18px);
+  }
+
+  .level-badge-area {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .level-ring {
+    width: 112px;
+    height: 112px;
+
+    flex: 0 0 112px;
+
+    display: grid;
+    place-items: center;
+    align-content: center;
+
+    border:
+      3px solid
+      var(--profile-accent);
+
+    border-radius: 50%;
+
+    background:
+      radial-gradient(
+        circle,
+        var(--profile-accent-soft),
+        rgba(6,9,13,.9)
+      );
+
+    box-shadow:
+      0 0 30px var(--profile-accent-glow),
+      inset 0 0 25px var(--profile-accent-soft);
+  }
+
+  .level-ring span {
+    color: #8995a1;
+    font-size: 7px;
+    font-weight: 1000;
+    letter-spacing: .15em;
+  }
+
+  .level-ring strong {
+    margin-top: 2px;
+
+    color:
+      var(--profile-accent) !important;
+
+    font-size: 40px;
+    line-height: 1;
+  }
+
+  .level-total-xp strong,
+  .level-total-xp span {
+    display: block;
+  }
+
+  .level-total-xp strong {
+    font-size: 27px;
+  }
+
+  .level-total-xp span {
+    margin-top: 4px;
+
+    color: #76828e;
+
+    font-size: 7px;
+    font-weight: 1000;
+  }
+
+  .level-progress-title {
+    display: flex;
+
+    justify-content:
+      space-between;
+
+    align-items:
+      flex-end;
+
+    gap: 15px;
+  }
+
+  .level-progress-title span {
+    display: block;
+
+    color:
+      var(--profile-accent);
+
+    font-size: 8px;
+    font-weight: 1000;
+  }
+
+  .level-progress-title strong {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 20px;
+  }
+
+  .next-level-label {
+    color: #7d8995;
+    font-size: 9px;
+    font-weight: 1000;
+  }
+
+  .level-big-track {
+    height: 14px;
+
+    margin-top: 20px;
+
+    overflow: hidden;
+
+    border:
+      1px solid
+      rgba(255,255,255,.06);
+
+    border-radius: 999px;
+
+    background:
+      rgba(255,255,255,.05);
+  }
+
+  .level-big-fill {
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+      linear-gradient(
+        90deg,
+        var(--profile-accent-2),
+        var(--profile-accent)
+      );
+
+    box-shadow:
+      0 0 20px
+      var(--profile-accent-glow);
+  }
+
+  .level-progress-info {
+    margin-top: 12px;
+
+    display: flex;
+
+    justify-content:
+      space-between;
+
+    gap: 15px;
+  }
+
+  .level-progress-info strong,
+  .level-progress-info span {
+    display: block;
+  }
+
+  .level-progress-info strong {
+    font-size: 10px;
+  }
+
+  .level-progress-info span {
+    margin-top: 3px;
+    color: #7c8792;
+    font-size: 7px;
+  }
+
+  .level-remaining {
+    text-align: right;
+  }
+
+  .level-remaining strong {
+    color:
+      var(--profile-accent) !important;
+  }
+
+  .level-threshold-info {
+    margin-top: 14px;
+
+    padding-top: 11px;
+
+    border-top:
+      1px solid
+      rgba(255,255,255,.06);
+
+    color: #818c97;
+
+    font-size: 9px;
+  }
+
+  .level-threshold-info strong {
+    color: #e6ebf0 !important;
+  }
+
+  .xp-source-area {
+    display: grid;
+    gap: 8px;
+  }
+
+  .xp-source-title {
+    color: #75818d;
+
+    font-size: 7px;
+    font-weight: 1000;
+    letter-spacing: .13em;
+  }
+
+  .xp-source-card {
+    min-height: 67px;
+
+    padding:
+      10px 13px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.07);
+
+    border-radius: 10px;
+
+    background:
+      rgba(255,255,255,.025);
+  }
+
+  .xp-source-icon {
+    width: 39px;
+    height: 39px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 8px;
+
+    background:
+      var(--profile-accent-soft);
+  }
+
+  .xp-source-card span,
+  .xp-source-card strong {
+    display: block;
+  }
+
+  .xp-source-card span {
+    color: #79848f;
+
+    font-size: 7px;
+    font-weight: 1000;
+  }
+
+  .xp-source-card strong {
+    margin-top: 4px;
+
+    color:
+      var(--profile-accent) !important;
+
+    font-size: 15px;
+  }
+
+  /* =====================================================
+     STATS
+     ===================================================== */
+
+  .profile-stats {
+    margin-top: 10px;
+
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0,1fr)
+      );
+
+    gap: 10px;
+  }
+
+  .stat-card {
+    min-height: 145px;
+
+    padding: 23px;
+
+    display: flex;
+
+    flex-direction:
+      column;
+
+    justify-content:
+      center;
+
+    border:
+      1px solid
+      rgba(255,255,255,.095);
+
+    border-radius: 12px;
+
+    background:
+      rgba(9,13,19,.80);
+
+    backdrop-filter:
+      blur(16px);
+  }
+
+  .stat-card > span {
+    color: #8b96a1;
+
+    font-size: 8px;
+    font-weight: 1000;
+  }
+
+  .stat-card > strong {
+    margin-top: 10px;
+
+    font-size: 35px;
+  }
+
+  .stat-card >
+  strong.stat-accent {
+    color:
+      var(--profile-accent) !important;
+  }
+
+  .stat-card > small {
+    margin-top: 6px;
+
+    color: #8c97a2;
+
+    font-size: 9px;
+  }
+
+  /* =====================================================
+     CONTENT
+     ===================================================== */
+
+  .profile-content-grid {
+    margin-top: 10px;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(0,1.55fr)
+      minmax(350px,.45fr);
+
+    gap: 10px;
+
+    align-items: start;
+  }
+
+  .profile-column,
+  .profile-sidebar {
+    display: grid;
+    gap: 10px;
+  }
+
+  .glass-panel {
+    padding: 30px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.095);
+
+    border-radius: 14px;
+
+    background:
+      rgba(10,14,20,.83);
+
+    backdrop-filter:
+      blur(18px);
+  }
+
+  .panel-header-row {
+    display: flex;
+
+    align-items:
+      flex-start;
+
+    justify-content:
+      space-between;
+
+    gap: 20px;
+  }
+
+  .panel-header h2 {
+    margin:
+      7px 0 22px;
+
+    font-size: 29px;
+  }
+
+  .panel-link {
+    padding:
+      10px 12px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.08);
+
+    border-radius: 7px;
+
+    color:
+      #afb8c2 !important;
+
+    font-size: 8px;
+    font-weight: 900;
+  }
+
+  /* =====================================================
+     SHOWCASE
+     ===================================================== */
+
+  .showcase-grid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        3,
+        minmax(0,1fr)
+      );
+
+    gap: 10px;
+  }
+
+  .showcase-item {
+    min-height: 180px;
+
+    padding: 22px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.07);
+
+    border-radius: 10px;
+
+    background:
+      rgba(255,255,255,.025);
+  }
+
+  .showcase-icon {
+    width: 42px;
+    height: 42px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 8px;
+
+    background:
+      var(--profile-accent-soft);
+  }
+
+  .showcase-item > span {
+    display: block;
+
+    margin-top: 17px;
+
+    color: #87929d;
+
+    font-size: 8px;
+    font-weight: 1000;
+  }
+
+  .showcase-item > strong {
+    display: block;
+
+    margin-top: 6px;
+
+    font-size: 20px;
+  }
+
+  .showcase-item p {
+    margin:
+      8px 0 0;
+
+    color:
+      #939eaa !important;
+
+    font-size: 10px;
+    line-height: 1.55;
+  }
+
+  /* =====================================================
+     PREDICTION XP NOTE
+     ===================================================== */
+
+  .prediction-xp-note {
+    margin:
+      -6px 0 18px;
+
+    padding:
+      12px 14px;
+
+    display: flex;
+    align-items: center;
+    gap: 11px;
+
+    border:
+      1px solid
+      rgba(240,199,94,.12);
+
+    border-radius: 9px;
+
+    background:
+      rgba(240,199,94,.045);
+  }
+
+  .prediction-xp-note > div {
+    width: 33px;
+    height: 33px;
+
+    flex: 0 0 33px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 8px;
+
+    background:
+      rgba(240,199,94,.09);
+  }
+
+  .prediction-xp-note p {
+    margin: 0;
+
+    color:
+      #969fa8 !important;
+
+    font-size: 9px;
+    line-height: 1.55;
+  }
+
+  .prediction-xp-note strong {
+    color:
+      #f0c75e !important;
+  }
+
+  /* =====================================================
+     MINI LEVEL
+     ===================================================== */
+
+  .mini-level-card {
+    background:
+      radial-gradient(
+        circle at 92% 10%,
+        var(--profile-accent-soft),
+        transparent 45%
+      ),
+      rgba(10,14,20,.88);
+  }
+
+  .mini-level-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mini-level-top span,
+  .mini-level-top strong {
+    display: block;
+  }
+
+  .mini-level-top span {
+    color:
+      var(--profile-accent);
+
+    font-size: 7px;
+    font-weight: 1000;
+  }
+
+  .mini-level-top strong {
+    margin-top: 5px;
+
+    font-size: 19px;
+  }
+
+  .mini-level-number {
+    width: 54px;
+    height: 54px;
+
+    display: grid;
+    place-items: center;
+
+    border:
+      2px solid
+      var(--profile-accent);
+
+    border-radius: 50%;
+
+    color:
+      var(--profile-accent);
+
+    background:
+      var(--profile-accent-soft);
+
+    font-size: 20px;
+    font-weight: 1000;
+  }
+
+  .mini-level-track {
+    height: 7px;
+
+    margin-top: 18px;
+
+    overflow: hidden;
+
+    border-radius: 999px;
+
+    background:
+      rgba(255,255,255,.06);
+  }
+
+  .mini-level-track > div {
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+      linear-gradient(
+        90deg,
+        var(--profile-accent-2),
+        var(--profile-accent)
+      );
+  }
+
+  .mini-level-meta {
+    margin-top: 8px;
+
+    display: flex;
+    justify-content: space-between;
+
+    color: #7c8792;
+
+    font-size: 7px;
+  }
+
+  .mini-level-meta strong {
+    color:
+      var(--profile-accent) !important;
+
+    font-size: 7px;
+  }
+
+  /* =====================================================
+     FAVORITES
+     ===================================================== */
+
+  .favorites-grid {
+    display: grid;
+    gap: 10px;
+  }
+
+  .favorite-pick {
+    position: relative;
+
+    min-height: 160px;
+
+    overflow: hidden;
+
+    padding: 18px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.08);
+
+    border-radius: 11px;
+
+    background:
+      rgba(255,255,255,.025);
+
+    isolation: isolate;
+  }
+
+  .favorite-pick-glow {
+    position: absolute;
+    z-index: -1;
+
+    width: 175px;
+    height: 175px;
+
+    right: -55px;
+    top: -70px;
+
+    border-radius: 50%;
+
+    background:
+      var(--pick-accent);
+
+    opacity: .20;
+
+    filter:
+      blur(42px);
+  }
+
+  .favorite-pick > span {
+    color: #858f9a;
+
+    font-size: 7px;
+    font-weight: 1000;
+  }
+
+  .favorite-pick-main {
+    margin-top: 17px;
+
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .favorite-pick-copy small {
+    display: block;
+
+    color: #747f89;
+
+    font-size: 7px;
+  }
+
+  .favorite-pick-copy strong {
+    display: block;
+
+    margin-top: 4px;
+
+    font-size: 16px;
+  }
+
+  .favorite-pick-copy em {
+    display: block;
+
+    margin-top: 6px;
+
+    color:
+      var(--pick-accent);
+
+    font-size: 8px;
+    font-style: normal;
+  }
+
+  .favorite-logo,
+  .favorite-monogram {
+    width: 72px;
+    height: 72px;
+
+    flex: 0 0 72px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 12px;
+  }
+
+  .favorite-logo {
+    background: #fff;
+  }
+
+  .favorite-logo img {
+    width: 52px;
+    height: 52px;
+
+    object-fit: contain;
+  }
+
+  .favorite-monogram {
+    background:
+      rgba(255,255,255,.05);
+
+    color: #fff;
+
+    font-weight: 1000;
+  }
+
+  .driver-visual {
+    position: relative;
+
+    width: 88px;
+    height: 100px;
+
+    flex: 0 0 88px;
+
+    overflow: hidden;
+
+    border:
+      1px solid
+      color-mix(
+        in srgb,
+        var(--pick-accent),
+        transparent 48%
+      );
+
+    border-radius: 13px;
+
+    background:
+      rgba(255,255,255,.025);
+  }
+
+  .driver-visual > img {
+    width: 100%;
+    height: 100%;
+
+    display: block;
+
+    object-fit: contain;
+    object-position: center bottom;
+
+    transform:
+      scale(1.08);
+
+    transform-origin:
+      center bottom;
+  }
+
+  .driver-monogram {
+    width: 100%;
+    height: 100%;
+
+    display: grid;
+    place-items: center;
+
+    color:
+      var(--pick-accent);
+
+    font-size: 20px;
+    font-weight: 1000;
+  }
+
+  .favorite-line {
+    position: absolute;
+
+    left: 18px;
+    right: 18px;
+    bottom: 14px;
+
+    height: 3px;
+
+    border-radius: 999px;
+
+    background:
+      linear-gradient(
+        90deg,
+        var(--pick-accent),
+        transparent
+      );
+  }
+
+  /* =====================================================
+     PADDOCK
+     ===================================================== */
+
+  .paddock-profile-grid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0,1fr)
+      );
+
+    gap: 12px;
+  }
+
+  .paddock-profile-post {
+    min-height: 195px;
+
+    overflow: hidden;
+
+    display: grid;
+
+    grid-template-columns:
+      minmax(145px,.48fr)
+      minmax(0,.52fr);
+
+    border:
+      1px solid
+      rgba(255,255,255,.07);
+
+    border-radius: 11px;
+
+    color: inherit;
+
+    text-decoration: none;
+
+    background:
+      rgba(255,255,255,.024);
+
+    transition: .18s ease;
+  }
+
+  .paddock-profile-post:hover {
+    transform:
+      translateY(-2px);
+
+    border-color:
+      color-mix(
+        in srgb,
+        var(--profile-accent),
+        transparent 55%
+      );
+  }
+
+  .paddock-profile-media {
+    position: relative;
+
+    min-height: 195px;
+
+    overflow: hidden;
+
+    background: #070a0e;
+  }
+
+  .paddock-profile-media img,
+  .paddock-profile-media video {
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+  }
+
+  .media-count {
+    position: absolute;
+
+    right: 8px;
+    top: 8px;
+
+    min-width: 29px;
+    height: 29px;
+
+    display: grid;
+    place-items: center;
+
+    border-radius: 999px;
+
+    background:
+      rgba(5,8,12,.82);
+
+    color: #fff;
+
+    font-size: 9px;
+    font-weight: 1000;
+  }
+
+  .paddock-profile-copy {
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .paddock-post-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+
+    color: #808b96;
+
+    font-size: 8px;
+  }
+
+  .paddock-post-meta strong {
+    color:
+      var(--profile-accent) !important;
+  }
+
+  .paddock-profile-copy p {
+    margin:
+      14px 0;
+
+    color:
+      #c4ccd4 !important;
+
+    font-size: 12px;
+    line-height: 1.6;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+  }
+
+  .paddock-open {
+    margin-top: auto;
+
+    color:
+      var(--profile-accent);
+
+    font-size: 8px;
+    font-weight: 1000;
+  }
+
+  /* =====================================================
+     PREDICTIONS
+     ===================================================== */
+
+  .prediction-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .prediction-row {
+    min-height: 95px;
+
+    padding:
+      17px 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.07);
+
+    border-radius: 9px;
+
+    background:
+      rgba(255,255,255,.022);
+  }
+
+  .prediction-info strong {
+    display: block;
+    font-size: 14px;
+  }
+
+  .prediction-info span,
+  .prediction-info small {
+    display: block;
+
+    margin-top: 5px;
+
+    color: #87929d;
+
+    font-size: 9px;
+  }
+
+  .prediction-result-area {
+    min-width: 85px;
+
+    display: grid;
+
+    justify-items: center;
+
+    gap: 5px;
+  }
+
+  .prediction-score {
+    text-align: center;
+  }
+
+  .prediction-score strong {
+    display: block;
+    font-size: 30px;
+  }
+
+  .prediction-score span {
+    color: #7b8691;
+    font-size: 7px;
+  }
+
+  .prediction-score.positive
+  strong {
+    color:
+      #55df94 !important;
+  }
+
+  .prediction-xp-earned {
+    padding:
+      4px 7px;
+
+    border:
+      1px solid
+      rgba(240,199,94,.15);
+
+    border-radius: 999px;
+
+    color:
+      #f0c75e;
+
+    background:
+      rgba(240,199,94,.06);
+
+    font-size: 7px;
+    font-weight: 1000;
+  }
+
+  /* =====================================================
+     INFO
+     ===================================================== */
+
+  .empty-history {
+    min-height: 170px;
+
+    display: grid;
+    place-items: center;
+
+    color: #87929d;
+
+    font-size: 11px;
+  }
+
+  .info-row {
+    min-height: 52px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content:
+      space-between;
+
+    gap: 14px;
+
+    border-top:
+      1px solid
+      rgba(255,255,255,.065);
+  }
+
+  .info-row span {
+    color: #87929d;
+    font-size: 9px;
+  }
+
+  .info-row strong {
+    font-size: 10px;
+  }
+
+  .side-button {
+    min-height: 45px;
+
+    margin-top: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border:
+      1px solid
+      rgba(255,255,255,.10);
+
+    border-radius: 8px;
+
+    background:
+      rgba(255,255,255,.04);
+
+    color: #fff !important;
+
+    font-size: 9px;
+    font-weight: 900;
+  }
+
+  .side-button.accent {
+    border: 0;
+
+    background:
+      linear-gradient(
+        135deg,
+        var(--profile-accent-2),
+        var(--profile-accent)
+      );
+
+    box-shadow:
+      0 8px 22px
+      var(--profile-accent-glow);
+  }
+
+  /* =====================================================
+     WALLPAPER
+     ===================================================== */
+
+  .wallpaper-info >
+  strong {
+    display: block;
+
+    margin-top: 14px;
+
+    font-size: 16px;
+  }
+
+  .wallpaper-info >
+  p {
+    margin:
+      7px 0 0;
+
+    color:
+      #909ba6 !important;
+
+    font-size: 10px;
+    line-height: 1.55;
+  }
+
+  .wallpaper-info >
+  a {
+    display: block;
+
+    margin-top: 15px;
+
+    color:
+      var(--profile-accent) !important;
+
+    font-size: 8px;
+    font-weight: 1000;
+  }
+
+  .wallpaper-thumb {
+    height: 145px;
+
+    margin-top: 15px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.09);
+
+    border-radius: 9px;
+
+    background-size:
+      cover,
+      cover,
+      cover;
+
+    background-position:
+      center;
+  }
+
+  /* =====================================================
+     RESPONSIVE
+     ===================================================== */
+
+  @media(
+    max-width:
+      1250px
+  ) {
+    .level-panel {
+      grid-template-columns:
+        190px
+        1fr;
+    }
+
+    .xp-source-area {
+      grid-column:
+        1 / -1;
+
+      grid-template-columns:
+        100px
+        1fr
+        1fr;
+
+      align-items:
+        center;
+    }
+  }
+
+  @media(
+    max-width:
+      1150px
+  ) {
+    .profile-header {
+      grid-template-columns:
+        220px
+        1fr;
+    }
+
+    .profile-summary {
+      grid-column:
+        1 / -1;
+    }
+
+    .profile-content-grid {
+      grid-template-columns:
+        1fr;
+    }
+  }
+
+  @media(
+    max-width:
+      850px
+  ) {
+    .profile-stats {
+      grid-template-columns:
+        1fr 1fr;
+    }
+
+    .showcase-grid {
+      grid-template-columns:
+        1fr;
+    }
+
+    .paddock-profile-grid {
+      grid-template-columns:
+        1fr;
+    }
+
+    .level-panel {
+      grid-template-columns:
+        1fr;
+    }
+
+    .xp-source-area {
+      grid-column:
+        auto;
+
+      grid-template-columns:
+        1fr 1fr;
+    }
+
+    .xp-source-title {
+      grid-column:
+        1 / -1;
+    }
+  }
+
+  @media(
+    max-width:
+      650px
+  ) {
+    .profile-container {
+      width:
+        calc(100% - 18px);
+
+      padding-top:
+        15px;
+    }
+
+    .profile-header {
+      padding:
+        27px 23px;
+
+      grid-template-columns:
+        1fr;
+
+      text-align:
+        center;
+    }
+
+    .profile-avatar-frame {
+      width: 175px;
+      height: 175px;
+    }
+
+    .identity-line,
+    .identity-meta,
+    .identity-accent {
+      justify-content:
+        center;
+    }
+
+    .profile-bio {
+      margin-left:
+        auto;
+
+      margin-right:
+        auto;
+    }
+
+    .profile-stats {
+      grid-template-columns:
+        1fr;
+    }
+
+    .level-panel {
+      padding: 22px;
+    }
+
+    .level-badge-area {
+      justify-content:
+        center;
+    }
+
+    .level-progress-info {
+      flex-direction:
+        column;
+    }
+
+    .level-remaining {
+      text-align:
+        left;
+    }
+
+    .xp-source-area {
+      grid-template-columns:
+        1fr;
+    }
+
+    .xp-source-title {
+      grid-column:
+        auto;
+    }
+
+    .glass-panel {
+      padding: 22px;
+    }
+
+    .panel-header-row {
+      flex-direction:
+        column;
+    }
+
+    .paddock-profile-post {
+      grid-template-columns:
+        1fr;
+    }
+
+    .paddock-profile-media {
+      height: 210px;
+    }
+
+    .profile-top-strip
+    strong {
+      display: none;
+    }
+  }
+`;
