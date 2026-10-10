@@ -1,1440 +1,836 @@
+
+import {
+  ACHIEVEMENT_CONDITION_LABELS,
+} from "@/lib/achievement-conditions";
+
 type Achievement = {
   id: string;
-
   slug: string;
-
   name: string;
-
-  description:
-    | string
-    | null;
-
-  image_url:
-    | string
-    | null;
-
+  description: string | null;
+  image_url: string | null;
   category: string;
-
-  rarity:
-    | "common"
-    | "rare"
-    | "epic"
-    | "legendary";
-
+  rarity: "common" | "rare" | "epic" | "legendary";
   xp_reward: number;
-
   is_automatic: boolean;
-
   condition_type: string;
-
-  condition_value:
-    | number
-    | null;
-
+  condition_value: number | null;
   is_published: boolean;
-
   sort_order: number;
 };
 
 type UserAchievement = {
   achievement_id: string;
-
   award_source: string;
-
   awarded_at: string;
-
   xp_awarded: number;
 };
 
 type Props = {
   achievements: Achievement[];
-
-  userAchievements:
-    UserAchievement[];
-
+  userAchievements: UserAchievement[];
   stats: {
-    paddockPostCount:
-      number;
-
-    predictionCount:
-      number;
-
-    totalPoints:
-      number;
-
-    bestScore:
-      number;
+    paddockPostCount: number;
+    predictionCount: number;
+    totalPoints: number;
+    bestScore: number;
   };
 };
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
+function rarityLabel(rarity: string) {
+  const labels: Record<string, string> = {
+    common: "COMMON",
+    rare: "RARE",
+    epic: "EPIC",
+    legendary: "LEGENDARY",
+  };
 
-function rarityLabel(
-  rarity: string
-) {
-  if (
-    rarity ===
-    "legendary"
-  ) {
-    return "LEGENDARY";
-  }
-
-  if (
-    rarity ===
-    "epic"
-  ) {
-    return "EPIC";
-  }
-
-  if (
-    rarity ===
-    "rare"
-  ) {
-    return "RARE";
-  }
-
-  return "COMMON";
+  return labels[rarity] ?? "COMMON";
 }
 
 function conditionLabel(
   type: string,
-  value:
-    | number
-    | null
+  value: number | null
 ) {
-  const target =
-    value ??
-    0;
+  const target = value ?? 1;
 
-  if (
-    type ===
-    "paddock_post_count"
-  ) {
-    return `${target} Paddock paylaşımı yap`;
+  switch (type) {
+    case "paddock_post_count":
+      return `${target} Paddock paylaşımı yap`;
+
+    case "paddock_comment_count":
+      return `${target} Paddock yorumu yap`;
+
+    case "paddock_likes_given":
+      return `${target} paylaşımı beğen`;
+
+    case "paddock_likes_received":
+      return `Paylaşımlarına ${target} beğeni al`;
+
+    case "prediction_count":
+      return `${target} tahmin yap`;
+
+    case "race_prediction_count":
+      return `${target} yarış tahmini yap`;
+
+    case "sprint_prediction_count":
+      return `${target} Sprint tahmini yap`;
+
+    case "scored_prediction_count":
+      return `${target} tahminden puan kazan`;
+
+    case "prediction_points":
+      return `Toplam ${target} tahmin puanına ulaş`;
+
+    case "race_prediction_points":
+      return `Yarış tahminlerinden ${target} puan kazan`;
+
+    case "sprint_prediction_points":
+      return `Sprint tahminlerinden ${target} puan kazan`;
+
+    case "best_prediction_score":
+      return `Tek tahminde ${target} puana ulaş`;
+
+    case "race_winner_correct_count":
+      return `${target} yarış galibini doğru tahmin et`;
+
+    case "sprint_winner_correct_count":
+      return `${target} Sprint galibini doğru tahmin et`;
+
+    case "race_exact_podium_count":
+      return `${target} yarış podyumunu tamamen doğru tahmin et`;
+
+    case "sprint_exact_podium_count":
+      return `${target} Sprint podyumunu tamamen doğru tahmin et`;
+
+    case "profile_avatar_set":
+      return "Profil fotoğrafı ekle";
+
+    case "profile_bio_set":
+      return "Profil biyografini doldur";
+
+    default:
+      return (
+        ACHIEVEMENT_CONDITION_LABELS[type] ??
+        "Yönetici tarafından verilen özel rozet"
+      );
   }
-
-  if (
-    type ===
-    "prediction_count"
-  ) {
-    return `${target} tahmin yap`;
-  }
-
-  if (
-    type ===
-    "prediction_points"
-  ) {
-    return `${target} toplam tahmin puanına ulaş`;
-  }
-
-  if (
-    type ===
-    "best_prediction_score"
-  ) {
-    return `Tek tahminde ${target} puana ulaş`;
-  }
-
-  return "Yönetici tarafından verilen özel rozet";
 }
 
 function currentConditionValue(
   type: string,
   stats: Props["stats"]
-) {
-  if (
-    type ===
-    "paddock_post_count"
-  ) {
-    return stats
-      .paddockPostCount;
-  }
+): number | null {
+  switch (type) {
+    case "paddock_post_count":
+      return stats.paddockPostCount;
 
-  if (
-    type ===
-    "prediction_count"
-  ) {
-    return stats
-      .predictionCount;
-  }
+    case "prediction_count":
+      return stats.predictionCount;
 
-  if (
-    type ===
-    "prediction_points"
-  ) {
-    return stats
-      .totalPoints;
-  }
+    case "prediction_points":
+      return stats.totalPoints;
 
-  if (
-    type ===
-    "best_prediction_score"
-  ) {
-    return stats
-      .bestScore;
-  }
+    case "best_prediction_score":
+      return stats.bestScore;
 
-  return null;
+    default:
+      return null;
+  }
 }
 
-/* =========================================================
-   COMPONENT
-   ========================================================= */
+function compareByXp(a: Achievement, b: Achievement) {
+  const xpDifference =
+    Number(b.xp_reward ?? 0) -
+    Number(a.xp_reward ?? 0);
+
+  if (xpDifference !== 0) {
+    return xpDifference;
+  }
+
+  const orderDifference =
+    a.sort_order - b.sort_order;
+
+  if (orderDifference !== 0) {
+    return orderDifference;
+  }
+
+  return a.name.localeCompare(b.name, "tr");
+}
+
+function AchievementCard({
+  achievement,
+  award,
+  stats,
+}: {
+  achievement: Achievement;
+  award?: UserAchievement;
+  stats: Props["stats"];
+}) {
+  const unlocked = Boolean(award);
+
+  const currentValue = currentConditionValue(
+    achievement.condition_type,
+    stats
+  );
+
+  const target = achievement.condition_value;
+
+  const showProgress =
+    !unlocked &&
+    achievement.is_automatic &&
+    currentValue !== null &&
+    target !== null &&
+    target > 0;
+
+  const percentage = showProgress
+    ? Math.min(
+        100,
+        Math.max(0, (currentValue / target) * 100)
+      )
+    : 0;
+
+  return (
+    <details
+      className={[
+        "profile-ach-card",
+        unlocked ? "is-unlocked" : "is-locked",
+        `rarity-${achievement.rarity}`,
+      ].join(" ")}
+    >
+      <summary className="profile-ach-card-summary">
+        <div className="profile-ach-image">
+          {achievement.image_url ? (
+            <img
+              src={achievement.image_url}
+              alt=""
+              loading="lazy"
+            />
+          ) : (
+            <span className="profile-ach-placeholder">
+              🏆
+            </span>
+          )}
+
+          {!unlocked && (
+            <span
+              className="profile-ach-lock"
+              aria-hidden="true"
+            >
+              🔒
+            </span>
+          )}
+        </div>
+
+        <div className="profile-ach-info">
+          <span
+            className={`profile-ach-rarity rarity-${achievement.rarity}`}
+          >
+            {rarityLabel(achievement.rarity)}
+          </span>
+
+          <strong title={achievement.name}>
+            {achievement.name}
+          </strong>
+
+          <span className="profile-ach-status">
+            {unlocked ? "KAZANILDI" : "KİLİTLİ"}
+          </span>
+        </div>
+
+        <div className="profile-ach-reward">
+          <strong>
+            +{Number(achievement.xp_reward ?? 0)}
+          </strong>
+          <span>XP</span>
+        </div>
+      </summary>
+
+      <div className="profile-ach-details">
+        <p className="profile-ach-description">
+          {achievement.description ||
+            "Bu başarım için açıklama eklenmemiş."}
+        </p>
+
+        {unlocked ? (
+          <div className="profile-ach-earned">
+            <span>✓ Başarım açıldı</span>
+
+            <strong>
+              {Number(
+                award?.xp_awarded ??
+                  achievement.xp_reward ??
+                  0
+              )}{" "}
+              XP kazanıldı
+            </strong>
+          </div>
+        ) : (
+          <>
+            <div className="profile-ach-condition">
+              <span>NASIL KAZANILIR?</span>
+
+              <strong>
+                {achievement.is_automatic
+                  ? conditionLabel(
+                      achievement.condition_type,
+                      achievement.condition_value
+                    )
+                  : "Yönetici tarafından verilen özel rozet"}
+              </strong>
+            </div>
+
+            {showProgress && (
+              <div className="profile-ach-progress">
+                <div className="profile-ach-progress-label">
+                  <span>İlerleme</span>
+
+                  <strong>
+                    {Math.min(currentValue, target)} /{" "}
+                    {target}
+                  </strong>
+                </div>
+
+                <div className="profile-ach-progress-track">
+                  <div
+                    className="profile-ach-progress-fill"
+                    style={{
+                      width: `${percentage}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </details>
+  );
+}
 
 export default function ProfileAchievements({
   achievements,
   userAchievements,
   stats,
 }: Props) {
-  const awardMap =
-    new Map<
-      string,
-      UserAchievement
-    >();
-
-  for (
-    const award of
-      userAchievements
-  ) {
-    awardMap.set(
+  const awardMap = new Map(
+    userAchievements.map((award) => [
       award.achievement_id,
-      award
-    );
-  }
+      award,
+    ])
+  );
 
-  const unlockedCount =
-    achievements.filter(
-      (
-        achievement
-      ) =>
-        awardMap.has(
-          achievement.id
-        )
-    ).length;
+  const unlocked = achievements
+    .filter((achievement) =>
+      awardMap.has(achievement.id)
+    )
+    .sort(compareByXp);
+
+  const locked = achievements
+    .filter(
+      (achievement) =>
+        !awardMap.has(achievement.id)
+    )
+    .sort(compareByXp);
 
   return (
-    <section className="f1-achievements-v2">
-      <style>
-        {styles}
-      </style>
+    <section className="profile-achievements-sidebar">
+      <style>{styles}</style>
 
-      {/* ===============================================
-          HEADER
-          =============================================== */}
-
-      <div className="f1-achievements-v2-header">
-        <div>
-          <span>
-            ACHIEVEMENT GARAGE
-          </span>
-
-          <h2>
-            Rozetler & Başarımlar
-          </h2>
-
-          <p>
-            Kazandığın başarımlar renkli,
-            henüz açmadıkların kilitli
-            görünür. Kilitli başarımın
-            şartını ve mevcut ilerlemeni
-            görebilirsin.
-          </p>
+      <div className="profile-ach-header">
+        <div className="profile-ach-heading">
+          <span>ACHIEVEMENT GARAGE</span>
+          <h2>Rozetler &amp; Başarımlar</h2>
         </div>
 
-        <div className="f1-achievements-v2-count">
-          <strong>
-            {unlockedCount}
-          </strong>
-
-          <span>
-            / {achievements.length}
-          </span>
-
-          <small>
-            AÇILDI
-          </small>
+        <div className="profile-ach-counter">
+          <strong>{unlocked.length}</strong>
+          <span>/{achievements.length}</span>
         </div>
       </div>
 
-      {/* ===============================================
-          LIST
-          =============================================== */}
+      <p className="profile-ach-subtitle">
+        Kazandığın rozetler ve sıradaki hedeflerin.
+      </p>
 
-      {achievements.length ===
-      0 ? (
-        <div className="f1-achievements-v2-empty">
-          Henüz yayınlanmış
-          başarım bulunmuyor.
+      {achievements.length === 0 ? (
+        <div className="profile-ach-empty">
+          Henüz yayınlanmış başarım bulunmuyor.
         </div>
       ) : (
-        <div className="f1-achievements-v2-list">
-          {achievements.map(
-            (
-              achievement
-            ) => {
-              const award =
-                awardMap.get(
-                  achievement.id
-                );
+        <div className="profile-ach-scroll">
+          <div className="profile-ach-group">
+            <div className="profile-ach-group-heading">
+              <span className="profile-ach-group-dot unlocked" />
+              <strong>KAZANILANLAR</strong>
+              <small>{unlocked.length}</small>
+            </div>
 
-              const unlocked =
-                Boolean(
-                  award
-                );
+            {unlocked.length === 0 ? (
+              <div className="profile-ach-group-empty">
+                Henüz açılan bir başarım yok.
+              </div>
+            ) : (
+              unlocked.map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                  award={awardMap.get(achievement.id)}
+                  stats={stats}
+                />
+              ))
+            )}
+          </div>
 
-              const currentValue =
-                currentConditionValue(
-                  achievement.condition_type,
-                  stats
-                );
+          <div className="profile-ach-group locked-group">
+            <div className="profile-ach-group-heading">
+              <span className="profile-ach-group-dot locked" />
+              <strong>KİLİTLİLER</strong>
+              <small>{locked.length}</small>
+            </div>
 
-              const target =
-                achievement.condition_value;
-
-              const percentage =
-                currentValue !==
-                  null &&
-                target !==
-                  null &&
-                target >
-                  0
-                  ? Math.min(
-                      100,
-                      Math.max(
-                        0,
-                        (
-                          currentValue /
-                          target
-                        ) *
-                          100
-                      )
-                    )
-                  : 0;
-
-              const displayedXp =
-                unlocked &&
-                award
-                  ? Number(
-                      award.xp_awarded ??
-                        0
-                    )
-                  : Number(
-                      achievement.xp_reward ??
-                        0
-                    );
-
-              return (
-                <article
-                  key={
-                    achievement.id
-                  }
-                  className={[
-                    "f1-achievement-row-v2",
-
-                    unlocked
-                      ? "is-unlocked"
-                      : "is-locked",
-
-                    `is-${achievement.rarity}`,
-                  ].join(
-                    " "
-                  )}
-                >
-                  {/* ===================================
-                      IMAGE
-                      =================================== */}
-
-                  <div className="f1-achievement-row-v2-image">
-                    {achievement.image_url ? (
-                      <img
-                        src={
-                          achievement.image_url
-                        }
-                        alt={
-                          achievement.name
-                        }
-                      />
-                    ) : (
-                      <div className="f1-achievement-row-v2-placeholder">
-                        🏆
-                      </div>
-                    )}
-
-                    {!unlocked && (
-                      <div className="f1-achievement-row-v2-lock">
-                        <span>
-                          🔒
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ===================================
-                      CONTENT
-                      =================================== */}
-
-                  <div className="f1-achievement-row-v2-content">
-                    <div className="f1-achievement-row-v2-topline">
-                      <span
-                        className={`f1-achievement-row-v2-rarity rarity-${achievement.rarity}`}
-                      >
-                        {rarityLabel(
-                          achievement.rarity
-                        )}
-                      </span>
-
-                      {!unlocked && (
-                        <span className="f1-achievement-row-v2-locked-label">
-                          KİLİTLİ
-                        </span>
-                      )}
-                    </div>
-
-                    <h3>
-                      {
-                        achievement.name
-                      }
-                    </h3>
-
-                    <p>
-                      {achievement.description ||
-                        "Bu başarım için açıklama eklenmemiş."}
-                    </p>
-
-                    {/* ===============================
-                        LOCKED INFORMATION
-                        =============================== */}
-
-                    {!unlocked && (
-                      <div className="f1-achievement-row-v2-condition">
-                        <div className="f1-achievement-row-v2-condition-text">
-                          <span>
-                            NASIL KAZANILIR?
-                          </span>
-
-                          <strong>
-                            {achievement.is_automatic
-                              ? conditionLabel(
-                                  achievement.condition_type,
-                                  achievement.condition_value
-                                )
-                              : "Yönetici tarafından verilen özel rozet"}
-                          </strong>
-                        </div>
-
-                        {achievement.is_automatic &&
-                          currentValue !==
-                            null &&
-                          target !==
-                            null && (
-                            <div className="f1-achievement-row-v2-progress">
-                              <div className="f1-achievement-row-v2-progress-meta">
-                                <span>
-                                  İlerleme
-                                </span>
-
-                                <strong>
-                                  {Math.min(
-                                    currentValue,
-                                    target
-                                  )}{" "}
-                                  /{" "}
-                                  {target}
-                                </strong>
-                              </div>
-
-                              <div className="f1-achievement-row-v2-track">
-                                <div
-                                  className="f1-achievement-row-v2-fill"
-                                  style={{
-                                    width:
-                                      `${percentage}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* ===================================
-                      XP
-                      =================================== */}
-
-                  <div className="f1-achievement-row-v2-xp">
-                    <strong>
-                      +
-                      {
-                        displayedXp
-                      }
-                    </strong>
-
-                    <span>
-                      XP
-                    </span>
-                  </div>
-                </article>
-              );
-            }
-          )}
+            {locked.length === 0 ? (
+              <div className="profile-ach-group-empty">
+                Bütün başarımlar açıldı!
+              </div>
+            ) : (
+              locked.map((achievement) => (
+                <AchievementCard
+                  key={achievement.id}
+                  achievement={achievement}
+                  stats={stats}
+                />
+              ))
+            )}
+          </div>
         </div>
       )}
+
+      <div className="profile-ach-footer">
+        <span>En yüksek XP ödülü üstte</span>
+        <span>Kaydır ↓</span>
+      </div>
     </section>
   );
 }
 
-/* =========================================================
-   CSS
-   ========================================================= */
-
 const styles = `
-  /* =====================================================
-     OUTER PANEL
-     ===================================================== */
-
-  .f1-achievements-v2 {
-    width:
-      100%;
-
-    padding:
-      34px;
-
-    border:
-      1px solid
-      rgba(255,255,255,.10);
-
-    border-radius:
-      16px;
-
-    background:
-      rgba(10,14,20,.86);
-
-    backdrop-filter:
-      blur(18px);
+  .profile-achievements-sidebar {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    padding: 17px 14px 13px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 14px;
+    background: #0a1117;
+    color: #f4f7fb;
   }
 
-  /* =====================================================
-     HEADER
-     ===================================================== */
-
-  .f1-achievements-v2-header {
-    margin-bottom:
-      26px;
-
-    display:
-      flex;
-
-    align-items:
-      flex-start;
-
-    justify-content:
-      space-between;
-
-    gap:
-      30px;
+  .profile-ach-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
   }
 
-  .f1-achievements-v2-header >
-  div:first-child >
-  span {
-    color:
-      var(
-        --profile-accent,
-        #ff443c
-      );
-
-    font-size:
-      10px;
-
-    font-weight:
-      1000;
-
-    letter-spacing:
-      .15em;
+  .profile-ach-heading {
+    min-width: 0;
   }
 
-  .f1-achievements-v2-header h2 {
-    margin:
-      7px 0 8px !important;
-
-    color:
-      #f5f7fa !important;
-
-    font-size:
-      32px !important;
-
-    line-height:
-      1.1;
-
-    letter-spacing:
-      -.025em;
+  .profile-ach-heading > span {
+    color: var(--profile-accent, #ff443c);
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .12em;
   }
 
-  .f1-achievements-v2-header p {
-    max-width:
-      720px;
-
-    margin:
-      0;
-
-    color:
-      #939eaa !important;
-
-    font-size:
-      13px !important;
-
-    line-height:
-      1.65;
+  .profile-ach-heading h2 {
+    margin: 7px 0 0 !important;
+    color: #f5f7fa !important;
+    font-size: 17px !important;
+    font-weight: 800;
+    line-height: 1.3 !important;
+    letter-spacing: -.025em;
   }
 
-  .f1-achievements-v2-count {
-    min-width:
-      120px;
-
-    padding:
-      14px 17px;
-
-    border:
-      1px solid
-      rgba(255,255,255,.08);
-
-    border-radius:
-      12px;
-
-    text-align:
-      center;
-
-    background:
-      rgba(255,255,255,.025);
+  .profile-ach-counter {
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    padding: 8px 10px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 9px;
+    background: rgba(255,255,255,.035);
+    white-space: nowrap;
   }
 
-  .f1-achievements-v2-count strong {
-    color:
-      var(
-        --profile-accent,
-        #ff443c
-      ) !important;
-
-    font-size:
-      29px !important;
+  .profile-ach-counter strong {
+    color: var(--profile-accent, #ff443c);
+    font-size: 18px;
+    font-weight: 900;
   }
 
-  .f1-achievements-v2-count >
-  span {
-    margin-left:
-      3px;
-
-    color:
-      #8994a0;
-
-    font-size:
-      16px;
+  .profile-ach-counter span {
+    margin-left: 3px;
+    color: #8895a3;
+    font-size: 11px;
   }
 
-  .f1-achievements-v2-count small {
-    display:
-      block;
-
-    margin-top:
-      3px;
-
-    color:
-      #707b87;
-
-    font-size:
-      8px;
-
-    font-weight:
-      1000;
-
-    letter-spacing:
-      .12em;
+  .profile-ach-subtitle {
+    margin: 9px 0 13px !important;
+    color: #8f9aa6 !important;
+    font-size: 10px !important;
+    line-height: 1.5;
   }
 
-  /* =====================================================
-     LIST
-     ===================================================== */
-
-  .f1-achievements-v2-list {
-    width:
-      100%;
-
-    display:
-      flex;
-
-    flex-direction:
-      column;
-
-    gap:
-      12px;
+  .profile-ach-scroll {
+    max-height: 470px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #394450 transparent;
   }
 
-  /* =====================================================
-     HORIZONTAL CARD
-     ===================================================== */
+  .profile-ach-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
 
-  .f1-achievement-row-v2 {
-    position:
-      relative;
+  .profile-ach-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-    box-sizing:
-      border-box;
+  .profile-ach-scroll::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #394450;
+  }
 
-    width:
-      100% !important;
+  .profile-ach-group-heading {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 9px;
+    padding: 0 3px;
+  }
 
-    min-height:
-      170px !important;
+  .profile-ach-group-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
 
-    padding:
-      20px 22px !important;
+  .profile-ach-group-dot.unlocked {
+    background: #6ddfac;
+    box-shadow: 0 0 9px rgba(109,223,172,.4);
+  }
 
-    display:
-      grid !important;
+  .profile-ach-group-dot.locked {
+    background: #8a95a3;
+  }
 
-    grid-template-columns:
-      128px
-      minmax(0,1fr)
-      112px !important;
+  .profile-ach-group-heading strong {
+    color: #d5e0e9;
+    font-size: 9px;
+    font-weight: 900;
+    letter-spacing: .1em;
+  }
 
-    grid-template-rows:
-      auto !important;
+  .profile-ach-group-heading small {
+    margin-left: auto;
+    color: #8793a1;
+    font-size: 10px;
+  }
 
-    align-items:
-      center !important;
+  .profile-ach-group.locked-group {
+    margin-top: 18px;
+  }
 
-    gap:
-      25px !important;
-
-    overflow:
-      hidden;
-
-    border:
-      1px solid
-      rgba(255,255,255,.09);
-
-    border-radius:
-      15px !important;
-
-    background:
-      linear-gradient(
-        125deg,
-        rgba(255,255,255,.042),
-        rgba(255,255,255,.014)
-      ) !important;
-
+  .profile-ach-card {
+    margin-bottom: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.085);
+    border-radius: 10px;
+    background: rgba(255,255,255,.023);
     transition:
-      transform .18s ease,
-      border-color .18s ease,
-      background .18s ease,
-      box-shadow .18s ease;
+      background .15s ease,
+      border-color .15s ease;
   }
 
-  .f1-achievement-row-v2.is-unlocked:hover {
-    transform:
-      translateY(-2px);
-
-    background:
-      linear-gradient(
-        125deg,
-        rgba(255,255,255,.06),
-        rgba(255,255,255,.02)
-      ) !important;
+  .profile-ach-card:hover {
+    background: rgba(255,255,255,.045);
+    border-color: rgba(255,255,255,.17);
   }
 
-  /* =====================================================
-     BADGE IMAGE
-     ===================================================== */
-
-  .f1-achievement-row-v2-image {
-    position:
-      relative;
-
-    width:
-      128px !important;
-
-    height:
-      128px !important;
-
-    min-width:
-      128px;
-
-    overflow:
-      hidden;
-
-    display:
-      grid;
-
-    place-items:
-      center;
-
-    border:
-      1px solid
-      rgba(255,255,255,.11);
-
-    border-radius:
-      17px;
-
-    background:
-      #070a0f;
-
-    box-shadow:
-      0 14px 35px
-      rgba(0,0,0,.28);
+  .profile-ach-card.is-unlocked {
+    border-color: rgba(115,221,164,.19);
   }
 
-  .f1-achievement-row-v2-image img {
-    width:
-      100% !important;
-
-    height:
-      100% !important;
-
-    display:
-      block;
-
-    object-fit:
-      cover !important;
+  .profile-ach-card.is-unlocked.rarity-rare {
+    border-color: rgba(98,151,255,.30);
   }
 
-  .f1-achievement-row-v2-placeholder {
-    font-size:
-      43px;
+  .profile-ach-card.is-unlocked.rarity-epic {
+    border-color: rgba(197,121,255,.30);
   }
 
-  /* =====================================================
-     CONTENT
-     ===================================================== */
-
-  .f1-achievement-row-v2-content {
-    min-width:
-      0;
-
-    align-self:
-      center;
+  .profile-ach-card.is-unlocked.rarity-legendary {
+    border-color: rgba(242,202,98,.36);
   }
 
-  .f1-achievement-row-v2-topline {
-    min-height:
-      20px;
-
-    display:
-      flex;
-
-    align-items:
-      center;
-
-    gap:
-      10px;
+  .profile-ach-card-summary {
+    display: grid;
+    grid-template-columns: 48px minmax(0,1fr) auto;
+    align-items: center;
+    gap: 9px;
+    min-height: 68px;
+    padding: 9px 8px;
+    cursor: pointer;
+    list-style: none;
   }
 
-  .f1-achievement-row-v2-rarity {
-    font-size:
-      9px !important;
-
-    font-weight:
-      1000;
-
-    letter-spacing:
-      .15em;
+  .profile-ach-card-summary::-webkit-details-marker {
+    display: none;
   }
 
-  .f1-achievement-row-v2-rarity.rarity-common {
-    color:
-      #c6ced7;
+  .profile-ach-card-summary:focus-visible {
+    outline: 2px solid #8fbaff;
+    outline-offset: -2px;
   }
 
-  .f1-achievement-row-v2-rarity.rarity-rare {
-    color:
-      #72a8ff;
+  .profile-ach-image {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 9px;
+    background: #05090d;
   }
 
-  .f1-achievement-row-v2-rarity.rarity-epic {
-    color:
-      #ca82ff;
+  .profile-ach-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
-  .f1-achievement-row-v2-rarity.rarity-legendary {
-    color:
-      #f2ca62;
+  .profile-ach-placeholder {
+    font-size: 24px;
   }
 
-  .f1-achievement-row-v2 h3 {
-    margin:
-      8px 0 0 !important;
-
-    color:
-      #f8fafc !important;
-
-    font-size:
-      24px !important;
-
-    line-height:
-      1.15 !important;
-
-    letter-spacing:
-      -.025em;
+  .profile-ach-card.is-locked .profile-ach-image img {
+    filter: grayscale(1) brightness(.53);
+    opacity: .7;
   }
 
-  .f1-achievement-row-v2-content >
-  p {
-    max-width:
-      760px;
-
-    margin:
-      12px 0 0 !important;
-
-    color:
-      #abb5bf !important;
-
-    font-size:
-      13px !important;
-
-    line-height:
-      1.6 !important;
+  .profile-ach-lock {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,.3);
+    font-size: 17px;
   }
 
-  /* =====================================================
-     LOCKED LABEL
-     ===================================================== */
-
-  .f1-achievement-row-v2-locked-label {
-    padding:
-      4px 7px;
-
-    border:
-      1px solid
-      rgba(255,255,255,.09);
-
-    border-radius:
-      999px;
-
-    color:
-      #929ba5;
-
-    background:
-      rgba(255,255,255,.035);
-
-    font-size:
-      7px;
-
-    font-weight:
-      1000;
-
-    letter-spacing:
-      .1em;
+  .profile-ach-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    gap: 4px;
   }
 
-  /* =====================================================
-     XP
-     ===================================================== */
-
-  .f1-achievement-row-v2-xp {
-    width:
-      112px !important;
-
-    min-height:
-      82px;
-
-    padding:
-      10px;
-
-    display:
-      flex;
-
-    flex-direction:
-      column;
-
-    align-items:
-      center;
-
-    justify-content:
-      center;
-
-    justify-self:
-      end;
-
-    border:
-      1px solid
-      rgba(240,199,94,.26);
-
-    border-radius:
-      13px;
-
-    background:
-      linear-gradient(
-        145deg,
-        rgba(240,199,94,.09),
-        rgba(240,199,94,.025)
-      );
+  .profile-ach-rarity {
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .1em;
   }
 
-  .f1-achievement-row-v2-xp strong {
-    color:
-      #f2cb63 !important;
-
-    font-size:
-      24px !important;
-
-    line-height:
-      1;
+  .profile-ach-rarity.rarity-common {
+    color: #cbd5e1;
   }
 
-  .f1-achievement-row-v2-xp span {
-    margin-top:
-      7px;
-
-    color:
-      #9e894f;
-
-    font-size:
-      8px;
-
-    font-weight:
-      1000;
-
-    letter-spacing:
-      .16em;
+  .profile-ach-rarity.rarity-rare {
+    color: #79aaff;
   }
 
-  /* =====================================================
-     LOCKED CARD
-     ===================================================== */
-
-  .f1-achievement-row-v2.is-locked {
-    border-color:
-      rgba(255,255,255,.07);
-
-    background:
-      linear-gradient(
-        125deg,
-        rgba(100,105,112,.045),
-        rgba(30,33,38,.025)
-      ) !important;
+  .profile-ach-rarity.rarity-epic {
+    color: #d39aff;
   }
 
-  .f1-achievement-row-v2.is-locked
-  .f1-achievement-row-v2-image img {
-    filter:
-      grayscale(1)
-      brightness(.52);
-
-    opacity:
-      .62;
+  .profile-ach-rarity.rarity-legendary {
+    color: #f4ce69;
   }
 
-  .f1-achievement-row-v2.is-locked
-  .f1-achievement-row-v2-content >
-  p {
-    color:
-      #777f88 !important;
+  .profile-ach-info > strong {
+    display: -webkit-box;
+    max-width: 100%;
+    overflow: hidden;
+    color: #f3f7fb;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
   }
 
-  .f1-achievement-row-v2.is-locked
-  .f1-achievement-row-v2-xp {
-    filter:
-      grayscale(1);
-
-    opacity:
-      .58;
+  .profile-ach-status {
+    color: #919ca9;
+    font-size: 8px;
+    font-weight: 800;
+    letter-spacing: .06em;
   }
 
-  .f1-achievement-row-v2-lock {
-    position:
-      absolute;
-
-    inset:
-      0;
-
-    display:
-      grid;
-
-    place-items:
-      center;
-
-    background:
-      rgba(5,7,10,.42);
+  .profile-ach-card.is-unlocked .profile-ach-status {
+    color: #79d7aa;
   }
 
-  .f1-achievement-row-v2-lock span {
-    width:
-      43px;
-
-    height:
-      43px;
-
-    display:
-      grid;
-
-    place-items:
-      center;
-
-    border:
-      1px solid
-      rgba(255,255,255,.10);
-
-    border-radius:
-      50%;
-
-    background:
-      rgba(5,7,10,.72);
-
-    font-size:
-      19px;
+  .profile-ach-reward {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    min-width: 42px;
   }
 
-  /* =====================================================
-     LOCKED CONDITION
-     ===================================================== */
-
-  .f1-achievement-row-v2-condition {
-    max-width:
-      720px;
-
-    margin-top:
-      16px;
-
-    padding-top:
-      13px;
-
-    border-top:
-      1px solid
-      rgba(255,255,255,.065);
+  .profile-ach-reward strong {
+    color: #e6bf63;
+    font-size: 13px;
+    font-weight: 900;
+    white-space: nowrap;
   }
 
-  .f1-achievement-row-v2-condition-text >
-  span {
-    display:
-      block;
-
-    color:
-      #717b85;
-
-    font-size:
-      8px;
-
-    font-weight:
-      1000;
-
-    letter-spacing:
-      .13em;
+  .profile-ach-reward span {
+    color: #97855c;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .1em;
   }
 
-  .f1-achievement-row-v2-condition-text >
-  strong {
-    display:
-      block;
-
-    margin-top:
-      6px;
-
-    color:
-      #b7c0c8 !important;
-
-    font-size:
-      12px !important;
-
-    line-height:
-      1.5;
+  .profile-ach-card.is-locked .profile-ach-reward {
+    opacity: .6;
   }
 
-  /* =====================================================
-     PROGRESS
-     ===================================================== */
-
-  .f1-achievement-row-v2-progress {
-    margin-top:
-      13px;
+  .profile-ach-details {
+    padding: 10px 11px 12px;
+    border-top: 1px solid rgba(255,255,255,.07);
   }
 
-  .f1-achievement-row-v2-progress-meta {
-    display:
-      flex;
-
-    align-items:
-      center;
-
-    justify-content:
-      space-between;
-
-    gap:
-      15px;
-
-    color:
-      #808b96;
-
-    font-size:
-      9px;
+  .profile-ach-description {
+    margin: 0 0 10px !important;
+    color: #a6b1bd !important;
+    font-size: 11px !important;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
   }
 
-  .f1-achievement-row-v2-progress-meta
-  strong {
-    color:
-      #abb5be !important;
-
-    font-size:
-      9px !important;
+  .profile-ach-condition > span {
+    display: block;
+    color: #7d8996;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: .09em;
   }
 
-  .f1-achievement-row-v2-track {
-    height:
-      7px;
-
-    margin-top:
-      8px;
-
-    overflow:
-      hidden;
-
-    border-radius:
-      999px;
-
-    background:
-      rgba(255,255,255,.07);
+  .profile-ach-condition > strong {
+    display: block;
+    margin-top: 6px;
+    color: #d7dfe8;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
   }
 
-  .f1-achievement-row-v2-fill {
-    height:
-      100%;
-
-    border-radius:
-      inherit;
-
-    background:
-      linear-gradient(
-        90deg,
-        var(
-          --profile-accent-2,
-          #b90000
-        ),
-        var(
-          --profile-accent,
-          #ff443c
-        )
-      );
-
-    box-shadow:
-      0 0 15px
-      var(
-        --profile-accent-glow,
-        rgba(255,68,60,.25)
-      );
+  .profile-ach-earned {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
   }
 
-  /* =====================================================
-     UNLOCKED RARITY BORDERS
-     ===================================================== */
-
-  .f1-achievement-row-v2.is-unlocked.is-common {
-    border-color:
-      rgba(205,212,220,.20);
+  .profile-ach-earned span {
+    color: #75d8aa;
+    font-size: 10px;
+    font-weight: 900;
   }
 
-  .f1-achievement-row-v2.is-unlocked.is-rare {
-    border-color:
-      rgba(82,143,255,.34);
-
-    box-shadow:
-      inset 3px 0 0
-      rgba(82,143,255,.65);
+  .profile-ach-earned strong {
+    color: #e8c572;
+    font-size: 11px;
   }
 
-  .f1-achievement-row-v2.is-unlocked.is-epic {
-    border-color:
-      rgba(190,105,255,.36);
-
-    box-shadow:
-      inset 3px 0 0
-      rgba(190,105,255,.70);
+  .profile-ach-progress {
+    margin-top: 13px;
   }
 
-  .f1-achievement-row-v2.is-unlocked.is-legendary {
-    border-color:
-      rgba(241,195,75,.38);
-
-    box-shadow:
-      inset 3px 0 0
-      rgba(241,195,75,.78),
-      inset 0 0 35px
-      rgba(241,195,75,.035);
+  .profile-ach-progress-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    color: #95a1ad;
+    font-size: 10px;
   }
 
-  /* =====================================================
-     EMPTY
-     ===================================================== */
-
-  .f1-achievements-v2-empty {
-    min-height:
-      150px;
-
-    display:
-      grid;
-
-    place-items:
-      center;
-
-    color:
-      #7e8994;
-
-    font-size:
-      12px;
+  .profile-ach-progress-label strong {
+    color: #d0d9e3;
   }
 
-  /* =====================================================
-     TABLET
-     ===================================================== */
+  .profile-ach-progress-track {
+    height: 5px;
+    margin-top: 7px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgba(255,255,255,.09);
+  }
 
-  @media(
-    max-width:
-      850px
-  ) {
-    .f1-achievements-v2 {
-      padding:
-        25px;
+  .profile-ach-progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(
+      90deg,
+      var(--profile-accent-2, #b90000),
+      var(--profile-accent, #ff443c)
+    );
+  }
+
+  .profile-ach-group-empty {
+    padding: 10px;
+    border: 1px dashed rgba(255,255,255,.1);
+    border-radius: 8px;
+    color: #8b97a4;
+    font-size: 10px;
+    line-height: 1.5;
+  }
+
+  .profile-ach-empty {
+    padding: 24px 10px;
+    color: #94a1af;
+    font-size: 11px;
+    text-align: center;
+  }
+
+  .profile-ach-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 11px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    color: #768390;
+    font-size: 9px;
+  }
+
+  @media (max-width: 600px) {
+    .profile-achievements-sidebar {
+      padding: 16px 12px 12px;
     }
 
-    .f1-achievement-row-v2 {
-      grid-template-columns:
-        105px
-        minmax(0,1fr)
-        92px !important;
-
-      gap:
-        18px !important;
-    }
-
-    .f1-achievement-row-v2-image {
-      width:
-        105px !important;
-
-      height:
-        105px !important;
-
-      min-width:
-        105px;
-    }
-
-    .f1-achievement-row-v2-xp {
-      width:
-        92px !important;
-    }
-
-    .f1-achievement-row-v2 h3 {
-      font-size:
-        21px !important;
-    }
-  }
-
-  /* =====================================================
-     MOBILE
-     ===================================================== */
-
-  @media(
-    max-width:
-      600px
-  ) {
-    .f1-achievements-v2 {
-      padding:
-        20px;
-    }
-
-    .f1-achievements-v2-header {
-      flex-direction:
-        column;
-
-      gap:
-        16px;
-    }
-
-    .f1-achievements-v2-header h2 {
-      font-size:
-        27px !important;
-    }
-
-    .f1-achievements-v2-count {
-      width:
-        100%;
-
-      text-align:
-        left;
-    }
-
-    .f1-achievement-row-v2 {
-      grid-template-columns:
-        84px
-        minmax(0,1fr) !important;
-
-      min-height:
-        auto !important;
-
-      padding:
-        15px !important;
-
-      gap:
-        15px !important;
-
-      align-items:
-        start !important;
-    }
-
-    .f1-achievement-row-v2-image {
-      width:
-        84px !important;
-
-      height:
-        84px !important;
-
-      min-width:
-        84px;
-    }
-
-    .f1-achievement-row-v2 h3 {
-      font-size:
-        19px !important;
-    }
-
-    .f1-achievement-row-v2-content >
-    p {
-      font-size:
-        12px !important;
-    }
-
-    .f1-achievement-row-v2-xp {
-      grid-column:
-        2;
-
-      width:
-        auto !important;
-
-      min-width:
-        78px;
-
-      min-height:
-        42px;
-
-      justify-self:
-        start;
-
-      flex-direction:
-        row;
-
-      gap:
-        5px;
-    }
-
-    .f1-achievement-row-v2-xp strong {
-      font-size:
-        15px !important;
-    }
-
-    .f1-achievement-row-v2-xp span {
-      margin-top:
-        0;
-
-      font-size:
-        7px;
+    .profile-ach-scroll {
+      max-height: 420px;
     }
   }
 `;

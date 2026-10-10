@@ -1416,32 +1416,6 @@ export default async function ProfilePage() {
               </section>
 
               {/* ===============================================
-                  NEW HORIZONTAL ACHIEVEMENTS
-                  =============================================== */}
-
-              <ProfileAchievements
-                achievements={
-                  achievements
-                }
-                userAchievements={
-                  userAchievements
-                }
-                stats={{
-                  paddockPostCount:
-                    paddockPostCount,
-
-                  predictionCount:
-                    predictionCount,
-
-                  totalPoints:
-                    totalPoints,
-
-                  bestScore:
-                    bestScore,
-                }}
-              />
-
-              {/* ===============================================
                   PADDOCK
                   =============================================== */}
 
@@ -1875,6 +1849,32 @@ export default async function ProfilePage() {
                   </div>
                 </div>
               </section>
+
+              {/* ===============================================
+                  SCROLLABLE ACHIEVEMENTS SIDEBAR
+                  =============================================== */}
+
+              <ProfileAchievements
+                achievements={
+                  achievements
+                }
+                userAchievements={
+                  userAchievements
+                }
+                stats={{
+                  paddockPostCount:
+                    paddockPostCount,
+
+                  predictionCount:
+                    predictionCount,
+
+                  totalPoints:
+                    totalPoints,
+
+                  bestScore:
+                    bestScore,
+                }}
+              />
 
               {/* ===============================================
                   INFO
