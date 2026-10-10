@@ -1,373 +1,826 @@
-import Header from "@/components/Header";
-import { createClient } from "@/utils/supabase/server";
-import { createAdminClient } from "@/utils/supabase/admin";
+import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+import Header from "@/components/Header";
+
+import {
+  createClient,
+} from "@/utils/supabase/server";
+
+import {
+  createAdminClient,
+} from "@/utils/supabase/admin";
+
+export const dynamic =
+  "force-dynamic";
 
 export default async function AdminPage() {
-  const supabase = await createClient();
+  const supabase =
+    await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: {
+      user,
+    },
+  } =
+    await supabase.auth.getUser();
 
   if (!user) {
     return (
       <>
         <Header />
 
-        <main
-          className="site-container"
-          style={{
-            paddingTop: "50px",
-            paddingBottom: "80px",
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              padding: "32px",
-              maxWidth: "650px",
-            }}
-          >
-            <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
+        <main className="admin-access">
+          <style>
+            {styles}
+          </style>
 
-            <h1>Giriş Gerekli</h1>
+          <div className="access-card">
+            <span>
+              F1 MEDİPOL · ADMIN
+            </span>
 
-            <p style={{ color: "#9da8b5" }}>
-              Yönetim panelini görüntülemek için giriş yapmalısın.
+            <h1>
+              Giriş Gerekli
+            </h1>
+
+            <p>
+              Yönetim panelini görüntülemek
+              için giriş yapmalısın.
             </p>
 
-            <a href="/login" className="btn btn-red">
+            <Link
+              href="/login"
+              className="admin-button red"
+            >
               Giriş Yap
-            </a>
+            </Link>
           </div>
         </main>
       </>
     );
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, username, is_admin")
-    .eq("id", user.id)
-    .single();
+  const {
+    data:
+      profile,
+  } =
+    await supabase
+      .from(
+        "profiles"
+      )
+      .select(`
+        display_name,
+        username,
+        is_admin
+      `)
+      .eq(
+        "id",
+        user.id
+      )
+      .single();
 
-  if (!profile?.is_admin) {
+  if (
+    !profile?.is_admin
+  ) {
     return (
       <>
         <Header />
 
-        <main
-          className="site-container"
-          style={{
-            paddingTop: "50px",
-            paddingBottom: "80px",
-          }}
-        >
-          <div
-            className="card"
-            style={{
-              padding: "32px",
-              maxWidth: "650px",
-            }}
-          >
-            <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
+        <main className="admin-access">
+          <style>
+            {styles}
+          </style>
 
-            <h1>Yetkisiz Erişim</h1>
+          <div className="access-card">
+            <span>
+              F1 MEDİPOL · ADMIN
+            </span>
 
-            <p style={{ color: "#9da8b5" }}>
-              Bu bölüm yalnızca yöneticiler tarafından kullanılabilir.
+            <h1>
+              Yetkisiz Erişim
+            </h1>
+
+            <p>
+              Bu bölüm yalnızca yöneticiler
+              tarafından kullanılabilir.
             </p>
 
-            <a href="/" className="btn">
+            <Link
+              href="/"
+              className="admin-button"
+            >
               Ana Sayfaya Dön
-            </a>
+            </Link>
           </div>
         </main>
       </>
     );
   }
 
-  const admin = createAdminClient();
+  const admin =
+    createAdminClient();
 
-  const { data: events } = await admin
-    .from("events")
-    .select("id, is_published");
+  const [
+    eventsResult,
+    achievementsResult,
+    awardsResult,
+  ] =
+    await Promise.all([
+      admin
+        .from(
+          "events"
+        )
+        .select(
+          "id, is_published"
+        ),
 
-  const eventRows = events ?? [];
+      admin
+        .from(
+          "achievements"
+        )
+        .select(
+          "id, is_published"
+        ),
 
-  const totalEvents = eventRows.length;
+      admin
+        .from(
+          "user_achievements"
+        )
+        .select(
+          "id",
+          {
+            count:
+              "exact",
 
-  const publishedEvents = eventRows.filter(
-    (event) => event.is_published
-  ).length;
+            head:
+              true,
+          }
+        ),
+    ]);
 
-  const draftEvents = eventRows.filter(
-    (event) => !event.is_published
-  ).length;
+  const events =
+    eventsResult.data ??
+    [];
+
+  const achievements =
+    achievementsResult.data ??
+    [];
+
+  const totalEvents =
+    events.length;
+
+  const publishedEvents =
+    events.filter(
+      (
+        event
+      ) =>
+        event.is_published
+    ).length;
+
+  const totalAchievements =
+    achievements.length;
+
+  const publishedAchievements =
+    achievements.filter(
+      (
+        achievement
+      ) =>
+        achievement.is_published
+    ).length;
+
+  const totalAwards =
+    awardsResult.count ??
+    0;
 
   const displayName =
     profile.display_name ||
     profile.username ||
-    user.email?.split("@")[0] ||
+    user.email?.split(
+      "@"
+    )[0] ||
     "Admin";
 
   return (
     <>
       <Header />
 
-      <main
-        className="site-container"
-        style={{
-          paddingTop: "32px",
-          paddingBottom: "80px",
-        }}
-      >
-        <section
-          className="card"
-          style={{
-            padding: "32px",
-            background:
-              "radial-gradient(circle at 90% 10%,rgba(225,6,0,.15),transparent 32%),linear-gradient(145deg,#232b36,#171d26)",
-          }}
-        >
-          <div className="eyebrow">
-            F1 MEDİPOL · CONTROL CENTER
-          </div>
+      <main className="admin-page">
+        <style>
+          {styles}
+        </style>
 
-          <h1
-            style={{
-              margin: "8px 0 6px",
-              fontSize: "48px",
-            }}
-          >
-            ADMIN PANELİ
-          </h1>
+        <div className="admin-wrap">
 
-          <p
-            style={{
-              margin: 0,
-              color: "#9da8b5",
-            }}
-          >
-            Hoş geldin, {displayName}.
-          </p>
+          {/* ===============================================
+              HERO
+              =============================================== */}
 
-          <div
-            style={{
-              display: "inline-block",
-              marginTop: "18px",
-              padding: "8px 12px",
-              borderRadius: "999px",
-              background: "rgba(53,212,119,.10)",
-              border: "1px solid rgba(53,212,119,.22)",
-              color: "#65df96",
-              fontSize: "9px",
-              fontWeight: 900,
-            }}
-          >
-            ● YÖNETİCİ OTURUMU AKTİF
-          </div>
-        </section>
-
-        <section
-          style={{
-            marginTop: "16px",
-            display: "grid",
-            gridTemplateColumns: "repeat(3,minmax(0,1fr))",
-            gap: "12px",
-          }}
-        >
-          <div className="card" style={{ padding: "20px" }}>
-            <div className="eyebrow">TOPLAM</div>
-
-            <div
-              style={{
-                marginTop: "7px",
-                fontSize: "34px",
-                fontWeight: 900,
-              }}
-            >
-              {totalEvents}
+          <section className="admin-hero">
+            <div className="admin-eyebrow">
+              F1 MEDİPOL · CONTROL CENTER
             </div>
 
-            <div
-              style={{
-                color: "#7f8b99",
-                fontSize: "10px",
-              }}
-            >
-              Etkinlik
+            <h1>
+              ADMIN PANELİ
+            </h1>
+
+            <p>
+              Hoş geldin,{" "}
+              {displayName}.
+            </p>
+
+            <div className="admin-active-badge">
+              ● YÖNETİCİ OTURUMU AKTİF
             </div>
-          </div>
+          </section>
 
-          <div className="card" style={{ padding: "20px" }}>
-            <div className="eyebrow">YAYINDA</div>
+          {/* ===============================================
+              STATS
+              =============================================== */}
 
-            <div
-              style={{
-                marginTop: "7px",
-                fontSize: "34px",
-                fontWeight: 900,
-              }}
-            >
-              {publishedEvents}
+          <section className="admin-stats">
+            <StatCard
+              label="ETKİNLİK"
+              value={
+                totalEvents
+              }
+              text="Toplam"
+            />
+
+            <StatCard
+              label="YAYINDA"
+              value={
+                publishedEvents
+              }
+              text="Etkinlik"
+            />
+
+            <StatCard
+              label="ROZET"
+              value={
+                totalAchievements
+              }
+              text={`${publishedAchievements} yayında`}
+            />
+
+            <StatCard
+              label="ÖDÜL"
+              value={
+                totalAwards
+              }
+              text="Dağıtılan rozet"
+            />
+          </section>
+
+          {/* ===============================================
+              MODULES
+              =============================================== */}
+
+          <section className="admin-modules">
+            <div className="admin-eyebrow">
+              YÖNETİM MODÜLLERİ
             </div>
 
-            <div
-              style={{
-                color: "#7f8b99",
-                fontSize: "10px",
-              }}
-            >
-              Yayınlanmış etkinlik
-            </div>
-          </div>
+            <h2>
+              Kontrol Merkezi
+            </h2>
 
-          <div className="card" style={{ padding: "20px" }}>
-            <div className="eyebrow">TASLAK</div>
+            <div className="admin-module-grid">
 
-            <div
-              style={{
-                marginTop: "7px",
-                fontSize: "34px",
-                fontWeight: 900,
-              }}
-            >
-              {draftEvents}
-            </div>
+              {/* EVENTS */}
 
-            <div
-              style={{
-                color: "#7f8b99",
-                fontSize: "10px",
-              }}
-            >
-              Yayınlanmamış etkinlik
-            </div>
-          </div>
-        </section>
-
-        <section style={{ marginTop: "32px" }}>
-          <div className="eyebrow">YÖNETİM MODÜLLERİ</div>
-
-          <h2
-            style={{
-              margin: "7px 0 17px",
-              fontSize: "30px",
-            }}
-          >
-            Kontrol Merkezi
-          </h2>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(2,minmax(0,1fr))",
-              gap: "14px",
-            }}
-          >
-            <a
-              href="/admin/events"
-              className="card"
-              style={{
-                padding: "24px",
-                minHeight: "180px",
-              }}
-            >
-              <div style={{ fontSize: "34px" }}>🏁</div>
-
-              <div
-                className="eyebrow"
-                style={{ marginTop: "18px" }}
+              <Link
+                href="/admin/events"
+                className="admin-module"
               >
-                ACTIVE MODULE
-              </div>
+                <div className="module-icon">
+                  🏁
+                </div>
 
-              <h3
-                style={{
-                  margin: "7px 0",
-                  fontSize: "24px",
-                }}
+                <span>
+                  ACTIVE MODULE
+                </span>
+
+                <h3>
+                  Etkinlik Yönetimi
+                </h3>
+
+                <p>
+                  Etkinlikleri oluştur,
+                  yayınla ve yönet.
+                </p>
+
+                <strong>
+                  PANELE GİT →
+                </strong>
+              </Link>
+
+              {/* ACHIEVEMENTS */}
+
+              <Link
+                href="/admin/achievements"
+                className="admin-module achievement-module"
               >
-                Etkinlik Yönetimi
-              </h3>
+                <div className="module-icon">
+                  🏆
+                </div>
 
-              <p
-                style={{
-                  color: "#8995a3",
-                  fontSize: "11px",
-                }}
+                <span>
+                  ACTIVE MODULE
+                </span>
+
+                <h3>
+                  Rozet & Başarım
+                </h3>
+
+                <p>
+                  Rozet oluştur, şart belirle,
+                  görsel yükle ve kullanıcıları
+                  ödüllendir.
+                </p>
+
+                <strong>
+                  BAŞARIM MERKEZİ →
+                </strong>
+              </Link>
+
+              {/* GALLERY */}
+
+              <Link
+                href="/admin/gallery"
+                className="admin-module"
               >
-                Etkinlikleri oluştur, yayınla ve yönet.
-              </p>
+                <div className="module-icon">
+                  📸
+                </div>
 
-              <div
-                style={{
-                  marginTop: "18px",
-                  color: "#ff625b",
-                  fontSize: "10px",
-                  fontWeight: 900,
-                }}
+                <span>
+                  MODULE
+                </span>
+
+                <h3>
+                  Galeri Yönetimi
+                </h3>
+
+                <p>
+                  Galeri içeriklerini yönet.
+                </p>
+
+                <strong>
+                  PANELE GİT →
+                </strong>
+              </Link>
+
+              {/* BOARD */}
+
+              <Link
+                href="/admin/board"
+                className="admin-module"
               >
-                PANELE GİT →
-              </div>
-            </a>
+                <div className="module-icon">
+                  👥
+                </div>
 
-            <div
-              className="card"
-              style={{
-                padding: "24px",
-                minHeight: "180px",
-                opacity: 0.5,
-              }}
-            >
-              <div style={{ fontSize: "34px" }}>📸</div>
+                <span>
+                  MODULE
+                </span>
 
-              <h3>Galeri Yönetimi</h3>
+                <h3>
+                  Yönetim Kurulu
+                </h3>
 
-              <p style={{ color: "#8995a3" }}>
-                Yakında eklenecek.
-              </p>
+                <p>
+                  Yönetim kurulu üyelerini
+                  düzenle.
+                </p>
+
+                <strong>
+                  PANELE GİT →
+                </strong>
+              </Link>
             </div>
-
-            <div
-              className="card"
-              style={{
-                padding: "24px",
-                minHeight: "180px",
-                opacity: 0.5,
-              }}
-            >
-              <div style={{ fontSize: "34px" }}>👥</div>
-
-              <h3>Yönetim Kurulu</h3>
-
-              <p style={{ color: "#8995a3" }}>
-                Yakında eklenecek.
-              </p>
-            </div>
-
-            <div
-              className="card"
-              style={{
-                padding: "24px",
-                minHeight: "180px",
-                opacity: 0.5,
-              }}
-            >
-              <div style={{ fontSize: "34px" }}>⚙️</div>
-
-              <h3>Site Yönetimi</h3>
-
-              <p style={{ color: "#8995a3" }}>
-                Yakında eklenecek.
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
     </>
   );
 }
+
+function StatCard({
+  label,
+  value,
+  text,
+}: {
+  label: string;
+  value: number;
+  text: string;
+}) {
+  return (
+    <div className="admin-stat">
+      <span>
+        {label}
+      </span>
+
+      <strong>
+        {value}
+      </strong>
+
+      <small>
+        {text}
+      </small>
+    </div>
+  );
+}
+
+const styles = `
+  .admin-page,
+  .admin-access {
+    min-height:
+      calc(100vh - 70px);
+
+    color:
+      #f5f7fa;
+
+    background:
+      radial-gradient(
+        circle at 88% 0%,
+        rgba(225,6,0,.12),
+        transparent 30%
+      ),
+      linear-gradient(
+        145deg,
+        #0f131a,
+        #07090d
+      );
+  }
+
+  .admin-wrap {
+    width:
+      min(
+        1450px,
+        calc(100% - 36px)
+      );
+
+    margin:
+      auto;
+
+    padding:
+      32px 0 90px;
+  }
+
+  .admin-hero {
+    padding:
+      34px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.09);
+
+    border-radius:
+      17px;
+
+    background:
+      radial-gradient(
+        circle at 90% 10%,
+        rgba(225,6,0,.15),
+        transparent 32%
+      ),
+      linear-gradient(
+        145deg,
+        #232b36,
+        #171d26
+      );
+  }
+
+  .admin-eyebrow,
+  .admin-module > span,
+  .admin-stat > span,
+  .access-card > span {
+    color:
+      #ff5149;
+
+    font-size:
+      8px;
+
+    font-weight:
+      1000;
+
+    letter-spacing:
+      .12em;
+  }
+
+  .admin-hero h1 {
+    margin:
+      8px 0 6px;
+
+    font-size:
+      48px;
+
+    letter-spacing:
+      -.04em;
+  }
+
+  .admin-hero p {
+    margin:
+      0;
+
+    color:
+      #9da8b5;
+  }
+
+  .admin-active-badge {
+    display:
+      inline-block;
+
+    margin-top:
+      18px;
+
+    padding:
+      8px 12px;
+
+    border:
+      1px solid
+      rgba(53,212,119,.22);
+
+    border-radius:
+      999px;
+
+    color:
+      #65df96;
+
+    background:
+      rgba(53,212,119,.10);
+
+    font-size:
+      9px;
+
+    font-weight:
+      900;
+  }
+
+  .admin-stats {
+    margin-top:
+      14px;
+
+    display:
+      grid;
+
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0,1fr)
+      );
+
+    gap:
+      12px;
+  }
+
+  .admin-stat {
+    min-height:
+      130px;
+
+    padding:
+      20px;
+
+    display:
+      flex;
+
+    flex-direction:
+      column;
+
+    justify-content:
+      center;
+
+    border:
+      1px solid
+      rgba(255,255,255,.09);
+
+    border-radius:
+      13px;
+
+    background:
+      #131820;
+  }
+
+  .admin-stat strong {
+    margin-top:
+      7px;
+
+    font-size:
+      34px;
+  }
+
+  .admin-stat small {
+    color:
+      #7f8b99;
+  }
+
+  .admin-modules {
+    margin-top:
+      32px;
+  }
+
+  .admin-modules h2 {
+    margin:
+      7px 0 17px;
+
+    font-size:
+      30px;
+  }
+
+  .admin-module-grid {
+    display:
+      grid;
+
+    grid-template-columns:
+      repeat(
+        2,
+        minmax(0,1fr)
+      );
+
+    gap:
+      14px;
+  }
+
+  .admin-module {
+    position:
+      relative;
+
+    min-height:
+      220px;
+
+    padding:
+      25px;
+
+    overflow:
+      hidden;
+
+    border:
+      1px solid
+      rgba(255,255,255,.09);
+
+    border-radius:
+      15px;
+
+    color:
+      #fff;
+
+    background:
+      #131820;
+
+    transition:
+      .2s ease;
+  }
+
+  .admin-module:hover {
+    transform:
+      translateY(-3px);
+
+    border-color:
+      rgba(255,81,73,.35);
+
+    background:
+      #171d26;
+  }
+
+  .achievement-module {
+    background:
+      radial-gradient(
+        circle at 90% 10%,
+        rgba(242,196,73,.13),
+        transparent 35%
+      ),
+      #131820;
+  }
+
+  .module-icon {
+    margin-bottom:
+      18px;
+
+    font-size:
+      36px;
+  }
+
+  .admin-module h3 {
+    margin:
+      8px 0;
+
+    font-size:
+      24px;
+  }
+
+  .admin-module p {
+    max-width:
+      440px;
+
+    color:
+      #8995a3;
+
+    font-size:
+      11px;
+
+    line-height:
+      1.6;
+  }
+
+  .admin-module > strong {
+    position:
+      absolute;
+
+    left:
+      25px;
+
+    bottom:
+      24px;
+
+    color:
+      #ff625b;
+
+    font-size:
+      9px;
+  }
+
+  .admin-access {
+    padding:
+      60px 20px;
+  }
+
+  .access-card {
+    width:
+      min(
+        650px,
+        100%
+      );
+
+    margin:
+      auto;
+
+    padding:
+      32px;
+
+    border:
+      1px solid
+      rgba(255,255,255,.09);
+
+    border-radius:
+      16px;
+
+    background:
+      #131820;
+  }
+
+  .access-card p {
+    color:
+      #9da8b5;
+  }
+
+  .admin-button {
+    min-height:
+      42px;
+
+    padding:
+      0 15px;
+
+    display:
+      inline-flex;
+
+    align-items:
+      center;
+
+    border:
+      1px solid
+      rgba(255,255,255,.1);
+
+    border-radius:
+      8px;
+
+    color:
+      #fff;
+
+    background:
+      rgba(255,255,255,.05);
+  }
+
+  .admin-button.red {
+    border:
+      0;
+
+    background:
+      #e10600;
+  }
+
+  @media(max-width:900px) {
+    .admin-stats {
+      grid-template-columns:
+        1fr 1fr;
+    }
+  }
+
+  @media(max-width:650px) {
+    .admin-module-grid,
+    .admin-stats {
+      grid-template-columns:
+        1fr;
+    }
+  }
+`;
