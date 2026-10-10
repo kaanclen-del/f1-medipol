@@ -1,3 +1,4 @@
+import { VALID_ACHIEVEMENT_CONDITIONS } from "@/lib/achievement-conditions";
 import {
   NextResponse,
 } from "next/server";
@@ -24,13 +25,7 @@ const VALID_CATEGORIES = [
   "event",
 ];
 
-const VALID_CONDITIONS = [
-  "manual",
-  "paddock_post_count",
-  "prediction_count",
-  "prediction_points",
-  "best_prediction_score",
-];
+const VALID_CONDITIONS = VALID_ACHIEVEMENT_CONDITIONS;
 
 async function getAdmin() {
   const supabase =

@@ -6,6 +6,8 @@ import {
   useState,
 } from "react";
 
+import { ACHIEVEMENT_CONDITIONS, ACHIEVEMENT_CONDITION_LABELS } from "@/lib/achievement-conditions";
+
 type Achievement = {
   id: string;
   slug: string;
@@ -75,27 +77,7 @@ type UserAward = {
     | null;
 };
 
-const CONDITIONS:
-  Record<
-    string,
-    string
-  > =
-{
-  manual:
-    "Manuel",
-
-  paddock_post_count:
-    "Paddock paylaşım sayısı",
-
-  prediction_count:
-    "Tahmin sayısı",
-
-  prediction_points:
-    "Toplam tahmin puanı",
-
-  best_prediction_score:
-    "Tek tahminde en yüksek puan",
-};
+const CONDITIONS: Record<string, string> = ACHIEVEMENT_CONDITION_LABELS;
 
 function emptyForm() {
   return {
@@ -1167,21 +1149,21 @@ export default function AdminAchievementManager() {
                     )
                   }
                 >
-                  <option value="paddock_post_count">
-                    Paddock paylaşım sayısı
-                  </option>
-
-                  <option value="prediction_count">
-                    Tahmin sayısı
-                  </option>
-
-                  <option value="prediction_points">
-                    Toplam tahmin puanı
-                  </option>
-
-                  <option value="best_prediction_score">
-                    Tek tahminde en yüksek puan
-                  </option>
+                  {[
+  ["paddock", "PADDOCK"],
+  ["prediction", "TAHMINLER"],
+  ["profile", "PROFIL"],
+].map(([category, label]) => (
+  <optgroup key={category} label={label}>
+    {ACHIEVEMENT_CONDITIONS
+      .filter((item) => item.category === category)
+      .map((item) => (
+        <option key={item.value} value={item.value}>
+          {item.label}
+        </option>
+      ))}
+  </optgroup>
+))}
                 </select>
               </label>
 
