@@ -8,15 +8,88 @@ import { getTeamBranding } from "@/lib/team-branding";
 import { getProfileWallpaper, getWallpaperBackground } from "@/lib/profile-wallpapers";
 import { getProfileAccent } from "@/lib/profile-accents";
 import { getLatestF1Drivers, type OpenF1Driver } from "@/lib/openf1";
-
 export const dynamic = "force-dynamic";
-
 type Prediction = {
-  id: string; season: number; round: number; race_name: string;
+  id: string;
+  season: number;
+  round: number;
+  race_name: string;
   prediction_type: "race" | "sprint";
-  p1_driver_number: number; p2_driver_number: number; p3_driver_number: number;
-  points: number; created_at: string;
+  p1_driver_number: number;
+  p2_driver_number: number;
+  p3_driver_number: number;
+  points: number | null;
+  podium_points: number | null;
+  bulletin_points: number | null;
+  special_points: number | null;
+  score_breakdown: unknown;
+  created_at: string;
 };
+type PredictionDetail = {
+  predicted?: unknown;
+  actual?: unknown;
+  available?: boolean;
+  correct?: boolean;
+  points?: number;
+  maxPoints?: number;
+};
+type ScoreBreakdown = {
+  type?: "race" | "sprint";
+  podium?: Record<string, number>;
+  bulletin?: Record<string, PredictionDetail>;
+  special?: Record<string, PredictionDetail>;
+  total?: number;
+};
+const BULLETIN_NAMES: Record<string, string> = {
+  redFlag: "Kırmızı bayrak",
+  safetyCar: "Güvenlik aracı",
+  vsc: "Sanal güvenlik aracı",
+  dnf3: "En az 3 pilot yarışı bırakır mı?",
+  lap1Incident: "İlk turda olay",
+  rain: "Yağmur",
+  poleWins: "Pole sahibi yarışı kazanır mı?",
+  lightsToFlag: "Liderlik el değiştirmez mi?",
+  margin10: "Fark 10 saniyeyi aşar mı?",
+  fastestOnPodium: "En hızlı tur sahibi podyumda mı?",
+  leaders4: "En az 4 farklı lider olur mu?",
+  lateNeutral: "Geç bölümde nötralizasyon",
+};
+const SPECIAL_NAMES: Record<string, string> = {
+  fastestLap: "En hızlı tur",
+  firstDnf: "İlk yarışı bırakan pilot",
+  mostGained: "En çok sıra kazanan pilot",
+  winningTeam: "Kazanan takım",
+};
+function readScoreBreakdown(value: unknown): ScoreBreakdown | null {
+  let parsed = value;
+  if (typeof parsed === "string") {
+    try { parsed = JSON.parse(parsed); } catch { return null; }
+  }
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+  const data = parsed as Record<string, unknown>;
+  if (data.type !== "race" && data.type !== "sprint") return null;
+  return data as ScoreBreakdown;
+}
+function detailRows(value?: Record<string, PredictionDetail>): Array<[string, PredictionDetail]> {
+  return Object.entries(value ?? {}).filter(([, detail]) =>
+    !!detail && typeof detail === "object" && !Array.isArray(detail)
+  );
+}
+function formatAnswer(value: unknown): string {
+  if (value === null || value === undefined) return "Belirlenmedi";
+  if (typeof value === "boolean") return value ? "Evet" : "Hayır";
+  if (Array.isArray(value)) return value.length ? value.map(formatAnswer).join(", ") : "Yok";
+  if (typeof value === "string") {
+    if (value.toLowerCase() === "yes") return "Evet";
+    if (value.toLowerCase() === "no") return "Hayır";
+    return value;
+  }
+  return String(value);
+}
+function scoreNumber(value: unknown): number {
+  const number = Number(value ?? 0);
+  return Number.isFinite(number) ? Math.max(0, number) : 0;
+}
 type PaddockPost = {
   id: string; user_id: string; content: string | null;
   is_admin_post: boolean; is_pinned: boolean; created_at: string;
@@ -36,7 +109,6 @@ type UserAchievement = {
   achievement_id: string; award_source: string;
   awarded_at: string; xp_awarded: number;
 };
-
 function formatPaddockDate(value: string) {
   try {
     return new Intl.DateTimeFormat("tr-TR", {
@@ -73,7 +145,6 @@ function calculateLevel(xp: number) {
   while (Math.max(0, xp) >= xpRequiredForLevel(level + 1)) level++;
   return level;
 }
-
 export default async function ProfilePage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -88,20 +159,18 @@ export default async function ProfilePage() {
       </div>
     </main>
   </>;
-
   const { data: profile } = await supabase.from("profiles")
     .select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_accent,xp,level")
     .eq("id", user.id).maybeSingle();
   const { data: predictionData } = await supabase.from("predictions")
-    .select("id,season,round,race_name,prediction_type,p1_driver_number,p2_driver_number,p3_driver_number,points,created_at")
+    .select("id,season,round,race_name,prediction_type,p1_driver_number,p2_driver_number,p3_driver_number,points,podium_points,bulletin_points,special_points,score_breakdown,created_at")
     .eq("user_id", user.id).order("created_at", { ascending: false });
   const predictions = (predictionData ?? []) as Prediction[];
   const totalPoints = predictions.reduce((total, p) => total + Math.max(Number(p.points ?? 0), 0), 0);
   const predictionXp = totalPoints;
   const predictionCount = predictions.length;
   const bestScore = predictionCount ? Math.max(...predictions.map((p) => Math.max(Number(p.points ?? 0), 0))) : 0;
-  const recentPredictions = predictions.slice(0, 5);
-
+  const recentPredictions = predictions;
   const admin = createAdminClient();
   const [paddockPostsResult, paddockCountResult] = await Promise.all([
     admin.from("paddock_posts")
@@ -127,7 +196,6 @@ export default async function ProfilePage() {
     existing.push(media);
     mediaByPost.set(media.post_id, existing);
   }
-
   const [achievementsResult, userAchievementsResult] = await Promise.all([
     admin.from("achievements")
       .select("id,slug,name,description,image_url,category,rarity,xp_reward,is_automatic,condition_type,condition_value,is_published,sort_order")
@@ -165,7 +233,6 @@ export default async function ProfilePage() {
   const wallpaper = getProfileWallpaper(profile?.profile_wallpaper);
   const profileAccent = getProfileAccent(profile?.profile_accent);
   const background = getWallpaperBackground(wallpaper);
-
   return <>
     <Header />
     <main className="steam-profile" style={{
@@ -182,7 +249,6 @@ export default async function ProfilePage() {
           <div><span>F1 MEDİPOL</span><strong>DRIVER PROFILE</strong></div>
           <Link href="/profile/edit" className="edit-profile-button">PROFİLİ DÜZENLE</Link>
         </div>
-
         <section className="profile-shell">
           <div className="hero-accent-top" />
           <div className="wallpaper-glow" />
@@ -217,7 +283,6 @@ export default async function ProfilePage() {
             </aside>
           </div>
         </section>
-
         <section className="level-panel">
           <div className="level-badge-area">
             <div className="level-ring"><span>LEVEL</span><strong>{currentLevel}</strong></div>
@@ -249,7 +314,6 @@ export default async function ProfilePage() {
             </div>
           </div>
         </section>
-
         <section className="profile-content-grid">
           <div className="profile-column">
             <section className="profile-stats-layout">
@@ -262,7 +326,6 @@ export default async function ProfilePage() {
                 <StatCard label="ACHIEVEMENTS" value={`${unlockedAchievementCount}/${totalAchievementCount}`} description={`${achievementXp} XP kazanıldı`} />
               </div>
             </section>
-
             <section className="glass-panel showcase-panel">
               <PanelHeader kicker="PROFILE SHOWCASE" title="Sürücü Vitrini" />
               <div className="showcase-grid">
@@ -271,7 +334,6 @@ export default async function ProfilePage() {
                 <ShowcaseItem icon="🏆" label="Achievement XP" title={`+${achievementXp} XP`} text="Rozet ve başarımlardan kazanılan deneyim." />
               </div>
             </section>
-
             <section className="glass-panel">
               <div className="panel-header-row">
                 <PanelHeader kicker="PADDOCK ACTIVITY" title="Paddock Paylaşımları" />
@@ -298,31 +360,150 @@ export default async function ProfilePage() {
                 </div>
               }
             </section>
-
             <section className="glass-panel">
-              <PanelHeader kicker="PREDICTION HISTORY" title="Son Tahminler" />
-              <div className="prediction-xp-note"><div>⚡</div><p>Tahmin sisteminde kazanılan her <strong>1 puan = 1 XP</strong>. Tahmin sonuçların profil seviyene doğrudan katkı sağlar.</p></div>
-              {recentPredictions.length === 0 ? <div className="empty-history">Henüz kayıtlı tahminin yok.</div> :
+              <PanelHeader kicker="PREDICTION HISTORY" title="Tahmin Geçmişi" />
+              <div className="prediction-xp-note">
+                <div>⚡</div>
+                <p>
+                  Sonuçlandırılmış her <strong>1 tahmin puanı = 1 XP</strong>.
+                  Her kartı açarak hangi seçimlerden puan aldığını görebilirsin.
+                </p>
+              </div>
+              {recentPredictions.length === 0 ? (
+                <div className="empty-history">Henüz kayıtlı tahminin yok.</div>
+              ) : (
                 <div className="prediction-list">
                   {recentPredictions.map((prediction) => {
-                    const score = Math.max(Number(prediction.points ?? 0), 0);
-                    return <div className="prediction-row" key={prediction.id}>
-                      <div className="prediction-info">
-                        <strong>{prediction.race_name}</strong>
-                        <span>{prediction.season} · ROUND {prediction.round} · {prediction.prediction_type === "sprint" ? "SPRINT" : "RACE"}</span>
-                        <small>P1 #{prediction.p1_driver_number} · P2 #{prediction.p2_driver_number} · P3 #{prediction.p3_driver_number}</small>
-                      </div>
-                      <div className="prediction-result-area">
-                        <div className={`prediction-score ${score > 0 ? "positive" : ""}`}><strong>{score}</strong><span>PTS</span></div>
-                        <div className="prediction-xp-earned">+{score} XP</div>
-                      </div>
-                    </div>;
+                    const breakdown = readScoreBreakdown(prediction.score_breakdown);
+                    const isScored = breakdown !== null;
+                    const score = scoreNumber(prediction.points);
+                    const picks = [
+                      { position: "P1", number: prediction.p1_driver_number },
+                      { position: "P2", number: prediction.p2_driver_number },
+                      { position: "P3", number: prediction.p3_driver_number },
+                    ];
+                    const podiumHits = picks.filter((pick) =>
+                      scoreNumber(breakdown?.podium?.[pick.position]) > 0
+                    ).length;
+                    const bulletin = detailRows(breakdown?.bulletin);
+                    const specials = detailRows(breakdown?.special);
+                    const bulletinAvailable = bulletin.filter(([, answer]) => answer.available !== false);
+                    const bulletinCorrect = bulletinAvailable.filter(([, answer]) => answer.correct === true).length;
+                    const specialAvailable = specials.filter(([, answer]) => answer.available !== false);
+                    const specialCorrect = specialAvailable.filter(([, answer]) => answer.correct === true).length;
+                    return (
+                      <article className="prediction-history-card" key={prediction.id}>
+                        <div className="prediction-row">
+                          <div className="prediction-info">
+                            <strong>{prediction.race_name}</strong>
+                            <span>
+                              {prediction.season} · ROUND {prediction.round} · {prediction.prediction_type === "sprint" ? "SPRINT" : "RACE"}
+                            </span>
+                            <small>
+                              P1 #{prediction.p1_driver_number} · P2 #{prediction.p2_driver_number} · P3 #{prediction.p3_driver_number}
+                            </small>
+                            <div className={`prediction-status ${isScored ? "done" : "pending"}`}>
+                              {isScored ? "✓ SONUÇLANDI" : "◷ SONUÇ BEKLENİYOR"}
+                            </div>
+                          </div>
+                          <div className="prediction-result-area">
+                            {isScored ? (
+                              <>
+                                <div className={`prediction-score ${score > 0 ? "positive" : ""}`}>
+                                  <strong>{score}</strong><span>PTS</span>
+                                </div>
+                                <div className="prediction-xp-earned">+{score} XP</div>
+                              </>
+                            ) : (
+                              <div className="prediction-awaiting">—<span>BEKLENİYOR</span></div>
+                            )}
+                          </div>
+                        </div>
+                        {isScored && breakdown && (
+                          <details className="prediction-breakdown">
+                            <summary>
+                              <span>TAHMİN SONUÇLARINI GÖR</span>
+                              <span className="prediction-summary-meta">
+                                Podyumdan puan: {podiumHits}/3
+                                {bulletinAvailable.length > 0 ? ` · Bülten: ${bulletinCorrect}/${bulletinAvailable.length}` : ""}
+                                {specialAvailable.length > 0 ? ` · Özel: ${specialCorrect}/${specialAvailable.length}` : ""}
+                              </span>
+                              <span className="prediction-toggle-icon">⌄</span>
+                            </summary>
+                            <div className="prediction-breakdown-content">
+                              <div className="prediction-detail-heading">
+                                <strong>🏁 Podyum tahminleri</strong>
+                                <span>{scoreNumber(prediction.podium_points)} P</span>
+                              </div>
+                              <div className="prediction-podium-grid">
+                                {picks.map((pick) => {
+                                  const earned = scoreNumber(breakdown.podium?.[pick.position]);
+                                  return (
+                                    <div className={`prediction-podium-item ${earned > 0 ? "earned" : "missed"}`} key={pick.position}>
+                                      <span>{pick.position}</span>
+                                      <strong>#{pick.number}</strong>
+                                      <small>{earned > 0 ? `+${earned} puan` : "0 puan"}</small>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <p className="prediction-detail-footnote">
+                                Podyum puanı, pilotun doğru sırada veya farklı bir podyum sırasında tahmin edilmesine göre değişebilir.
+                              </p>
+                              {bulletin.length > 0 && (
+                                <>
+                                  <div className="prediction-detail-heading">
+                                    <strong>📋 Yarış bülteni</strong>
+                                    <span>{scoreNumber(prediction.bulletin_points)} P · {bulletinCorrect}/{bulletinAvailable.length} doğru</span>
+                                  </div>
+                                  <div className="prediction-answers">
+                                    {bulletin.map(([key, answer]) => (
+                                      <div className="prediction-answer" key={key}>
+                                        <span className={answer.available === false ? "unavailable" : answer.correct ? "correct" : "incorrect"}>
+                                          {answer.available === false ? "—" : answer.correct ? "✓" : "×"}
+                                        </span>
+                                        <div>
+                                          <strong>{BULLETIN_NAMES[key] ?? key}</strong>
+                                          <small>Sen: {formatAnswer(answer.predicted)} · Sonuç: {formatAnswer(answer.actual)}</small>
+                                        </div>
+                                        <b>+{scoreNumber(answer.points)} P</b>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                              {specials.length > 0 && (
+                                <>
+                                  <div className="prediction-detail-heading">
+                                    <strong>⭐ Özel tahminler</strong>
+                                    <span>{scoreNumber(prediction.special_points)} P · {specialCorrect}/{specialAvailable.length} doğru</span>
+                                  </div>
+                                  <div className="prediction-answers">
+                                    {specials.map(([key, answer]) => (
+                                      <div className="prediction-answer" key={key}>
+                                        <span className={answer.available === false ? "unavailable" : answer.correct ? "correct" : "incorrect"}>
+                                          {answer.available === false ? "—" : answer.correct ? "✓" : "×"}
+                                        </span>
+                                        <div>
+                                          <strong>{SPECIAL_NAMES[key] ?? key}</strong>
+                                          <small>Sen: {formatAnswer(answer.predicted)} · Sonuç: {formatAnswer(answer.actual)}</small>
+                                        </div>
+                                        <b>+{scoreNumber(answer.points)} P</b>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </details>
+                        )}
+                      </article>
+                    );
                   })}
                 </div>
-              }
+              )}
             </section>
           </div>
-
           <aside className="profile-sidebar">
             <section className="glass-panel">
               <PanelHeader kicker="GRID PICKS" title="Favoriler" />
@@ -349,10 +530,8 @@ export default async function ProfilePage() {
                 </div>
               </div>
             </section>
-
             <ProfileAchievements achievements={achievements} userAchievements={userAchievements}
               stats={{ paddockPostCount, predictionCount, totalPoints, bestScore }} />
-
             <section className="glass-panel">
               <PanelHeader kicker="DRIVER INFO" title="Profil" />
               <InfoRow label="Görünen Ad" value={displayName} />
@@ -365,7 +544,6 @@ export default async function ProfilePage() {
               <Link href="/predict" className="side-button accent">Tahmin Merkezine Git →</Link>
               <ProfileActions />
             </section>
-
             <section className="glass-panel wallpaper-info">
               <span className="profile-kicker">PROFILE BACKGROUND</span>
               <div className="wallpaper-thumb" style={{ backgroundImage: background }} />
@@ -379,7 +557,6 @@ export default async function ProfilePage() {
     </main>
   </>;
 }
-
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return <div className="summary-row"><span>{label}</span><strong>{value}</strong></div>;
 }
@@ -399,7 +576,6 @@ function ShowcaseItem({ icon, label, title, text }: { icon: string; label: strin
 function InfoRow({ label, value }: { label: string; value: string }) {
   return <div className="info-row"><span>{label}</span><strong>{value}</strong></div>;
 }
-
 const styles = `
 .profile-login { min-height:calc(100vh - 70px); padding:90px 20px; display:grid; place-items:start center; background:#080b10; color:#fff; }
 .login-card { width:min(620px,100%); padding:48px; border:1px solid rgba(255,255,255,.1); border-radius:20px; background:#151a22; text-align:center; }
@@ -580,5 +756,41 @@ const styles = `
 .paddock-profile-media { height:210px; }
 .profile-top-strip strong { display:none; }
 }
-
+/* TAHMİN GEÇMİŞİ — AÇILABİLİR SONUÇ KARTLARI */
+.prediction-history-card { overflow:hidden; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
+.prediction-history-card .prediction-row { border:0; border-radius:0; background:transparent; }
+.prediction-status { display:inline-flex; align-items:center; margin-top:10px; padding:5px 9px; border-radius:999px; font-size:8px; font-weight:900; letter-spacing:.045em; }
+.prediction-status.done { border:1px solid rgba(83,219,148,.18); color:#72e7a5; background:rgba(83,219,148,.07); }
+.prediction-status.pending { border:1px solid rgba(239,194,97,.18); color:#f0c75e; background:rgba(239,194,97,.07); }
+.prediction-awaiting { text-align:center; font-size:27px; font-weight:800; color:#aab4be; }
+.prediction-awaiting span { display:block; font-size:8px; letter-spacing:.07em; color:#8d99a7; }
+.prediction-breakdown { border-top:1px solid rgba(255,255,255,.07); }
+.prediction-breakdown summary { padding:14px 18px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; cursor:pointer; list-style:none; color:#c9d2dc; font-size:9px; font-weight:950; letter-spacing:.035em; background:rgba(255,255,255,.015); }
+.prediction-breakdown summary::-webkit-details-marker { display:none; }
+.prediction-summary-meta { margin-left:auto; color:#92a0ad; font-size:9px; font-weight:700; letter-spacing:0; }
+.prediction-toggle-icon { color:var(--profile-accent); font-size:20px; line-height:1; transition:transform .2s ease; }
+.prediction-breakdown[open] .prediction-toggle-icon { transform:rotate(180deg); }
+.prediction-breakdown-content { padding:4px 18px 20px; }
+.prediction-detail-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:18px 0 12px; }
+.prediction-detail-heading strong { font-size:12px; }
+.prediction-detail-heading span { color:#6fe0a0; font-size:10px; font-weight:900; }
+.prediction-podium-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; }
+.prediction-podium-item { padding:12px; display:grid; gap:6px; border:1px solid rgba(255,255,255,.08); border-radius:9px; background:rgba(255,255,255,.025); }
+.prediction-podium-item > span { font-size:9px; font-weight:950; color:#98a6b3; }
+.prediction-podium-item > strong { font-size:20px; }
+.prediction-podium-item > small { font-size:10px; color:#a6b2be; }
+.prediction-podium-item.earned { border-color:rgba(83,219,148,.24); background:rgba(83,219,148,.045); }
+.prediction-podium-item.earned > small { color:#7be4a8; }
+.prediction-detail-footnote { margin:10px 0 0; color:#84919e !important; font-size:9px; line-height:1.55; }
+.prediction-answers { display:grid; gap:6px; }
+.prediction-answer { padding:10px 12px; display:flex; align-items:center; gap:12px; border:1px solid rgba(255,255,255,.055); border-radius:8px; background:rgba(255,255,255,.018); }
+.prediction-answer > span { width:23px; height:23px; flex:0 0 23px; display:grid; place-items:center; border-radius:6px; font-size:13px; font-weight:900; }
+.prediction-answer > span.correct { color:#8cedb4; background:rgba(83,219,148,.12); }
+.prediction-answer > span.incorrect { color:#ff9b98; background:rgba(225,6,0,.13); }
+.prediction-answer > span.unavailable { color:#aab4be; background:rgba(255,255,255,.06); }
+.prediction-answer > div { min-width:0; flex:1; }
+.prediction-answer > div strong { display:block; font-size:10px; }
+.prediction-answer > div small { display:block; margin-top:5px; color:#929eaa; font-size:9px; line-height:1.5; overflow-wrap:anywhere; }
+.prediction-answer > b { white-space:nowrap; font-size:10px; color:#79e3aa; }
+@media(max-width:650px) { .prediction-history-card .prediction-row { gap:10px; padding:15px 12px; } .prediction-summary-meta { width:100%; margin-left:0; order:3; } .prediction-toggle-icon { margin-left:auto; } .prediction-breakdown-content { padding:4px 12px 16px; } .prediction-podium-item { padding:9px; } .prediction-podium-item > strong { font-size:16px; } }
 `;
