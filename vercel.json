@@ -1,8 +1,13 @@
+
 {
   "crons": [
     {
-      "path": "/api/score-predictions",
-      "schedule": "30 23 * * *"
+      "path": "/api/score-predictions-evening",
+      "schedule": "30 17 * * *"
+    },
+    {
+      "path": "/api/score-predictions-night",
+      "schedule": "30 19 * * *"
     }
   ]
 }
