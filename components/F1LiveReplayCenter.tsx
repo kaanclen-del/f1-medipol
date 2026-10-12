@@ -957,6 +957,47 @@ export default function F1LiveReplayCenter() {
       null
     );
 
+  // Her replay için o yarıştan önceki gerçek sezon puanları.
+  const [replayBaseStandings, setReplayBaseStandings] =
+    useState<ChampionshipStanding[]>([]);
+  const [replayBaseLoading, setReplayBaseLoading] = useState(false);
+  const [replayBaseError, setReplayBaseError] = useState("");
+
+  useEffect(() => {
+    if (!replay || replay.session.kind !== "race") {
+      setReplayBaseStandings([]);
+      setReplayBaseError("");
+      return;
+    }
+    let cancelled = false;
+    setReplayBaseStandings([]);
+    setReplayBaseLoading(true);
+    setReplayBaseError("");
+    const year = encodeURIComponent(String(replay.session.year));
+    const date = encodeURIComponent(replay.session.dateStart);
+    fetch(`/api/live/replay/championship?year=${year}&date=${date}`)
+      .then(async (r) => {
+        const json = await r.json() as {
+          ok?: boolean; standings?: ChampionshipStanding[];
+          error?: string; firstRound?: boolean;
+        };
+        if (!r.ok || !json.ok) throw new Error(json.error || "Geçmiş puanlar alınamadı");
+        return json;
+      })
+      .then((json) => {
+        if (cancelled) return;
+        if (json.firstRound) {
+          setReplayBaseError("Sezonun ilk yarışında önceki tur puanı bulunmuyor.");
+        }
+        setReplayBaseStandings(json.standings ?? []);
+      })
+      .catch((e: unknown) => {
+        if (!cancelled) setReplayBaseError(e instanceof Error ? e.message : "Puanlar alınamadı");
+      })
+      .finally(() => { if (!cancelled) setReplayBaseLoading(false); });
+    return () => { cancelled = true; };
+  }, [replay?.session.sessionKey, replay?.session.dateStart, replay?.session.year, replay?.session.kind]);
+
   /* =======================================================
      MOVEMENT
      ======================================================= */
@@ -1526,6 +1567,26 @@ export default function F1LiveReplayCenter() {
       projectionActive,
     ]
   );
+
+  // Replay oynatma çubuğunda kare değiştikçe anlık sıralama da değişir.
+  const replayProjectionActive = !live && replay?.session.kind === "race" &&
+    !!currentFrame && currentFrame.drivers.some((item) => item.position === 1);
+  const replayProjectionDrivers: ChampionshipLiveDriver[] =
+    !live && replay && currentFrame ? currentFrame.drivers.map((item) => {
+      const original = replay.drivers.find((driver) => driver.driverNumber === item.driverNumber);
+      return {
+        driverNumber: item.driverNumber,
+        position: item.dns || item.dsq || item.dnf ? null : item.position,
+        acronym: original?.acronym ?? String(item.driverNumber),
+        name: original?.name ?? "",
+        team: original?.team ?? "",
+        colour: original?.teamColour ?? "#858585",
+        headshot: original?.headshotUrl ?? null,
+        status: item.dns ? "DNS" : item.dsq ? "DSQ" : item.dnf ? "DNF" : null,
+      };
+    }) : [];
+  const replayPointsMode = !live && replay?.session.kind === "race";
+  const displayedChampionship = replayPointsMode ? replayBaseStandings : championshipStandings;
 
   /* =======================================================
      DRIVER MAP
@@ -3270,26 +3331,21 @@ export default function F1LiveReplayCenter() {
             {hubTab ===
               "championship" && (
               <div className="hub-panel championship-panel">
-                {championshipStandings.length >
+                {displayedChampionship.length >
                 0 ? (
                   <ProjectedChampionship
-                    standings={
-                      championshipStandings
-                    }
+                    standings={displayedChampionship}
                     drivers={
-                      projectionActive
-                        ? championshipDrivers
-                        : []
+                      replayPointsMode
+                        ? replayProjectionDrivers
+                        : projectionActive
+                          ? championshipDrivers
+                          : []
                     }
-                    active={
-                      projectionActive
-                    }
-                    isSprint={
-                      isSprintSession
-                    }
-                    sessionName={
-                      sessionTitle
-                    }
+                    active={replayPointsMode ? Boolean(replayProjectionActive) : projectionActive}
+                    isSprint={isSprintSession}
+                    sessionName={sessionTitle}
+                    isReplay={Boolean(replayPointsMode)}
                   />
                 ) : (
                   <div className="hub-empty">
@@ -3298,9 +3354,13 @@ export default function F1LiveReplayCenter() {
                     </span>
 
                     <strong>
-                      {championshipLoading
-                        ? "Standings yükleniyor..."
-                        : "Standings kullanılamıyor"}
+                      {replayPointsMode
+                        ? replayBaseLoading
+                          ? "Replay öncesi puan durumu yükleniyor..."
+                          : (replayBaseError || "Replay öncesi puanlar kullanılamıyor")
+                        : championshipLoading
+                          ? "Standings yükleniyor..."
+                          : "Standings kullanılamıyor"}
                     </strong>
                   </div>
                 )}

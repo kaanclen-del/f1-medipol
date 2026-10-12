@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 export type ChampionshipStanding = {
   position: number;
   points: number;
@@ -55,6 +57,7 @@ type Props = {
 
   sessionName:
     string;
+  isReplay?: boolean;
 };
 
 /* =========================================================
@@ -137,7 +140,9 @@ export default function ProjectedChampionship({
   active,
   isSprint,
   sessionName,
+  isReplay = false,
 }: Props) {
+  const [hideLeader, setHideLeader] = useState(false);
   const liveMapByNumber =
     new Map<
       number,
@@ -316,11 +321,11 @@ export default function ProjectedChampionship({
       <div className="projected-header">
         <div>
           <span>
-            LIVE CHAMPIONSHIP
+            {isReplay ? "REPLAY · GEÇİCİ ŞAMPİYONA" : "LIVE CHAMPIONSHIP"}
           </span>
 
           <h3>
-            Projected Standings
+            {isReplay ? "O Anki Sanal Puan Durumu" : "Projected Standings"}
           </h3>
 
           <p>
@@ -330,6 +335,16 @@ export default function ProjectedChampionship({
           </p>
         </div>
 
+        <div style={{display: "flex", gap: 8, alignItems: "center"}}>
+          <button
+            type="button"
+            aria-label={hideLeader ? "Lideri göster" : "Lideri gizle"}
+            aria-pressed={hideLeader}
+            title={hideLeader ? "Lideri göster" : "Eğlence modu: lideri gizle"}
+            onClick={() => setHideLeader((x) => !x)}
+            style={{border:"1px solid rgba(255,255,255,.18)",padding:"6px 10px",borderRadius:8,
+              background:"rgba(255,255,255,.05)",color:"#fff",cursor:"pointer"}}
+          >{hideLeader ? "◌" : "👁"}</button>
         <div
           className={
             active
@@ -340,8 +355,9 @@ export default function ProjectedChampionship({
           <i />
 
           {active
-            ? "LIVE PROJECTION"
+            ? (isReplay ? "REPLAY" : "LIVE PROJECTION")
             : "STANDBY"}
+        </div>
         </div>
       </div>
 
@@ -365,10 +381,7 @@ export default function ProjectedChampionship({
 
       <div className="projected-list">
         {projected
-          .slice(
-            0,
-            10
-          )
+          .slice(hideLeader ? 1 : 0, hideLeader ? 11 : 10)
           .map(
             (
               driver
@@ -391,7 +404,7 @@ export default function ProjectedChampionship({
                       : "",
 
                     driver.projectedPosition ===
-                    1
+                    (hideLeader ? 2 : 1)
                       ? "projected-leader"
                       : "",
                   ]
@@ -413,7 +426,7 @@ export default function ProjectedChampionship({
                     <strong>
                       P
                       {
-                        driver.projectedPosition
+                        driver.projectedPosition - (hideLeader ? 1 : 0)
                       }
                     </strong>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import NotificationBell from "@/components/NotificationBell";
 
 import {
   useCallback,
@@ -543,6 +544,10 @@ export default function Header() {
     {
       label: "Arcade",
       href: "/arcade",
+    },
+    {
+      label: "Bildirimler",
+      href: "/bildirimler",
     },
   ];
 
@@ -1537,6 +1542,9 @@ export default function Header() {
             ================================================= */}
 
         <div className="medipol-header-right">
+
+          {/* NOTIFICATIONS */}
+          <NotificationBell isLight={isLight} />
 
           {/* PROFILE */}
 

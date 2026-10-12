@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import Header from "@/components/Header";
 import PredictionSelector from "@/components/PredictionSelector";
+import PredictionLiveSummary from "@/components/PredictionLiveSummary";
 
 import {
   BULLETIN_MAX_POINTS,
@@ -441,6 +442,7 @@ export default async function PredictPage({
               start;
           }
 
+          .predict-hero h1 { color: #f9fafc; text-transform: uppercase; font-weight: 1000; }
           .prediction-main {
             padding:
               27px;
@@ -748,7 +750,8 @@ export default async function PredictPage({
                 column;
             }
 
-            .prediction-main {
+            .predict-hero h1 { color: #f9fafc; text-transform: uppercase; font-weight: 1000; }
+          .prediction-main {
               padding:
                 18px;
             }
@@ -899,6 +902,13 @@ export default async function PredictPage({
             </section>
 
             <aside className="prediction-side">
+              <PredictionLiveSummary
+                initialPrediction={initialPrediction}
+                drivers={drivers}
+                season={season}
+                round={race?.round ?? 0}
+                predictionType={predictionType}
+              />
               <div className="side-card score-card">
                 <div className="side-eyebrow">
                   {isSprint

@@ -378,6 +378,8 @@ export default function HomeChampionshipLive({
   initialTeams,
   currentRound = 0,
 }: Props) {
+  // Eğlencelik göz: sadece görüntüde lideri gizler, gerçek puanlar sabittir.
+  const [hideLeader, setHideLeader] = useState(false);
   const [data, setData] = useState<DisplayData>({
     drivers: initialDrivers,
     teams: initialTeams,
@@ -508,6 +510,16 @@ export default function HomeChampionshipLive({
         </div>
 
         <div className="champ-tabs">
+          <button
+            type="button"
+            onClick={() => setHideLeader((previous) => !previous)}
+            aria-pressed={hideLeader}
+            aria-label={hideLeader ? "Lideri göster" : "Lideri gizle"}
+            title={hideLeader ? "Lideri göster" : "Eğlence modu: lideri gizle"}
+            style={{ padding: "7px 10px", border: "1px solid rgba(255,255,255,.18)", borderRadius: 8,
+              background: hideLeader ? "rgba(225,6,0,.15)" : "rgba(255,255,255,.045)",
+              color: "#fff", cursor: "pointer", fontSize: 14 }}
+          >{hideLeader ? "◌" : "👁"}</button>
           <label htmlFor="champ-drivers">
             PİLOTLAR
           </label>
@@ -520,12 +532,12 @@ export default function HomeChampionshipLive({
 
       <div className="champ-panels">
         <div className="drivers-panel">
-          {data.drivers.slice(0, 10).map((driver) => (
+          {data.drivers.filter((_, index) => !hideLeader || index !== 0).slice(0, 10).map((driver, index) => (
             <div
               className="standing-row"
               key={driver.code}
             >
-              <strong>P{driver.position}</strong>
+              <strong>P{hideLeader ? index + 1 : driver.position}</strong>
 
               <span
                 className="team-line"

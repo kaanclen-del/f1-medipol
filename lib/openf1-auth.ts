@@ -77,7 +77,16 @@ export async function openF1Request(
   path: string,
   options: RequestInit = {}
 ): Promise<Response> {
-  const token = await getOpenF1AccessToken();
+  // Historik veriler kimlik doğrulamadan kullanılabilir. Canlı veriler için
+  // ücretli OpenF1 hesabı gerekir; kimlik bilgisi olmayan Preview çökmemeli.
+  let token: string | null = null;
+  if (process.env.OPENF1_USERNAME && process.env.OPENF1_PASSWORD) {
+    try {
+      token = await getOpenF1AccessToken();
+    } catch (error) {
+      console.warn("OpenF1 kimlik doğrulaması başarısız; halka açık veri deneniyor.", error);
+    }
+  }
 
   const url = path.startsWith("https://")
     ? path
@@ -85,7 +94,7 @@ export async function openF1Request(
 
   const headers = new Headers(options.headers);
 
-  headers.set("Authorization", `Bearer ${token}`);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
   headers.set("Accept", "application/json");
 
   return fetch(url, {

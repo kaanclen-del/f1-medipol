@@ -1,0 +1,6 @@
+.page{min-height:calc(100vh - 72px);background:radial-gradient(circle at 90% 4%,rgba(226,6,0,.14),transparent 37%),linear-gradient(140deg,#0c1018,#141923);color:#f7f7fb;padding:38px 18px 100px}
+.wrap{max-width:1120px;margin:0 auto}.back{display:inline-block;margin-bottom:26px;font-size:13px;color:#bac4d1;text-decoration:none}
+.back:hover{color:#fff}.kicker{font-size:11px;font-weight:850;letter-spacing:.16em;color:#ff5f55;margin-bottom:8px}
+.page h1{font-size:clamp(30px,4vw,56px);letter-spacing:-.045em;margin:0 0 12px;font-weight:900}
+.lead{max-width:750px;color:#aeb7c3;line-height:1.7;font-size:15px;margin:0 0 30px}
+.hint{max-width:750px;margin-top:20px;font-size:12px;color:#8f99a9;line-height:1.6}.cta{display:inline-block;padding:12px 18px;background:#e10600;color:white;border-radius:10px;font-weight:850;margin-top:20px}

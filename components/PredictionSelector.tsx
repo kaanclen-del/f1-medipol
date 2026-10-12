@@ -4,6 +4,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type CSSProperties,
 } from "react";
 
 import type {
@@ -42,6 +43,14 @@ type SelectedPrediction = {
   P3:
     | number
     | null;
+};
+
+export type PredictionCommunityStats = {
+  ready: boolean;
+  total: number;
+  podium: Record<"P1" | "P2" | "P3", Record<string, number>>;
+  bulletin: Record<string, { yes: number; no: number; total: number }>;
+  specials: Record<string, { total: number; choices: Record<string, number> }>;
 };
 
 type Props = {
@@ -180,6 +189,53 @@ export default function PredictionSelector({
   const isRace =
     predictionType ===
     "race";
+
+  type Stage = "podium" | "bulletin" | "special" | "review";
+  const stages: { id: Stage; title: string; subtitle: string }[] = isRace
+    ? [
+        { id: "podium", title: "Podyum", subtitle: "İlk üç" },
+        { id: "bulletin", title: "Yarış Senaryoları", subtitle: "12 soru" },
+        { id: "special", title: "Özel Seçimler", subtitle: "4 tahmin" },
+        { id: "review", title: "Onay", subtitle: "Kaydet" },
+      ]
+    : [
+        { id: "podium", title: "Sprint Podyumu", subtitle: "İlk üç" },
+        { id: "review", title: "Onay", subtitle: "Kaydet" },
+      ];
+
+  const [currentStage, setCurrentStage] = useState<Stage>("podium");
+  const currentStageIndex = Math.max(0, stages.findIndex((step) => step.id === currentStage));
+  const [community, setCommunity] = useState<PredictionCommunityStats | null>(null);
+  const [communityRevision, setCommunityRevision] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const request = `/api/predict/community?season=${season}&round=${round}&type=${predictionType}`;
+    fetch(request, { cache: "no-store" })
+      .then((response) => response.ok ? response.json() : null)
+      .then((data: PredictionCommunityStats | null) => {
+        if (!cancelled && data) setCommunity(data);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [season, round, predictionType, communityRevision]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("f1-prediction-change", { detail: selected }));
+  }, [selected]);
+
+  const pct = (count: number, total: number) => total > 0 ? Math.round(count * 100 / total) : 0;
+
+  function communityPodium(slot: PodiumSlot, number: number) {
+    if (!community?.ready) return null;
+    return pct(community.podium[slot]?.[String(number)] ?? 0, community.total);
+  }
+
+  function navigateStage(stage: Stage) {
+    setCurrentStage(stage);
+    setMessage("");
+    window.scrollTo({ top: 160, behavior: "smooth" });
+  }
 
   useEffect(() => {
     function checkLock() {
@@ -524,6 +580,7 @@ export default function PredictionSelector({
           ? `✅ Yarış tahmin paketin kaydedildi. ${answeredCount}/12 senaryo ve ${specialCount}/4 özel seçim işaretlendi.`
           : "✅ Sprint podyum tahminin kaydedildi."
       );
+      setCommunityRevision((revision) => revision + 1);
     } finally {
       setSaving(
         false
@@ -1677,6 +1734,84 @@ export default function PredictionSelector({
               100%;
           }
         }
+
+        /* F1 MEDIPOL - 2026 Prediction Center */
+        .prediction-system { color: #f6f7fa; }
+        .prediction-system .driver-title,
+        .prediction-system .driver-button-name,
+        .prediction-system .podium-position,
+        .prediction-system .bulletin-card h4,
+        .prediction-system .special-head strong { color: #f9fafc !important; }
+        .prediction-system .driver-team,
+        .prediction-system .driver-button-team { color: #a9b4c4; }
+        .prediction-system .podium-card {
+          min-height: 215px; border-radius: 17px;
+          background: linear-gradient(150deg, #20232c 0%, #151923 100%);
+        }
+        .prediction-system .podium-card.active {
+          border-color: #ff424b;
+          box-shadow: 0 0 0 1px rgba(255, 66, 75, .18) inset;
+          background: linear-gradient(145deg, #441b27, #191920);
+        }
+        .prediction-system .driver-button { position: relative; padding: 12px 13px; min-height: 78px; background: #1b202a; border-color: #343a47; }
+        .prediction-system .driver-button:hover { border-color: #fb515e; background: #28232c; }
+        .prediction-system .driver-button:disabled { opacity: .55; }
+        .prediction-system .driver-button-name { font-size: 12px; }
+        .prediction-system .bulletin-card { background: #1c2029; border-color: #343a47; }
+        .prediction-system .special-card { background: #1c2029; border-color: #343a47; }
+        .prediction-wizard { margin: 0 0 24px; padding: 15px; border-radius: 16px; border: 1px solid #333743; background: linear-gradient(100deg,#1d202a,#161820); }
+        .prediction-wizard-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #a5afbf; font-size: 10px; font-weight: 900; letter-spacing: .08em; margin-bottom: 12px; }
+        .prediction-wizard-progress { height: 3px; background: #353944; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
+        .prediction-wizard-progress > span { display: block; height: 100%; background: linear-gradient(90deg,#e10600,#ff6c65); transition: width .2s; }
+        .prediction-wizard-steps { display: grid; grid-template-columns: repeat(var(--step-count),1fr); gap: 8px; }
+        .prediction-wizard-step { min-width: 0; display: flex; align-items: center; gap: 9px; text-align: left; padding: 10px 8px; border: 1px solid transparent; border-radius: 10px; color: #aab3c1; background: transparent; cursor: pointer; }
+        .prediction-wizard-step.active { border-color: #ae3443; color: white; background: #38202a; }
+        .prediction-step-number { display: grid; place-items: center; flex: 0 0 26px; height: 26px; background: #303540; color: #d8dce2; border-radius: 50%; font-size: 11px; font-weight: 1000; }
+        .prediction-wizard-step.active .prediction-step-number { background: #f1424e; color: white; }
+        .prediction-wizard-step strong { display:block; font-size: 10px; color: inherit; }
+        .prediction-wizard-step small { display:block; font-size: 9px; color: #8d98a8; margin-top: 2px; }
+        .prediction-system .prediction-section { margin-top: 18px; }
+        .prediction-wizard-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 23px; }
+        .prediction-wizard-controls button { border-radius: 10px; border: 1px solid #454653; padding: 13px 19px; background: #292b35; color: white; font-size: 11px; font-weight: 900; cursor: pointer; }
+        .prediction-wizard-controls .next { background: linear-gradient(115deg,#bc1218,#f54a50); border-color: #f55361; }
+        .prediction-wizard-controls .back { color:#c7d0db; }
+        .prediction-wizard-controls button:disabled { opacity: .4; }
+        .community-mini { margin-top: 9px; display: grid; gap: 5px; }
+        .community-mini-label { display:flex; justify-content:space-between; gap: 8px; color: #c7d0da; font-size: 10px; }
+        .community-mini-label b { color: #ffa49c; }
+        .community-track { height: 4px; border-radius: 20px; background: #3a3b43; overflow:hidden; }
+        .community-track i { display:block; height:100%; background:linear-gradient(90deg,#e10600,#ff726f); border-radius:inherit; }
+        .community-yesno { display:grid; gap: 6px; margin-top:10px; }
+        .community-duo { display:flex; justify-content:space-between; font-size:9px; color:#b7c3d0; }
+        .community-duo b { color:white; }
+        .community-footnote { padding: 13px; margin: 16px 0 0; border-radius: 12px; background: #171b25; color: #a3afbe; border: 1px solid #313743; font-size: 11px; line-height: 1.5; }
+        .prediction-review { padding: 22px; border-radius: 14px; border: 1px solid #383d49; background: linear-gradient(145deg,#24222c,#1a1c25); }
+        .prediction-review h3 { color:white; font-size: 26px; margin: 0 0 9px; }
+        .prediction-review-picks { display:grid; gap:7px; margin:20px 0; }
+        .prediction-review-picks > div { display:flex; justify-content:space-between; padding:10px 12px; border-radius:9px; background:#151923; border:1px solid #383a47; gap:10px; }
+        .prediction-review-picks span { color:#ff6571; font-size:11px; font-weight:1000; }
+        .prediction-review-picks strong { color:#fff; font-size:12px; }
+        @media (max-width: 850px) {
+          .prediction-system .podium-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
+          .prediction-system .podium-card { min-height: 180px; padding: 12px; }
+          .prediction-system .podium-driver { margin-top: 15px; gap: 7px; flex-wrap:wrap; }
+          .prediction-system .podium-driver img,.prediction-system .podium-avatar { width: 48px; height: 48px; flex-basis:48px; }
+          .prediction-system .podium-position { font-size: 29px; }
+          .prediction-wizard-step { gap: 5px; padding: 7px 3px; flex-direction:column; justify-content:center; text-align:center; }
+          .prediction-wizard-step strong { font-size:9px; }
+          .prediction-wizard-step small { display:none; }
+        }
+        @media (max-width: 520px) {
+          .prediction-system .podium-card { min-height: 157px; padding: 9px; }
+          .prediction-system .podium-driver img,.prediction-system .podium-avatar,.prediction-system .team-bar { display:none; }
+          .prediction-system .driver-title { font-size: 11px; }
+          .prediction-system .driver-team { font-size: 8px; }
+          .prediction-system .driver-button { min-height: 65px; }
+          .prediction-system .driver-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+          .prediction-system .driver-button img,.prediction-system .driver-small-avatar { width: 35px; height: 35px; flex-basis:35px; }
+          .prediction-wizard-step strong { font-size:8px; }
+          .prediction-review-picks > div { flex-direction:column; }
+        }
       `}</style>
 
       {locked && (
@@ -1691,7 +1826,25 @@ export default function PredictionSelector({
         </div>
       )}
 
+      <div className="prediction-wizard">
+        <div className="prediction-wizard-top">
+          <span>TAHMİN ROTASI · {isRace ? "GRAND PRIX" : "SPRINT"}</span>
+          <span>ADIM {currentStageIndex + 1} / {stages.length}</span>
+        </div>
+        <div className="prediction-wizard-progress"><span style={{ width: `${((currentStageIndex + 1) / stages.length) * 100}%` }} /></div>
+        <div className="prediction-wizard-steps" style={{ "--step-count": stages.length } as CSSProperties}>
+          {stages.map((stage, index) => (
+            <button key={stage.id} type="button" className={`prediction-wizard-step ${stage.id === currentStage ? "active" : ""}`} onClick={() => navigateStage(stage.id)}>
+              <span className="prediction-step-number">{index + 1}</span>
+              <span><strong>{stage.title}</strong><small>{stage.subtitle}</small></span>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* PODIUM */}
+      {currentStage === "podium" && (<>
+
 
       <div className="podium-grid">
         {slots.map(
@@ -1796,6 +1949,12 @@ export default function PredictionSelector({
                     Aşağıdan pilot seç
                   </div>
                 )}
+                {driver && communityPodium(slot.key, driver.driver_number) !== null && (
+                  <div className="community-mini">
+                    <div className="community-mini-label"><span>{slot.key} için topluluk tercihi</span><b>%{communityPodium(slot.key, driver.driver_number)}</b></div>
+                    <div className="community-track"><i style={{ width: `${communityPodium(slot.key, driver.driver_number)}%` }} /></div>
+                  </div>
+                )}
               </button>
             );
           }
@@ -1884,6 +2043,9 @@ export default function PredictionSelector({
                       {driver.team_name ||
                         "Formula 1"}
                     </div>
+                    {communityPodium(activeSlot, driver.driver_number) !== null && (
+                      <div className="community-mini-label" style={{ marginTop: 6 }}><span>{activeSlot} seçimi</span><b>%{communityPodium(activeSlot, driver.driver_number)}</b></div>
+                    )}
                   </div>
                 </button>
               );
@@ -1892,9 +2054,16 @@ export default function PredictionSelector({
         </div>
       </section>
 
+      {community?.ready ? (
+        <div className="community-footnote">Topluluk tercihleri · {community.total} kayıtlı tahmin üzerinden hesaplanıyor. Yüzdeler gerçek katılıma göre değişir.</div>
+      ) : (
+        <div className="community-footnote">Topluluk oranları en az 10 kişinin bu yarış için tahmin kaydetmesinden sonra görünür.</div>
+      )}
+      </>)}
+
       {/* NORMAL RACE EXTRA */}
 
-      {isRace && (
+      {isRace && currentStage === "bulletin" && (
         <>
           <section className="prediction-section">
             <div className="prediction-heading">
@@ -1995,6 +2164,12 @@ export default function PredictionSelector({
                           HAYIR
                         </button>
                       </div>
+                      {community?.ready && (community.bulletin[question.key]?.total ?? 0) >= 10 && (
+                        <div className="community-yesno">
+                          <div className="community-duo"><span>EVET <b>%{pct(community.bulletin[question.key].yes, community.bulletin[question.key].total)}</b></span><span>HAYIR <b>%{pct(community.bulletin[question.key].no, community.bulletin[question.key].total)}</b></span></div>
+                          <div className="community-track"><i style={{ width: `${pct(community.bulletin[question.key].yes, community.bulletin[question.key].total)}%` }} /></div>
+                        </div>
+                      )}
                     </article>
                   );
                 }
@@ -2002,6 +2177,10 @@ export default function PredictionSelector({
             </div>
           </section>
 
+        </>
+      )}
+      {isRace && currentStage === "special" && (
+        <>
           <section className="prediction-section">
             <div className="prediction-heading">
               <div>
@@ -2312,11 +2491,36 @@ export default function PredictionSelector({
                 </select>
               </div>
             </div>
+            {community?.ready && (
+              <div className="community-footnote">
+                <b style={{ color: "white" }}>Topluluğun favorileri</b>
+                {RACE_SPECIAL_PICKS.map((pick) => {
+                  const stat = community.specials[pick.key];
+                  if (!stat || stat.total < 10) return null;
+                  const top = Object.entries(stat.choices).sort((a,b) => b[1] - a[1])[0];
+                  if (!top) return null;
+                  const driver = getDriver(Number(top[0]));
+                  const label = pick.key === "winningTeam" ? top[0] : top[0] === "NONE" ? "DNF yok" : driver ? driverName(driver) : `#${top[0]}`;
+                  return <div key={pick.key} style={{ marginTop: 8 }}>{pick.label}: <strong style={{ color: "#f9fafc" }}>{label} · %{pct(top[1],stat.total)}</strong></div>;
+                })}
+              </div>
+            )}
           </section>
         </>
       )}
 
-      <div className="save-summary">
+      {currentStage === "review" && (
+        <div className="prediction-review">
+          <div className="eyebrow">SON KONTROL · TAHMİN ÖZETİN</div>
+          <h3>Pistte her şey hazır mı?</h3>
+          <p style={{ color: "#abb4c0", fontSize: 12 }}>Seçimlerini kontrol et, ardından tahmin paketini hesabına kaydet.</p>
+          <div className="prediction-review-picks">
+            {slots.map(({ key }) => (
+              <div key={key}><span>{key}</span><strong>{getDriver(selected[key]) ? driverName(getDriver(selected[key])!) : "Henüz seçilmedi"}</strong></div>
+            ))}
+            {isRace && <div><span>EK SEÇİMLER</span><strong>{answeredCount}/12 senaryo · {specialCount}/4 özel seçim</strong></div>}
+          </div>
+          <div className="save-summary">
         <div>
           <strong>
             {isRace
@@ -2348,6 +2552,16 @@ export default function PredictionSelector({
             ? "TAHMİNLER KİLİTLİ"
             : "TAHMİN PAKETİNİ KAYDET →"}
         </button>
+      </div>
+
+        </div>
+      )}
+
+      <div className="prediction-wizard-controls">
+        <button type="button" className="back" disabled={currentStageIndex === 0} onClick={() => navigateStage(stages[currentStageIndex - 1].id)}>← GERİ</button>
+        {currentStageIndex < stages.length - 1 && (
+          <button type="button" className="next" onClick={() => navigateStage(stages[currentStageIndex + 1].id)}>DEVAM ET →</button>
+        )}
       </div>
 
       {message && (

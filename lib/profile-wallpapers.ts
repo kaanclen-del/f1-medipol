@@ -500,6 +500,48 @@ export const PROFILE_WALLPAPERS: ProfileWallpaper[] = [
       )
     `,
   },
+  {
+    id: "sunburst-yellow",
+    name: "Sunburst Yellow",
+    description: "Sarı pist ışıkları, sıcak yarış atmosferi.",
+    image: null,
+    accent: "#ffdc48",
+    fallback: `
+      radial-gradient(ellipse at 78% 28%, rgba(255,219,68,.38) 0%, transparent 33%),
+      repeating-linear-gradient(112deg, transparent 0 62px, rgba(255,255,255,.055) 63px, transparent 64px),
+      linear-gradient(112deg, transparent 0 55%, rgba(255,219,68,.38) 55.2% 55.5%, transparent 55.8%),
+      radial-gradient(ellipse at 16% 82%, rgba(255,219,68,.38), transparent 38%),
+      linear-gradient(135deg, #332706 0%, #735616 58%, #332706 100%)
+    `,
+  },
+  {
+    id: "amethyst-night",
+    name: "Amethyst Night",
+    description: "Mor neonlar, gece pisti ve ışık izleri.",
+    image: null,
+    accent: "#bc78ff",
+    fallback: `
+      radial-gradient(ellipse at 78% 28%, rgba(173,95,255,.39) 0%, transparent 33%),
+      repeating-linear-gradient(112deg, transparent 0 62px, rgba(255,255,255,.055) 63px, transparent 64px),
+      linear-gradient(112deg, transparent 0 55%, rgba(173,95,255,.39) 55.2% 55.5%, transparent 55.8%),
+      radial-gradient(ellipse at 16% 82%, rgba(173,95,255,.39), transparent 38%),
+      linear-gradient(135deg, #150824 0%, #421b60 58%, #150824 100%)
+    `,
+  },
+  {
+    id: "emerald-speed",
+    name: "Emerald Speed",
+    description: "Yeşil yarış enerjisi ve parlak pist çizgileri.",
+    image: null,
+    accent: "#4dfbb1",
+    fallback: `
+      radial-gradient(ellipse at 78% 28%, rgba(50,225,148,.35) 0%, transparent 33%),
+      repeating-linear-gradient(112deg, transparent 0 62px, rgba(255,255,255,.055) 63px, transparent 64px),
+      linear-gradient(112deg, transparent 0 55%, rgba(50,225,148,.35) 55.2% 55.5%, transparent 55.8%),
+      radial-gradient(ellipse at 16% 82%, rgba(50,225,148,.35), transparent 38%),
+      linear-gradient(135deg, #061f16 0%, #12523a 58%, #061f16 100%)
+    `,
+  },
 ];
 
 /* =========================================================

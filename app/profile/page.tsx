@@ -160,7 +160,7 @@ export default async function ProfilePage() {
     </main>
   </>;
   const { data: profile } = await supabase.from("profiles")
-    .select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_accent,xp,level")
+    .select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_accent,xp,level,is_admin")
     .eq("id", user.id).maybeSingle();
   const { data: predictionData } = await supabase.from("predictions")
     .select("id,season,round,race_name,prediction_type,p1_driver_number,p2_driver_number,p3_driver_number,points,podium_points,bulletin_points,special_points,score_breakdown,created_at")
@@ -236,13 +236,13 @@ export default async function ProfilePage() {
   return <>
     <Header />
     <main className="steam-profile" style={{
-      backgroundImage: background,
       ["--profile-accent" as string]: profileAccent.primary,
       ["--profile-accent-2" as string]: profileAccent.secondary,
       ["--profile-accent-soft" as string]: profileAccent.soft,
       ["--profile-accent-glow" as string]: profileAccent.glow,
     }}>
       <style>{styles}</style>
+      <div className="profile-wallpaper-layer" aria-hidden="true" style={{ backgroundImage: background }} />
       <div className="profile-page-shade" />
       <div className="profile-container">
         <div className="profile-top-strip">
@@ -553,6 +553,15 @@ export default async function ProfilePage() {
             </section>
           </aside>
         </section>
+        {profile?.is_admin && (
+          <section className="glass-panel" style={{marginTop:20,padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:14,flexWrap:"wrap"}}>
+            <div><span className="profile-kicker">F1 MEDİPOL · YÖNETİM</span>
+              <div style={{color:"#f5f7fa",fontWeight:900,marginTop:6}}>Yönetim Paneli</div>
+              <div style={{color:"#aeb8c4",fontSize:12,marginTop:5}}>Etkinlikler, bildirimler ve yönetim işlemleri.</div>
+            </div>
+            <Link href="/admin" className="side-button accent" style={{minWidth:190,textAlign:"center"}}>ADMİN PANELİNE GİT →</Link>
+          </section>
+        )}
       </div>
     </main>
   </>;
@@ -585,7 +594,8 @@ const styles = `
 .steam-profile { position:relative; min-height:calc(100vh - 60px); color:#f5f7fa; background-size:cover,cover,cover; background-position:center; background-attachment:fixed; }
 .steam-profile h1,.steam-profile h2,.steam-profile h3,.steam-profile strong { color:#f5f7fa; }
 :root[data-site-theme="light"] .steam-profile,:root[data-site-theme="light"] .steam-profile h1,:root[data-site-theme="light"] .steam-profile h2,:root[data-site-theme="light"] .steam-profile h3,:root[data-site-theme="light"] .steam-profile strong { color:#f5f7fa !important; }
-.profile-page-shade { position:absolute; inset:0; pointer-events:none; background:linear-gradient( 90deg,rgba(4,7,11,.36),rgba(4,7,11,.05) 50%,rgba(4,7,11,.36) ); }
+.profile-wallpaper-layer { position:absolute; inset:0; z-index:0; pointer-events:none; background-size:cover; background-position:center top; background-repeat:no-repeat; }
+.profile-page-shade { position:absolute; z-index:1; inset:0; pointer-events:none; background:linear-gradient( 90deg,rgba(4,7,11,.36),rgba(4,7,11,.05) 50%,rgba(4,7,11,.36) ); }
 .profile-container { position:relative; z-index:2; width:min( 1540px,calc(100% - 48px) ); margin:auto; padding:36px 0 100px; }
 .profile-top-strip { min-height:50px; margin-bottom:10px; padding:0 18px; display:flex; align-items:center; justify-content:space-between; border:1px solid rgba(255,255,255,.10); border-radius:10px; background:rgba(10,14,20,.77); backdrop-filter:blur(18px); }
 .profile-top-strip > div { display:flex; align-items:center; gap:10px; }

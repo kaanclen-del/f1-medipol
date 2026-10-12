@@ -77,6 +77,8 @@ export default async function AdminPage() {
   }
 
   const admin = createAdminClient();
+  const {data: ownerConfig} = await admin.from("site_admin_config")
+    .select("owner_id").eq("singleton", true).maybeSingle();
 
   const [
     eventsResult,
@@ -190,6 +192,24 @@ export default async function AdminPage() {
             <h2>Kontrol Merkezi</h2>
 
             <div className="admin-module-grid">
+              {ownerConfig?.owner_id === user.id && (
+                <Link href="/admin/permissions" className="admin-module">
+                  <div className="module-icon">🛡️</div>
+                  <span>ANA YÖNETİCİ MODÜLÜ</span>
+                  <h3>Yönetici Yetkileri</h3>
+                  <p>Üyelere yönetici yetkisi ver, diğer yöneticilerin yetkilerini kaldır.</p>
+                  <strong>YETKİLERİ YÖNET →</strong>
+                </Link>
+              )}
+
+              {/* BILDIRIM YONETIMI */}
+              <Link href="/admin/notifications" className="admin-module">
+                <div className="module-icon">🔔</div>
+                <span>ACTIVE MODULE</span>
+                <h3>Bildirim Yönetimi</h3>
+                <p>Üyelere push bildirimi gönder, iPhone ve Android cihazlarında test et.</p>
+                <strong>BİLDİRİM GÖNDER →</strong>
+              </Link>
 
               {/* ETKİNLİKLER */}
 

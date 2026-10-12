@@ -1,0 +1,15 @@
+ .panel { margin-top: 20px; padding: 24px; background: #181921; color: #f8f9fd; border: 1px solid #383740; border-radius: 21px; }
+.head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.head span { font-size: 11px; color: #ff5557; font-weight: 900; letter-spacing: 2px; }
+.head h2 { font-size: clamp(20px, 3vw, 28px); margin: 8px 0 0; }
+.head button { padding: 10px 12px; background: transparent; color: #e5a0a2; cursor: pointer; border: 1px solid #574048; border-radius: 9px; font-size: 12px; }
+.head button:disabled { opacity: .4; cursor: default; }
+.empty { color: #a8adbb; padding: 22px 0; line-height: 1.8; }
+.list { margin-top: 16px; max-height: 560px; overflow-y: auto; }
+.item { display: block; border-top: 1px solid #30313a; padding: 18px 5px; text-decoration: none; color: #eee; }
+.item.new { background: rgba(236, 32, 32, .045); }
+.item div { display: flex; align-items: center; gap: 10px; }
+.item strong { font-size: 15px; }
+.item div span { font-size: 9px; color: #ff6060; font-weight: 900; }
+.item p { color: #b8bcc9; font-size: 13px; line-height: 1.6; margin: 6px 0; }
+.item small { color: #878b98; }

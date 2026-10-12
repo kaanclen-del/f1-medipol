@@ -1,4 +1,3 @@
-import { getOpenF1AccessToken } from "@/lib/openf1-auth";
 
 /* =========================================================
    F1 MEDIPOL
@@ -663,21 +662,19 @@ async function fetchOpenF1<
   await waitForOpenF1();
 
   try {
-    const token = await getOpenF1AccessToken();
-
+    // OpenF1 2023+ tarihsel arşivini ücretsiz ve tokensız sunuyor.
+    // Vercel Preview'da OPENF1_USERNAME / PASSWORD bulunmasa da
+    // geçmiş seansların replay verilerini alabilmeliyiz.
+    // Ücretli canlı erişim için token yalnızca ilgili LIVE API'de kullanılır.
     const response =
       await fetch(
         `https://api.openf1.org/v1/${path}`,
         {
           next: {
-            revalidate:
-              600,
+            revalidate: 600,
           },
-
           headers: {
-            Accept:
-              "application/json",
-            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
           },
         }
       );
@@ -1098,23 +1095,11 @@ async function getCompletedSessions() {
   let all =
     [...thisYear];
 
-  if (
-    all.length <
-    10
-  ) {
-    const previous =
-      await fetchOpenF1<RawSession>(
-        `sessions?year=${
-          currentYear -
-          1
-        }`
-      );
-
-    all = [
-      ...all,
-      ...previous,
-    ];
-  }
+  // Son seansın arşivi geç yayımlandığında geçen sezona düşebilir.
+  const previous = await fetchOpenF1<RawSession>(
+    `sessions?year=${currentYear - 1}`
+  );
+  all = [...all, ...previous];
 
   const safeNow =
     Date.now() -
@@ -1201,11 +1186,13 @@ async function findReplayCandidate():
     ] ??
     null;
 
-  const candidates =
-    sessions.slice(
-      0,
-      10
-    );
+  const thisSeason = sessions.filter((item) =>
+    item.year === new Date().getUTCFullYear()
+  ).slice(0, 12);
+  const previousSeason = sessions.filter((item) =>
+    item.year === new Date().getUTCFullYear() - 1
+  ).slice(0, 5);
+  const candidates = [...thisSeason, ...previousSeason];
 
   for (
     const session of
