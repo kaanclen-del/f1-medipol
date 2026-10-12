@@ -1,3 +1,10 @@
+
+import { createAdminClient } from "@/utils/supabase/admin";
+
+/*
+  YARIŞ GÖRSELİ TİPLERİ
+*/
+
 type RaceForImage = {
   raceName: string;
   circuitName: string;
@@ -18,6 +25,18 @@ type MediaResponse = {
   items?: MediaItem[];
 };
 
+type RaceHeroRecord = {
+  image_url: string;
+  sort_order: number;
+};
+
+const MAX_IMAGES = 5;
+
+/*
+  WIKIPEDIA'DA İSTEMEDİĞİMİZ
+  GÖRSEL TÜRLERİ
+*/
+
 const BAD_WORDS = [
   "logo",
   "map",
@@ -33,7 +52,35 @@ const BAD_WORDS = [
   "symbol",
 ];
 
-function normalizeUrl(url: string) {
+/*
+  YARIŞ ADINI VERİTABANI
+  ANAHTARINA ÇEVİR
+
+  Admin panelindeki slugify
+  fonksiyonuyla aynı mantığı kullanır.
+
+  Örnek:
+  United States Grand Prix
+  ->
+  united-states-grand-prix
+*/
+
+function getRaceKey(
+  raceName: string
+): string {
+  return raceName
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/*
+  URL DÜZENLEME
+*/
+
+function normalizeUrl(url: string): string {
   if (url.startsWith("//")) {
     return `https:${url}`;
   }
@@ -41,7 +88,108 @@ function normalizeUrl(url: string) {
   return url;
 }
 
-function isPhoto(item: MediaItem) {
+/*
+  TEKRAR EDEN GÖRSELLERİ TEMİZLE
+*/
+
+function uniqueImages(
+  images: string[]
+): string[] {
+  const result: string[] = [];
+
+  for (const image of images) {
+    const url = image.trim();
+
+    if (
+      !url ||
+      result.includes(url)
+    ) {
+      continue;
+    }
+
+    result.push(url);
+
+    if (result.length >= MAX_IMAGES) {
+      break;
+    }
+  }
+
+  return result;
+}
+
+/*
+  ADMIN PANELİNDEN YÜKLENEN
+  YARIŞ FOTOĞRAFLARINI AL
+
+  Önceliğimiz her zaman
+  yöneticilerin seçtiği görseller.
+*/
+
+async function getAdminRaceImages(
+  race: RaceForImage
+): Promise<string[]> {
+  try {
+    const raceKey = getRaceKey(
+      race.raceName
+    );
+
+    if (!raceKey) {
+      return [];
+    }
+
+    const supabase = createAdminClient();
+
+    const { data, error } = await supabase
+      .from("race_hero_images")
+      .select("image_url, sort_order")
+      .eq("race_key", raceKey)
+      .eq("is_active", true)
+      .order("sort_order", {
+        ascending: true,
+      })
+      .order("created_at", {
+        ascending: false,
+      })
+      .limit(MAX_IMAGES);
+
+    if (error) {
+      console.error(
+        "RACE HERO DATABASE ERROR:",
+        error
+      );
+
+      return [];
+    }
+
+    const records =
+      (data ?? []) as RaceHeroRecord[];
+
+    const images = records
+      .map((item) => item.image_url)
+      .filter(
+        (url): url is string =>
+          typeof url === "string" &&
+          url.trim().length > 0
+      );
+
+    return uniqueImages(images);
+  } catch (error) {
+    console.error(
+      "RACE HERO ADMIN IMAGES ERROR:",
+      error
+    );
+
+    return [];
+  }
+}
+
+/*
+  WIKIPEDIA FOTOĞRAF KONTROLÜ
+*/
+
+function isPhoto(
+  item: MediaItem
+): boolean {
   const title =
     item.title?.toLowerCase() ?? "";
 
@@ -68,6 +216,14 @@ function isPhoto(item: MediaItem) {
     title.endsWith(".webp")
   );
 }
+
+/*
+  WIKIPEDIA SAYFASINDAN
+  FOTOĞRAFLARI AL
+
+  Bu bölüm yedek kaynak
+  olarak kullanılacak.
+*/
 
 async function getPageImages(
   pageTitle: string
@@ -103,12 +259,11 @@ async function getPageImages(
         continue;
       }
 
-      const sources =
-        item.srcset ?? [];
+      const sources = item.srcset ?? [];
 
       /*
         En yüksek çözünürlüklü
-        görseli seç.
+        fotoğrafı tercih et.
       */
 
       const best =
@@ -118,73 +273,102 @@ async function getPageImages(
         continue;
       }
 
-      const url =
-        normalizeUrl(best.src);
+      const url = normalizeUrl(
+        best.src
+      );
 
       if (!images.includes(url)) {
         images.push(url);
       }
+
+      if (images.length >= MAX_IMAGES) {
+        break;
+      }
     }
 
     return images;
-  } catch {
+  } catch (error) {
+    console.error(
+      "WIKIPEDIA RACE IMAGES ERROR:",
+      error
+    );
+
     return [];
   }
 }
 
-export async function getRaceHeroImages(
+/*
+  OTOMATİK YEDEK GÖRSELLER
+
+  Önce Grand Prix sayfası,
+  ardından pist sayfası kullanılır.
+*/
+
+async function getWikipediaRaceImages(
   race: RaceForImage
 ): Promise<string[]> {
   const images: string[] = [];
-
-  /*
-    Önce yarış sayfası:
-    Singapore Grand Prix gibi.
-  */
 
   const raceImages =
     await getPageImages(
       race.raceName
     );
 
-  for (const image of raceImages) {
-    if (!images.includes(image)) {
-      images.push(image);
-    }
+  images.push(...raceImages);
 
-    if (images.length >= 5) {
-      return images;
-    }
+  if (images.length >= MAX_IMAGES) {
+    return uniqueImages(images);
   }
-
-  /*
-    Yeterli sonuç yoksa
-    pist sayfasını da tara.
-  */
 
   const circuitImages =
     await getPageImages(
       race.circuitName
     );
 
-  for (const image of circuitImages) {
-    if (!images.includes(image)) {
-      images.push(image);
-    }
+  images.push(...circuitImages);
 
-    if (images.length >= 5) {
-      return images;
-    }
+  return uniqueImages(images);
+}
+
+/*
+  ANA SAYFANIN KULLANDIĞI
+  GÖRSEL SEÇİM SİSTEMİ
+
+  1. Admin görselleri
+  2. Wikipedia görselleri
+*/
+
+export async function getRaceHeroImages(
+  race: RaceForImage
+): Promise<string[]> {
+  /*
+    Önce yönetici tarafından
+    yüklenmiş aktif fotoğraflara bak.
+  */
+
+  const adminImages =
+    await getAdminRaceImages(race);
+
+  if (adminImages.length > 0) {
+    return adminImages;
   }
 
-  return images.slice(0, 5);
+  /*
+    O yarış için aktif fotoğraf
+    bulunmuyorsa Wikipedia'yı kullan.
+  */
+
+  return getWikipediaRaceImages(race);
 }
+
+/*
+  TEK BİR YARIŞ GÖRSELİ GEREKEN
+  SAYFALAR İÇİN
+*/
 
 export async function getRaceHeroImage(
   race: RaceForImage
-): Promise<
-  string | null
-> {
+): Promise<string | null> {
   const images =
     await getRaceHeroImages(race);
 

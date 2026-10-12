@@ -11,20 +11,40 @@ type RouteContext = {
   }>;
 };
 
+/*
+  ============================================================
+  GET
+  ============================================================
+
+  Lobi bilgilerini,
+  aktif oyuncuları,
+  oyuncu profillerini,
+  mevcut kullanıcıyı
+  ve host bilgisini getirir.
+*/
+
 export async function GET(
   _request: Request,
   context: RouteContext
 ) {
   try {
-    const { lobbyId } = await context.params;
+    const { lobbyId } =
+      await context.params;
 
-    const supabase = await createClient();
+    const supabase =
+      await createClient();
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
-    const admin = createAdminClient();
+    const admin =
+      createAdminClient();
+
+    /*
+      LOBİYİ BUL
+    */
 
     const {
       data: lobby,
@@ -54,20 +74,30 @@ export async function GET(
 
       return NextResponse.json(
         {
-          error: "Lobi bilgileri alınamadı.",
+          error:
+            "Lobi bilgileri alınamadı.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
     if (!lobby) {
       return NextResponse.json(
         {
-          error: "Lobi bulunamadı.",
+          error:
+            "Lobi bulunamadı.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
+
+    /*
+      AKTİF LOBİ ÜYELERİ
+    */
 
     const {
       data: memberRows,
@@ -83,11 +113,20 @@ export async function GET(
         is_ready,
         joined_at
       `)
-      .eq("lobby_id", lobby.id)
-      .eq("status", "active")
-      .order("joined_at", {
-        ascending: true,
-      });
+      .eq(
+        "lobby_id",
+        lobby.id
+      )
+      .eq(
+        "status",
+        "active"
+      )
+      .order(
+        "joined_at",
+        {
+          ascending: true,
+        }
+      );
 
     if (membersError) {
       console.error(
@@ -97,16 +136,24 @@ export async function GET(
 
       return NextResponse.json(
         {
-          error: "Lobi oyuncuları alınamadı.",
+          error:
+            "Lobi oyuncuları alınamadı.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
+
+    /*
+      PROFİL ID'LERİ
+    */
 
     const userIds = [
       ...new Set(
         (memberRows ?? []).map(
-          (member) => member.user_id
+          (member) =>
+            member.user_id
         )
       ),
     ];
@@ -114,16 +161,32 @@ export async function GET(
     let profiles:
       | {
           id: string;
-          display_name: string | null;
-          username: string | null;
-          avatar_url: string | null;
+
+          display_name:
+            | string
+            | null;
+
+          username:
+            | string
+            | null;
+
+          avatar_url:
+            | string
+            | null;
         }[]
       = [];
 
-    if (userIds.length > 0) {
+    /*
+      OYUNCU PROFİLLERİ
+    */
+
+    if (
+      userIds.length > 0
+    ) {
       const {
         data,
-        error: profilesError,
+        error:
+          profilesError,
       } = await admin
         .from("profiles")
         .select(`
@@ -132,40 +195,65 @@ export async function GET(
           username,
           avatar_url
         `)
-        .in("id", userIds);
+        .in(
+          "id",
+          userIds
+        );
 
-      if (profilesError) {
+      if (
+        profilesError
+      ) {
         console.error(
           "MANAGER LOBBY PROFILES ERROR:",
           profilesError
         );
       } else {
-        profiles = data ?? [];
+        profiles =
+          data ?? [];
       }
     }
 
-    const members = (memberRows ?? []).map(
-      (member) => {
-        const profile =
-          profiles.find(
-            (item) =>
-              item.id === member.user_id
-          ) ?? null;
+    /*
+      MEMBER + PROFILE
+      BİRLEŞTİR
+    */
 
-        return {
-          ...member,
-          profile,
-        };
-      }
-    );
+    const members =
+      (
+        memberRows ?? []
+      ).map(
+        (member) => {
+          const profile =
+            profiles.find(
+              (item) =>
+                item.id ===
+                member.user_id
+            ) ?? null;
+
+          return {
+            ...member,
+            profile,
+          };
+        }
+      );
+
+    /*
+      MEVCUT KULLANICI
+      LOBİ ÜYESİ Mİ?
+    */
 
     const currentMember =
       user
         ? members.find(
             (member) =>
-              member.user_id === user.id
+              member.user_id ===
+              user.id
           ) ?? null
         : null;
+
+    /*
+      SONUÇ
+    */
 
     return NextResponse.json({
       ok: true,
@@ -174,14 +262,17 @@ export async function GET(
 
       members,
 
-      memberCount: members.length,
+      memberCount:
+        members.length,
 
-      currentUserId: user?.id ?? null,
+      currentUserId:
+        user?.id ?? null,
 
       currentMember,
 
       isOwner:
-        user?.id === lobby.created_by,
+        user?.id ===
+        lobby.created_by,
     });
   } catch (error) {
     console.error(
@@ -196,49 +287,76 @@ export async function GET(
             ? error.message
             : "Beklenmeyen bir hata oluştu.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
+
+/*
+  ============================================================
+  PATCH
+  ============================================================
+
+  İki farklı işlem yapabilir:
+
+  1. Hazır / hazır değil
+     {
+       isReady: true
+     }
+
+  2. Host oyunu başlatır
+     {
+       action: "start"
+     }
+*/
 
 export async function PATCH(
   request: Request,
   context: RouteContext
 ) {
   try {
-    const { lobbyId } = await context.params;
+    const { lobbyId } =
+      await context.params;
 
-    const supabase = await createClient();
+    /*
+      OTURUM
+    */
+
+    const supabase =
+      await createClient();
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json(
         {
           error:
-            "Hazır durumunu değiştirmek için giriş yapmalısın.",
+            "Bu işlem için giriş yapmalısın.",
         },
-        { status: 401 }
-      );
-    }
-
-    const body = await request.json();
-
-    if (
-      typeof body?.isReady !== "boolean"
-    ) {
-      return NextResponse.json(
         {
-          error:
-            "Geçerli bir hazır durumu gönderilmedi.",
-        },
-        { status: 400 }
+          status: 401,
+        }
       );
     }
 
-    const admin = createAdminClient();
+    /*
+      BODY
+    */
+
+    const body =
+      await request.json();
+
+    const admin =
+      createAdminClient();
+
+    /*
+      LOBİ
+    */
 
     const {
       data: lobby,
@@ -247,98 +365,445 @@ export async function PATCH(
       .from("manager_lobbies")
       .select(`
         id,
-        status
+        created_by,
+        name,
+        status,
+        max_players,
+        started_at
       `)
-      .eq("id", lobbyId)
+      .eq(
+        "id",
+        lobbyId
+      )
       .maybeSingle();
 
-    if (lobbyError || !lobby) {
-      return NextResponse.json(
-        {
-          error: "Lobi bulunamadı.",
-        },
-        { status: 404 }
-      );
-    }
-
-    if (lobby.status !== "waiting") {
+    if (
+      lobbyError ||
+      !lobby
+    ) {
       return NextResponse.json(
         {
           error:
-            "Oyun başladıktan sonra hazır durumu değiştirilemez.",
+            "Lobi bulunamadı.",
         },
-        { status: 400 }
+        {
+          status: 404,
+        }
       );
     }
 
+    /*
+      KULLANICININ
+      LOBİ ÜYELİĞİ
+    */
+
     const {
       data: membership,
-      error: membershipError,
+      error:
+        membershipError,
     } = await admin
-      .from("manager_lobby_members")
+      .from(
+        "manager_lobby_members"
+      )
       .select(`
         id,
-        status
+        lobby_id,
+        user_id,
+        role,
+        status,
+        is_ready
       `)
-      .eq("lobby_id", lobbyId)
-      .eq("user_id", user.id)
+      .eq(
+        "lobby_id",
+        lobbyId
+      )
+      .eq(
+        "user_id",
+        user.id
+      )
       .maybeSingle();
 
     if (
       membershipError ||
       !membership ||
-      membership.status !== "active"
+      membership.status !==
+        "active"
     ) {
       return NextResponse.json(
         {
           error:
             "Bu lobinin aktif bir üyesi değilsin.",
         },
-        { status: 403 }
-      );
-    }
-
-    const {
-      data: updatedMember,
-      error: updateError,
-    } = await admin
-      .from("manager_lobby_members")
-      .update({
-        is_ready: body.isReady,
-      })
-      .eq("id", membership.id)
-      .select(`
-        id,
-        user_id,
-        role,
-        status,
-        is_ready
-      `)
-      .single();
-
-    if (updateError) {
-      console.error(
-        "MANAGER READY UPDATE ERROR:",
-        updateError
-      );
-
-      return NextResponse.json(
         {
-          error:
-            updateError.message ||
-            "Hazır durumu güncellenemedi.",
-        },
-        { status: 500 }
+          status: 403,
+        }
       );
     }
 
-    return NextResponse.json({
-      ok: true,
-      member: updatedMember,
-    });
+    /*
+      ========================================================
+      OYUNU BAŞLAT
+      ========================================================
+    */
+
+    if (
+      body?.action ===
+      "start"
+    ) {
+      /*
+        SADECE HOST
+        BAŞLATABİLİR
+      */
+
+      if (
+        lobby.created_by !==
+        user.id
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Oyunu yalnızca lobi sahibi başlatabilir.",
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      /*
+        LOBİ HALA
+        WAITING OLMALI
+      */
+
+      if (
+        lobby.status !==
+        "waiting"
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Bu lobi artık başlatılabilir durumda değil.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      /*
+        TÜM AKTİF
+        OYUNCULAR
+      */
+
+      const {
+        data:
+          activeMembers,
+        error:
+          membersError,
+      } = await admin
+        .from(
+          "manager_lobby_members"
+        )
+        .select(`
+          id,
+          user_id,
+          role,
+          status,
+          is_ready
+        `)
+        .eq(
+          "lobby_id",
+          lobbyId
+        )
+        .eq(
+          "status",
+          "active"
+        )
+        .order(
+          "joined_at",
+          {
+            ascending:
+              true,
+          }
+        );
+
+      if (
+        membersError
+      ) {
+        console.error(
+          "MANAGER START MEMBERS ERROR:",
+          membersError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              "Oyuncular kontrol edilirken hata oluştu.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+
+      const members =
+        activeMembers ?? [];
+
+      /*
+        EN AZ 2 OYUNCU
+      */
+
+      if (
+        members.length < 1
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Oyunu başlatmak için en az 2 oyuncu gerekli.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      /*
+        TÜM OYUNCULAR
+        HAZIR MI?
+      */
+
+      const notReadyMembers =
+        members.filter(
+          (member) =>
+            !member.is_ready
+        );
+
+      if (
+        notReadyMembers.length >
+        0
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Oyunu başlatmadan önce tüm oyuncular hazır olmalı.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      /*
+        BAŞLANGIÇ ZAMANI
+      */
+
+      const startedAt =
+        new Date().toISOString();
+
+      /*
+        LOBİYİ
+        TEAM SELECTION'A GEÇİR
+      */
+
+      const {
+        data:
+          updatedLobby,
+        error:
+          startError,
+      } = await admin
+        .from(
+          "manager_lobbies"
+        )
+        .update({
+          status:
+            "team_selection",
+
+          started_at:
+            startedAt,
+        })
+        .eq(
+          "id",
+          lobbyId
+        )
+        .eq(
+          "status",
+          "waiting"
+        )
+        .select(`
+          id,
+          created_by,
+          name,
+          status,
+          max_players,
+          started_at
+        `)
+        .maybeSingle();
+
+      if (
+        startError
+      ) {
+        console.error(
+          "MANAGER START ERROR:",
+          startError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              startError.message ||
+              "Oyun başlatılırken hata oluştu.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+
+      /*
+        AYNI ANDA İKİ
+        START İSTEĞİ GELİRSE
+      */
+
+      if (
+        !updatedLobby
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Lobi başka bir işlem tarafından zaten başlatılmış olabilir.",
+          },
+          {
+            status: 409,
+          }
+        );
+      }
+
+      /*
+        BAŞARILI
+      */
+
+      return NextResponse.json({
+        ok: true,
+
+        action:
+          "start",
+
+        lobby:
+          updatedLobby,
+
+        next:
+          `/arcade/manager/lobbies/${lobbyId}/team-select`,
+      });
+    }
+
+    /*
+      ========================================================
+      HAZIR / HAZIR DEĞİL
+      ========================================================
+    */
+
+    if (
+      typeof body?.isReady ===
+      "boolean"
+    ) {
+      /*
+        OYUN BAŞLADIYSA
+        READY DEĞİŞEMEZ
+      */
+
+      if (
+        lobby.status !==
+        "waiting"
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Oyun başladıktan sonra hazır durumu değiştirilemez.",
+          },
+          {
+            status: 400,
+          }
+        );
+      }
+
+      /*
+        READY GÜNCELLE
+      */
+
+      const {
+        data:
+          updatedMember,
+        error:
+          updateError,
+      } = await admin
+        .from(
+          "manager_lobby_members"
+        )
+        .update({
+          is_ready:
+            body.isReady,
+        })
+        .eq(
+          "id",
+          membership.id
+        )
+        .select(`
+          id,
+          lobby_id,
+          user_id,
+          role,
+          status,
+          is_ready
+        `)
+        .single();
+
+      if (
+        updateError
+      ) {
+        console.error(
+          "MANAGER READY UPDATE ERROR:",
+          updateError
+        );
+
+        return NextResponse.json(
+          {
+            error:
+              updateError.message ||
+              "Hazır durumu güncellenemedi.",
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+
+      return NextResponse.json({
+        ok: true,
+
+        action:
+          "ready",
+
+        member:
+          updatedMember,
+      });
+    }
+
+    /*
+      TANINMAYAN PATCH
+    */
+
+    return NextResponse.json(
+      {
+        error:
+          "Geçersiz işlem.",
+      },
+      {
+        status: 400,
+      }
+    );
   } catch (error) {
     console.error(
-      "MANAGER READY UPDATE ERROR:",
+      "MANAGER LOBBY PATCH ERROR:",
       error
     );
 
@@ -349,23 +814,44 @@ export async function PATCH(
             ? error.message
             : "Beklenmeyen bir hata oluştu.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }
+
+/*
+  ============================================================
+  DELETE
+  ============================================================
+
+  Lobiden ayrılma işlemi.
+
+  - Normal oyuncu ayrılır.
+  - Host ayrılırsa hostluk devredilir.
+  - Son kişi ayrılırsa lobi silinir.
+*/
 
 export async function DELETE(
   _request: Request,
   context: RouteContext
 ) {
   try {
-    const { lobbyId } = await context.params;
+    const { lobbyId } =
+      await context.params;
 
-    const supabase = await createClient();
+    /*
+      OTURUM
+    */
+
+    const supabase =
+      await createClient();
 
     const {
       data: { user },
-    } = await supabase.auth.getUser();
+    } =
+      await supabase.auth.getUser();
 
     if (!user) {
       return NextResponse.json(
@@ -373,84 +859,147 @@ export async function DELETE(
           error:
             "Lobiden ayrılmak için giriş yapmalısın.",
         },
-        { status: 401 }
+        {
+          status: 401,
+        }
       );
     }
 
-    const admin = createAdminClient();
+    const admin =
+      createAdminClient();
+
+    /*
+      LOBİ
+    */
 
     const {
       data: lobby,
       error: lobbyError,
     } = await admin
-      .from("manager_lobbies")
+      .from(
+        "manager_lobbies"
+      )
       .select(`
         id,
         created_by,
         status
       `)
-      .eq("id", lobbyId)
+      .eq(
+        "id",
+        lobbyId
+      )
       .maybeSingle();
 
-    if (lobbyError || !lobby) {
+    if (
+      lobbyError ||
+      !lobby
+    ) {
       return NextResponse.json(
         {
-          error: "Lobi bulunamadı.",
+          error:
+            "Lobi bulunamadı.",
         },
-        { status: 404 }
+        {
+          status: 404,
+        }
       );
     }
 
-    if (lobby.status !== "waiting") {
+    /*
+      ŞİMDİLİK SADECE
+      WAITING LOBİDEN
+      BU YOLLA ÇIKILABİLİR
+    */
+
+    if (
+      lobby.status !==
+      "waiting"
+    ) {
       return NextResponse.json(
         {
           error:
             "Oyun başladıktan sonra bu şekilde lobiden ayrılamazsın.",
         },
-        { status: 400 }
+        {
+          status: 400,
+        }
       );
     }
 
+    /*
+      ÜYELİK
+    */
+
     const {
       data: membership,
-      error: membershipError,
+      error:
+        membershipError,
     } = await admin
-      .from("manager_lobby_members")
+      .from(
+        "manager_lobby_members"
+      )
       .select(`
         id,
         user_id,
         role,
         status
       `)
-      .eq("lobby_id", lobbyId)
-      .eq("user_id", user.id)
+      .eq(
+        "lobby_id",
+        lobbyId
+      )
+      .eq(
+        "user_id",
+        user.id
+      )
       .maybeSingle();
 
     if (
       membershipError ||
       !membership ||
-      membership.status !== "active"
+      membership.status !==
+        "active"
     ) {
       return NextResponse.json(
         {
           error:
             "Bu lobinin aktif bir üyesi değilsin.",
         },
-        { status: 403 }
+        {
+          status: 403,
+        }
       );
     }
 
-    const { error: leaveError } =
-      await admin
-        .from("manager_lobby_members")
-        .update({
-          status: "left",
-          is_ready: false,
-          role: "member",
-        })
-        .eq("id", membership.id);
+    /*
+      OYUNCUYU LOBİDEN
+      AYRILMIŞ YAP
+    */
 
-    if (leaveError) {
+    const {
+      error: leaveError,
+    } = await admin
+      .from(
+        "manager_lobby_members"
+      )
+      .update({
+        status:
+          "left",
+
+        is_ready:
+          false,
+
+        role:
+          "member",
+      })
+      .eq(
+        "id",
+        membership.id
+      );
+
+    if (
+      leaveError
+    ) {
       console.error(
         "MANAGER LOBBY LEAVE ERROR:",
         leaveError
@@ -461,27 +1010,50 @@ export async function DELETE(
           error:
             "Lobiden ayrılırken hata oluştu.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
+    /*
+      GERİYE KALAN
+      AKTİF ÜYELER
+    */
+
     const {
-      data: remainingMembers,
-      error: remainingError,
+      data:
+        remainingMembers,
+      error:
+        remainingError,
     } = await admin
-      .from("manager_lobby_members")
+      .from(
+        "manager_lobby_members"
+      )
       .select(`
         id,
         user_id,
         joined_at
       `)
-      .eq("lobby_id", lobbyId)
-      .eq("status", "active")
-      .order("joined_at", {
-        ascending: true,
-      });
+      .eq(
+        "lobby_id",
+        lobbyId
+      )
+      .eq(
+        "status",
+        "active"
+      )
+      .order(
+        "joined_at",
+        {
+          ascending:
+            true,
+        }
+      );
 
-    if (remainingError) {
+    if (
+      remainingError
+    ) {
       console.error(
         "MANAGER REMAINING MEMBERS ERROR:",
         remainingError
@@ -492,21 +1064,38 @@ export async function DELETE(
           error:
             "Lobi üyeleri kontrol edilemedi.",
         },
-        { status: 500 }
+        {
+          status: 500,
+        }
       );
     }
 
+    /*
+      KİMSE KALMADIYSA
+      LOBİYİ SİL
+    */
+
     if (
       !remainingMembers ||
-      remainingMembers.length === 0
+      remainingMembers.length ===
+        0
     ) {
-      const { error: deleteLobbyError } =
-        await admin
-          .from("manager_lobbies")
-          .delete()
-          .eq("id", lobbyId);
+      const {
+        error:
+          deleteLobbyError,
+      } = await admin
+        .from(
+          "manager_lobbies"
+        )
+        .delete()
+        .eq(
+          "id",
+          lobbyId
+        );
 
-      if (deleteLobbyError) {
+      if (
+        deleteLobbyError
+      ) {
         console.error(
           "MANAGER EMPTY LOBBY DELETE ERROR:",
           deleteLobbyError
@@ -517,34 +1106,69 @@ export async function DELETE(
             error:
               "Boş lobi silinemedi.",
           },
-          { status: 500 }
+          {
+            status: 500,
+          }
         );
       }
 
       return NextResponse.json({
         ok: true,
-        lobbyDeleted: true,
+
+        lobbyDeleted:
+          true,
+
+        ownershipTransferred:
+          false,
       });
     }
 
-    const userWasOwner =
-      lobby.created_by === user.id ||
-      membership.role === "owner";
+    /*
+      AYRILAN KULLANICI
+      HOST MUYDU?
+    */
 
-    if (userWasOwner) {
+    const userWasOwner =
+      lobby.created_by ===
+        user.id ||
+      membership.role ===
+        "owner";
+
+    /*
+      HOST AYRILDIYSA
+      EN ESKİ AKTİF OYUNCUYA
+      HOSTLUĞU VER
+    */
+
+    if (
+      userWasOwner
+    ) {
       const newOwner =
         remainingMembers[0];
 
-      const {
-        error: newOwnerMemberError,
-      } = await admin
-        .from("manager_lobby_members")
-        .update({
-          role: "owner",
-        })
-        .eq("id", newOwner.id);
+      /*
+        MEMBER ROLE
+      */
 
-      if (newOwnerMemberError) {
+      const {
+        error:
+          newOwnerMemberError,
+      } = await admin
+        .from(
+          "manager_lobby_members"
+        )
+        .update({
+          role:
+            "owner",
+        })
+        .eq(
+          "id",
+          newOwner.id
+        );
+
+      if (
+        newOwnerMemberError
+      ) {
         console.error(
           "MANAGER NEW OWNER MEMBER ERROR:",
           newOwnerMemberError
@@ -555,21 +1179,35 @@ export async function DELETE(
             error:
               "Yeni lobi sahibi atanamadı.",
           },
-          { status: 500 }
+          {
+            status: 500,
+          }
         );
       }
 
+      /*
+        LOBİ CREATED_BY
+      */
+
       const {
-        error: newOwnerLobbyError,
+        error:
+          newOwnerLobbyError,
       } = await admin
-        .from("manager_lobbies")
+        .from(
+          "manager_lobbies"
+        )
         .update({
           created_by:
             newOwner.user_id,
         })
-        .eq("id", lobbyId);
+        .eq(
+          "id",
+          lobbyId
+        );
 
-      if (newOwnerLobbyError) {
+      if (
+        newOwnerLobbyError
+      ) {
         console.error(
           "MANAGER NEW OWNER LOBBY ERROR:",
           newOwnerLobbyError
@@ -580,23 +1218,39 @@ export async function DELETE(
             error:
               "Lobi sahipliği aktarılamadı.",
           },
-          { status: 500 }
+          {
+            status: 500,
+          }
         );
       }
 
       return NextResponse.json({
         ok: true,
-        lobbyDeleted: false,
-        ownershipTransferred: true,
+
+        lobbyDeleted:
+          false,
+
+        ownershipTransferred:
+          true,
+
         newOwnerId:
           newOwner.user_id,
       });
     }
 
+    /*
+      NORMAL OYUNCU
+      AYRILDI
+    */
+
     return NextResponse.json({
       ok: true,
-      lobbyDeleted: false,
-      ownershipTransferred: false,
+
+      lobbyDeleted:
+        false,
+
+      ownershipTransferred:
+        false,
     });
   } catch (error) {
     console.error(
@@ -611,7 +1265,9 @@ export async function DELETE(
             ? error.message
             : "Beklenmeyen bir hata oluştu.",
       },
-      { status: 500 }
+      {
+        status: 500,
+      }
     );
   }
 }

@@ -915,7 +915,31 @@ export default async function EventsPage() {
                           .72,
                       }}
                     >
-                      <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "15px", minWidth: 0 }}>
+                        {event.cover_image_url ? (
+                          <img
+                            src={event.cover_image_url}
+                            alt={`${event.title} etkinlik görseli`}
+                            loading="lazy"
+                            style={{
+                              width: "104px",
+                              height: "76px",
+                              flexShrink: 0,
+                              objectFit: "cover",
+                              borderRadius: "10px",
+                              border: "1px solid rgba(255,255,255,.12)",
+                              background: "rgba(255,255,255,.04)",
+                            }}
+                          />
+                        ) : (
+                          <div aria-hidden="true" style={{
+                            width: "104px", height: "76px", flexShrink: 0, borderRadius: "10px",
+                            display: "grid", placeItems: "center", fontSize: "27px",
+                            background: "linear-gradient(135deg,rgba(225,6,0,.17),rgba(255,255,255,.035))",
+                            border: "1px solid rgba(255,255,255,.08)",
+                          }}>🏁</div>
+                        )}
+                        <div style={{ minWidth: 0 }}>
                         <div
                           style={{
                             fontSize:
@@ -949,6 +973,7 @@ export default async function EventsPage() {
                           {
                             event.title
                           }
+                        </div>
                         </div>
                       </div>
 

@@ -5,6 +5,11 @@ import HomeChampionshipLive from "@/components/HomeChampionshipLive";
 import LiveAutoRefresh from "@/components/LiveAutoRefresh";
 import RaceCountdown from "@/components/RaceCountdown";
 import RaceHeroBackground from "@/components/RaceHeroBackground";
+import RotatingPredictionPrompt from "@/components/RotatingPredictionPrompt";
+import DriverNewsCarousel from "@/components/DriverNewsCarousel";
+import TrackInsightCarousel from "@/components/TrackInsightCarousel";
+import { getTrackInsights } from "@/lib/f1-track-insights";
+import { getUpcomingDriverNews } from "@/lib/f1-driver-news";
 
 import {
   getRaceHeroImages,
@@ -12,11 +17,14 @@ import {
 
 import {
   getCurrentRaceWeekend,
+  getSeasonRaces,
+  type RaceWeekend,
 } from "@/lib/race-data";
+
+import { createAdminClient } from "@/utils/supabase/admin";
 
 import {
   getF1LiveStatus,
-  formatF1SessionDayTR,
   formatF1SessionTimeTR,
 } from "@/lib/f1-live-status";
 
@@ -80,11 +88,42 @@ type EventCard = {
     | null;
 };
 
-type IntelItem = {
-  label: string;
+type WeeklyCommentary = {
+  id: string;
+  week_label: string;
   title: string;
-  text: string;
+  summary: string;
+  content: string;
+  image_url: string | null;
+  published_at: string | null;
 };
+
+function formatCalendarDate(date: string) {
+  try {
+    return new Intl.DateTimeFormat("tr-TR", {
+      day: "numeric", month: "short", timeZone: "UTC",
+    }).format(new Date(`${date}T12:00:00Z`));
+  } catch {
+    return date;
+  }
+}
+
+function formatSessionTimeTR(date: string, time?: string) {
+  try {
+    // Yarış verisindeki saat UTC'dir; ziyaretçiye Türkiye saatini gösteriyoruz.
+    if (!time) {
+      return `${new Intl.DateTimeFormat("tr-TR", {
+        weekday: "short", day: "numeric", month: "short", timeZone: "UTC",
+      }).format(new Date(`${date}T12:00:00Z`))} · Saat açıklanmadı`;
+    }
+    return new Intl.DateTimeFormat("tr-TR", {
+      weekday: "short", day: "numeric", month: "short",
+      hour: "2-digit", minute: "2-digit", timeZone: "Europe/Istanbul",
+    }).format(new Date(`${date}T${time}`));
+  } catch {
+    return `${date} · Saat açıklanmadı`;
+  }
+}
 
 /* =========================================================
    TEAM COLOURS
@@ -558,110 +597,6 @@ function formatEventType(
    QUICK INTEL
    ========================================================= */
 
-function getQuickIntel(
-  race:
-    any,
-
-  leader?:
-    | DriverStanding
-    | null
-): IntelItem[] {
-  const raceName =
-    (
-      race?.raceName ??
-      ""
-    ).toLowerCase();
-
-  const circuit =
-    (
-      race?.circuitName ??
-      ""
-    ).toLowerCase();
-
-  const leaderCode =
-    leader?.code ??
-    "LDR";
-
-  if (
-    raceName.includes(
-      "singapore"
-    ) ||
-    circuit.includes(
-      "marina"
-    )
-  ) {
-    return [
-      {
-        label:
-          "FİZİKSEL ETKİ",
-
-        title:
-          "Sıcaklık yarışın son bölümünü zorlaştırır",
-
-        text:
-          "Yüksek nem ve sıcaklık pilot konsantrasyonunu ve lastik kullanımını daha kritik hale getirir.",
-      },
-
-      {
-        label:
-          "RİSK KARAKTERİ",
-
-        title:
-          "Safety Car yarışı tersine çevirebilir",
-
-        text:
-          "Dar şehir pisti nedeniyle tek bir temas bile bütün pit stratejilerini değiştirebilir.",
-      },
-
-      {
-        label:
-          "PİLOT ODAĞI",
-
-        title:
-          "Duvarlardan uzak kalan kazanır",
-
-        text:
-          "Marina Bay hatayı çok hızlı cezalandırır. Kontrollü tempo uzun stintlerde büyük avantaj sağlayabilir.",
-      },
-    ];
-  }
-
-  return [
-    {
-      label:
-        "PİST ANALİZİ",
-
-      title:
-        "Araç dengesi belirleyici olacak",
-
-      text:
-        "Tek tur performansı ile uzun stint temposu arasında doğru denge kuran takımlar avantaj yakalayabilir.",
-    },
-
-    {
-      label:
-        "STRATEJİ",
-
-      title:
-        "Pit penceresi kritik",
-
-      text:
-        "Lastik ömrü ve trafik durumu pit zamanlamasını yarış sonucunu değiştirecek kadar önemli hale getirebilir.",
-    },
-
-    {
-      label:
-        "PİLOT ODAĞI",
-
-      title:
-        `${leaderCode} referans noktası`,
-
-      text:
-        "Şampiyona liderinin temposu rakip takımlar için hafta sonu boyunca ana kıyas noktalarından biri olacak.",
-    },
-  ];
-}
-
 /* =========================================================
    PAGE
    ========================================================= */
@@ -669,6 +604,34 @@ function getQuickIntel(
 export default async function HomePage() {
   const race =
     await getCurrentRaceWeekend();
+
+  // Bir sonraki yarıştan başlayarak yalnızca tamamlanmamış GP'ler.
+  const now = Date.now();
+  const seasonYear = race?.raceDate
+    ? Number(race.raceDate.slice(0, 4))
+    : new Date().getUTCFullYear();
+  const seasonRaces = await getSeasonRaces(seasonYear);
+  const remainingRaces = seasonRaces.filter((item: RaceWeekend) => {
+    const starts = Date.parse(`${item.raceDate}T${item.raceTime || "12:00:00Z"}`);
+    if (!Number.isFinite(starts)) return false;
+    if (starts >= now) return true;
+    // Seans devam ediyor ve henüz resmî sonuçlar gelmediğinde aktif GP'yi göster.
+    return Boolean(race && item.round === race.round && now < starts + 12 * 3600000);
+  });
+
+  const editorialAdmin = createAdminClient();
+  const { data: commentaryRow, error: commentaryError } = await editorialAdmin
+    .from("weekly_commentaries")
+    .select("id,week_label,title,summary,content,image_url,published_at")
+    .eq("is_published", true)
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (commentaryError) {
+    // SQL tablo kurulumu tamamlanmamışsa ana sayfa çalışmaya devam eder.
+    console.warn("WEEKLY COMMENTARY FETCH:", commentaryError.message);
+  }
+  const weeklyCommentary = (commentaryRow ?? null) as WeeklyCommentary | null;
 
   /*
     CANLI SEANS:
@@ -685,6 +648,8 @@ export default async function HomePage() {
     driverStandings,
     constructorStandings,
     lastRace,
+    pilotNews,
+    trackInsights,
   ] =
     await Promise.all([
       race
@@ -710,6 +675,10 @@ export default async function HomePage() {
       getConstructorStandings(),
 
       getLastRace(),
+      getUpcomingDriverNews(
+        race ? { raceName: race.raceName, city: race.city, raceDate: race.raceDate } : null
+      ),
+      getTrackInsights(race),
     ]);
 
   const supabase =
@@ -747,73 +716,23 @@ export default async function HomePage() {
     new Date()
       .toISOString();
 
-  const {
-    data:
-      nextEvent,
-  } =
-    await supabase
-      .from(
-        "events"
-      )
-      .select(`
-        id,
-        title,
-        event_type,
-        location_name,
-        start_at,
-        cover_image_url
-      `)
-      .eq(
-        "is_published",
-        true
-      )
-      .gte(
-        "start_at",
-        nowIso
-      )
-      .order(
-        "start_at",
-        {
-          ascending:
-            true,
-        }
-      )
-      .limit(1)
-      .maybeSingle();
-
-  const {
-    data:
-      pastEvent,
-  } =
-    await supabase
-      .from(
-        "events"
-      )
-      .select(`
-        id,
-        title,
-        event_type,
-        location_name,
-        start_at,
-        cover_image_url
-      `)
-      .eq(
-        "is_published",
-        true
-      )
-      .lt(
-        "start_at",
-        nowIso
-      )
-      .order(
-        "start_at",
-        {
-          ascending:
-            false,
-        }
-      )
-      .limit(1)
-      .maybeSingle();
+  // Ana sayfa etkinlikleri: önce yaklaşanlar (erken tarihten geçe),
+  // sonra geçmiş etkinlikler (en yeniden eskiye). Tek bir dikey liste.
+  const eventFields = "id,title,event_type,location_name,start_at,cover_image_url";
+  const [upcomingEventRows, pastEventRows] = await Promise.all([
+    supabase.from("events").select(eventFields)
+      .eq("is_published", true).gte("start_at", nowIso)
+      .order("start_at", { ascending: true }).limit(12),
+    supabase.from("events").select(eventFields)
+      .eq("is_published", true).lt("start_at", nowIso)
+      .order("start_at", { ascending: false }).limit(12),
+  ]);
+  if (upcomingEventRows.error) console.warn("HOME UPCOMING EVENTS:", upcomingEventRows.error.message);
+  if (pastEventRows.error) console.warn("HOME PAST EVENTS:", pastEventRows.error.message);
+  const homeEvents: { event: EventCard; upcoming: boolean }[] = [
+    ...((upcomingEventRows.data ?? []) as EventCard[]).map((event) => ({ event, upcoming: true })),
+    ...((pastEventRows.data ?? []) as EventCard[]).map((event) => ({ event, upcoming: false })),
+  ].slice(0, 16);
 
   const boardMembers =
     (
@@ -821,17 +740,6 @@ export default async function HomePage() {
       []
     ) as BoardMember[];
 
-  const upcomingEvent =
-    (
-      nextEvent ??
-      null
-    ) as EventCard | null;
-
-  const previousEvent =
-    (
-      pastEvent ??
-      null
-    ) as EventCard | null;
 
   const isLive =
     liveStatus.isLive;
@@ -842,83 +750,10 @@ export default async function HomePage() {
   const nextSession =
     liveStatus.nextSession;
 
-  const weekendSchedule =
-    liveStatus.sessions;
-
   const title =
     formatRaceTitle(
       race?.raceName
     );
-
-  const quickIntel =
-    getQuickIntel(
-      race,
-
-      driverStandings[
-        0
-      ] ??
-        null
-    );
-
-  const ticker =
-    race
-      ? [
-          [
-            "SIRADAKİ",
-            race.raceName,
-          ],
-
-          [
-            "ROUND",
-            `${race.round}`,
-          ],
-
-          [
-            "PİST",
-            race.circuitName,
-          ],
-
-          [
-            "KONUM",
-            `${race.city} · ${race.country}`,
-          ],
-
-          [
-            "SEANS",
-
-            isLive
-              ? `● ${currentSession?.shortLabel ?? "CANLI"}`
-              : nextSession
-              ? `${nextSession.shortLabel} · ${formatF1SessionTimeTR(
-                  nextSession.startTimestamp
-                )}`
-              : "BEKLENİYOR",
-          ],
-
-          [
-            "ŞAMPİYONA",
-
-            driverStandings[0]
-              ? `${driverStandings[0].code} · ${driverStandings[0].points} P`
-              : "GÜNCELLENİYOR",
-          ],
-        ]
-      : [
-          [
-            "F1 MEDİPOL",
-            "RACE HUB",
-          ],
-
-          [
-            "PADDOCK",
-            "TOPLULUK",
-          ],
-
-          [
-            "MANAGER",
-            "CAREER MODE",
-          ],
-        ];
 
   const marqueeMembers =
     boardMembers.length
@@ -927,9 +762,6 @@ export default async function HomePage() {
           ...boardMembers,
         ]
       : [];
-
-  const nowTimestamp =
-    Date.now();
 
   return (
     <>
@@ -1975,9 +1807,8 @@ export default async function HomePage() {
             display: grid;
 
             grid-template-columns:
-              minmax(0,1.35fr)
-              minmax(0,.825fr)
-              minmax(0,.825fr);
+              minmax(0,1.12fr)
+              minmax(0,.88fr);
 
             gap: 14px;
 
@@ -2341,7 +2172,161 @@ export default async function HomePage() {
           }
 
           /* =================================================
-             PREDICTION
+             PREDICTION — BÜYÜK, DÖNÜŞÜMLÜ SENARYO KARTI
+             ================================================= */
+
+          .prediction-card { text-decoration: none; cursor: pointer; }
+          .prediction-card:hover { border-color: color-mix(in srgb,var(--accent),transparent 48%); }
+          .prediction-card .feature-kicker { font-size: 12px; }
+          .prediction-card h3 {
+            margin: 16px 0 9px;
+            font-size: clamp(32px,3vw,43px);
+            line-height: 1.09;
+            font-weight: 950;
+            letter-spacing: -.045em;
+          }
+          .prediction-card .prediction-intro {
+            max-width: 530px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.55;
+          }
+          .prediction-top-points {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            font-size: 25px;
+            font-weight: 1000;
+            line-height: 1;
+            color: #f1cc64;
+          }
+          .prediction-top-points span {
+            font-size: 8px;
+            font-weight: 900;
+            letter-spacing: .08em;
+            color: var(--muted);
+          }
+          .prediction-spotlight {
+            position: relative;
+            min-height: 236px;
+            margin-top: 20px;
+            overflow: hidden;
+            isolation: isolate;
+            border: 1px solid color-mix(in srgb,var(--accent),transparent 71%);
+            border-radius: 15px;
+            background: linear-gradient(136deg,rgba(225,6,0,.17),rgba(225,6,0,.045) 48%,rgba(255,255,255,.025) 100%);
+          }
+          .prediction-spotlight::before {
+            content: "?";
+            position: absolute;
+            z-index: -1;
+            right: -5px;
+            bottom: -52px;
+            color: color-mix(in srgb,var(--accent),transparent 93%);
+            font-size: 260px;
+            font-weight: 1000;
+            line-height: 1;
+            pointer-events: none;
+          }
+          .prediction-spotlight::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 3px;
+            background: linear-gradient(90deg,var(--accent),rgba(255,255,255,.2),transparent);
+            opacity: .9;
+          }
+          .prediction-spotlight-inner { padding: 24px 25px 22px; }
+          .prediction-spotlight-question { animation: predictionQuestionIn .52s cubic-bezier(.2,.75,.2,1) both; }
+          @keyframes predictionQuestionIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .prediction-spotlight-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+          }
+          .prediction-spotlight-category {
+            color: var(--accent);
+            font-size: 10px;
+            font-weight: 1000;
+            letter-spacing: .11em;
+          }
+          .prediction-spotlight-counter {
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 850;
+            font-variant-numeric: tabular-nums;
+          }
+          .prediction-spotlight-question h4 {
+            max-width: 460px;
+            min-height: 69px;
+            margin: 18px 0 11px;
+            color: var(--text);
+            font-size: clamp(25px,2.4vw,34px);
+            line-height: 1.18;
+            font-weight: 950;
+            letter-spacing: -.035em;
+          }
+          .prediction-spotlight-question p {
+            max-width: 440px;
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+          }
+          .prediction-spotlight-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+            margin-top: 19px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border);
+          }
+          .prediction-spotlight-choice {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: 1000;
+            letter-spacing: .05em;
+          }
+          .prediction-spotlight-choice em { font-style: normal; color: var(--accent); }
+          .prediction-spotlight-hint {
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 800;
+          }
+          .prediction-summary-line {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 9px 19px;
+            margin: 20px 0 2px;
+            color: var(--muted);
+            font-size: 10px;
+            font-weight: 950;
+            letter-spacing: .04em;
+          }
+          .prediction-card .feature-footer { font-size: 11px; }
+          @media (prefers-reduced-motion: reduce) {
+            .prediction-spotlight-question { animation: none; }
+          }
+          @media (max-width: 740px) {
+            .prediction-spotlight { min-height: 220px; }
+            .prediction-spotlight-inner { padding: 20px; }
+            .prediction-spotlight-question h4 { font-size: clamp(24px,6vw,30px); min-height: 0; }
+            .prediction-card h3 { font-size: clamp(31px,7.3vw,41px); }
+          }
+
+          /* =================================================
+             PREDICTION — LEGACY STYLES (HARİCİ ALANLAR İÇİN)
              ================================================= */
 
           .prediction-overview {
@@ -2468,34 +2453,114 @@ export default async function HomePage() {
           }
 
           /* =================================================
-             PADDOCK
+             PADDOCK — YATAY ŞERİT
              ================================================= */
 
-          .paddock-line {
-            padding:
-              11px 0;
-
-            border-bottom:
-              1px solid
-              var(--border);
+          .paddock-wide {
+            position: relative;
+            isolation: isolate;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: minmax(220px,.75fr) minmax(0,1.7fr);
+            gap: 27px;
+            align-items: center;
+            margin-top: 14px;
+            padding: 27px 29px;
+            border: 1px solid var(--border);
+            border-radius: 17px;
+            background: linear-gradient(105deg,var(--panel),var(--panel-deep));
+          }
+          .paddock-wide::before {
+            content: "";
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            width: 3px;
+            background: linear-gradient(180deg,var(--accent),transparent 96%);
+          }
+          .paddock-wide::after {
+            content: "";
+            z-index: -1;
+            position: absolute;
+            width: 360px; height: 270px;
+            left: -130px; top: -185px;
+            pointer-events: none;
+            border-radius: 50%;
+            background: var(--accent);
+            opacity: .08;
+            filter: blur(85px);
+          }
+          .paddock-wide-kicker {
+            display: flex; align-items: center; gap: 9px;
+            color: var(--accent);
+            font-size: 9px; font-weight: 950; letter-spacing: .12em;
+          }
+          .paddock-wide-pulse {
+            height: 7px; width: 7px; flex: 0 0 7px;
+            border-radius: 50%; background: var(--accent);
+            box-shadow: 0 0 15px var(--accent);
+          }
+          .paddock-wide-intro h3 {
+            margin: 10px 0 6px;
+            color: var(--text);
+            font-size: clamp(25px,2.55vw,35px);
+            letter-spacing: -.04em;
+            line-height: 1.1;
+          }
+          .paddock-wide-intro p {
+            max-width: 32ch;
+            margin: 0;
+            color: var(--muted);
+            font-size: 11px; line-height: 1.5;
+          }
+          .paddock-wide-cta {
+            display: inline-flex; align-items: center; gap: 15px;
+            margin-top: 18px;
+            color: var(--accent);
+            font-size: 10px; font-weight: 950;
+            text-decoration: none;
+          }
+          .paddock-wide-cta:hover { gap: 19px; }
+          .paddock-wide-links {
+            display: grid;
+            grid-template-columns: repeat(3,minmax(0,1fr));
+            gap: 10px;
+          }
+          .paddock-wide-tile {
+            position: relative;
+            display: flex; flex-direction: column;
+            min-height: 145px;
+            padding: 17px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--soft);
+            color: var(--text);
+            text-decoration: none;
+            transition: background .18s ease,border-color .18s ease,transform .18s ease;
+          }
+          .paddock-wide-tile:hover,.paddock-wide-tile:focus-visible {
+            border-color: var(--accent);
+            background: rgba(225,6,0,.07);
+            transform: translateY(-2px);
+          }
+          .paddock-wide-tile-icon {
+            display: grid; place-items: center;
+            width: 34px; height: 34px;
+            margin-bottom: 13px;
+            border-radius: 9px;
+            background: var(--panel);
+            font-size: 17px;
+          }
+          .paddock-wide-tile strong { font-size: 12px; font-weight: 900; }
+          .paddock-wide-tile small {
+            margin-top: 6px; padding-right: 7px;
+            color: var(--muted);
+            font-size: 9px; line-height: 1.45;
+          }
+          .paddock-wide-tile-arrow {
+            position: absolute; top: 17px; right: 15px;
+            color: var(--accent); font-size: 16px;
           }
 
-          .paddock-line b {
-            display: block;
-
-            font-size: 12px;
-          }
-
-          .paddock-line span {
-            display: block;
-
-            margin-top: 4px;
-
-            color:
-              var(--muted);
-
-            font-size: 10px;
-          }
 
           /* =================================================
              FEATURE FOOTER
@@ -2987,6 +3052,402 @@ export default async function HomePage() {
           }
 
           /* =================================================
+             ETKİNLİK LİSTESİ · İKİ OYUN · HERO PROGRAMI
+             ================================================= */
+
+          .events-stack { display:grid; gap:10px; margin-top:14px; }
+          .event-list-row { display:grid; grid-template-columns: 54px 150px minmax(0,1fr) 35px;
+            gap:22px; align-items:center; min-height:126px; padding:12px 24px 12px 18px;
+            border:1px solid var(--border); border-radius:15px; background:var(--panel);
+            color:var(--text); text-decoration:none; transition:border-color .2s,transform .2s,background .2s; }
+          .event-list-row:hover { border-color:var(--accent); transform:translateY(-1px);
+            background:color-mix(in srgb,var(--panel),var(--accent) 5%); }
+          .event-list-index { color:var(--accent); font-size:27px; font-weight:950;
+            font-variant-numeric:tabular-nums; opacity:.85; }
+          .event-list-cover { height:99px; overflow:hidden; display:grid; place-items:center;
+            border-radius:10px; background:linear-gradient(145deg,#510e15,#151820); color:#fff;
+            border:1px solid var(--border); font-weight:950; font-size:23px; }
+          .event-list-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+          .event-list-info { min-width:0; }
+          .event-list-meta { display:flex; align-items:center; gap:9px; color:var(--accent);
+            font-size:10px; font-weight:900; letter-spacing:.05em; }
+          .event-list-meta i { font-style:normal; color:var(--muted); }
+          .event-list-info h3 { margin:7px 0 4px; color:var(--text); font-size:clamp(18px,2vw,24px);
+            line-height:1.2; overflow-wrap:anywhere; }
+          .event-list-info p { margin:0; color:var(--muted); font-size:12px; }
+          .event-list-arrow { display:grid; place-items:center; width:34px; height:34px;
+            color:var(--accent); border:1px solid var(--border); border-radius:50%; font-size:19px; }
+          .events-stack-empty { padding:30px 25px; border:1px solid var(--border); border-radius:14px;
+            background:var(--panel); color:var(--muted); font-size:13px; }
+
+          .arcade-home-grid { margin-top:14px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+          .arcade-home-card { position:relative; min-height:310px; overflow:hidden;
+            display:flex; flex-direction:column; justify-content:flex-start; padding:33px;
+            color:#fff!important; text-decoration:none; border:1px solid rgba(255,255,255,.11);
+            border-radius:18px; transition:transform .2s,border-color .2s; }
+          .arcade-home-card:hover { transform:translateY(-3px); border-color:rgba(255,100,92,.6); }
+          .arcade-home-manager { background:radial-gradient(circle at 100% 0%,rgba(255,75,70,.22),transparent 53%),linear-gradient(130deg,#301115,#171a22 75%); }
+          .arcade-home-whatif { background:radial-gradient(circle at 82% 16%,rgba(240,190,85,.14),transparent 42%),linear-gradient(120deg,#1c1625,#141a26 78%); }
+          .arcade-home-kicker { color:#ff736d; font-size:10px; font-weight:950; letter-spacing:.14em; }
+          .arcade-home-whatif .arcade-home-kicker { color:#f4cb74; }
+          .arcade-home-card h3 { margin:18px 0 10px; color:#fff!important; font-size:clamp(28px,3vw,41px); line-height:1.10; letter-spacing:-.045em; }
+          .arcade-home-card p { max-width:48ch; color:#b7b4bd; line-height:1.6; font-size:13px; }
+          .arcade-home-bottom { margin-top:auto; padding-top:22px; display:flex; align-items:center;
+            justify-content:space-between; gap:12px; font-size:11px; font-weight:950; color:#fff;
+            letter-spacing:.07em; }
+          .arcade-home-bottom b { width:38px; height:38px; display:grid; place-items:center;
+            border:1px solid rgba(255,255,255,.18); border-radius:50%; font-size:22px; }
+
+          .intel-weekend-program { margin-top:auto; padding:16px 16px 10px;
+            border:1px solid var(--hero-border); border-radius:13px;
+            background:rgba(255,255,255,.028); color:#fff; }
+          .intel-program-header { display:flex; justify-content:space-between; align-items:center;
+            gap:8px; padding-bottom:9px; }
+          .intel-program-header span { font-size:9px; font-weight:950; letter-spacing:.08em; color:var(--accent); }
+          .intel-program-header small { font-size:8px; font-weight:850; color:var(--hero-muted); }
+          .intel-program-row { display:flex; align-items:center; justify-content:space-between; gap:10px;
+            padding:11px 0; border-top:1px solid var(--hero-border); }
+          .intel-program-row strong { font-size:12px; font-weight:850; }
+          .intel-program-row time { color:var(--hero-muted); font-size:10px; text-align:right; }
+          .intel-program-empty { padding:17px 0; color:var(--hero-muted); font-size:11px; }
+          @media(max-width:1050px){ .intel-weekend-program {margin-top:15px;} }
+          @media(max-width:740px){
+            .arcade-home-grid{grid-template-columns:1fr;}
+            .arcade-home-card{min-height:275px;padding:26px;}
+            .event-list-row { grid-template-columns:35px 82px minmax(0,1fr) 19px; gap:10px;
+              padding:11px; min-height:104px; }
+            .event-list-cover { height:78px; }
+            .event-list-index { font-size:19px; }
+            .event-list-info h3 { font-size:16px; }
+            .event-list-info p { font-size:10px; }
+            .event-list-meta { font-size:8px; flex-wrap:wrap; }
+            .event-list-arrow { border:0; width:19px; height:30px; }
+          }
+
+          /* =================================================
+             HAFTALIK YORUM / KALAN YARIŞLAR
+             ================================================= */
+
+          .intel-weekly-note {
+            display: grid; gap: 5px; margin-top: 13px; padding: 15px 17px;
+            border: 1px solid rgba(255,72,64,.27); border-radius: 13px;
+            background: linear-gradient(110deg,rgba(225,6,0,.13),rgba(255,255,255,.018));
+            color: #fff; text-decoration: none; transition: border-color .2s;
+          }
+          .intel-weekly-note:hover { border-color: var(--accent); }
+          .intel-weekly-note span { color: var(--accent); font-size: 8px; font-weight: 900; letter-spacing: .07em; }
+          .intel-weekly-note strong { color: #fff; font-size: 17px; }
+          .intel-weekly-note small { color: var(--hero-muted); font-size: 10px; line-height: 1.4;
+            display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+          .intel-weekly-note em { margin-top: 5px; font-size: 9px; font-style: normal; font-weight: 900; color: var(--accent); }
+          /* Yarış kartı: başlık önde, satıra dokununca gerçek seans takvimi açılır. */
+          .feature-card.live { padding-top: 24px; }
+          .live-titleline { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+          .feature-card.live .live-titleline h3 {
+            margin: 0; font-size: clamp(32px,3.2vw,43px); font-weight: 950;
+            letter-spacing: -.045em; line-height: 1.12;
+          }
+          .live-titleline .feature-icon { flex: 0 0 40px; width: 40px; height: 40px; }
+          .remaining-head { margin-top: 19px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+          .remaining-head strong { font-size: 10px; letter-spacing: .08em; }
+          .remaining-head span { color: var(--accent); font-size: 9px; font-weight: 900; }
+          .remaining-list { max-height: 326px; overflow-y: auto; scrollbar-width: thin;
+            scrollbar-color: rgba(255,72,64,.4) transparent; margin-top: 4px; }
+          .remaining-detail { border-bottom: 1px solid var(--border); }
+          .remaining-detail[open] { background: linear-gradient(90deg,rgba(225,6,0,.055),transparent 92%); }
+          .remaining-row { display: grid; grid-template-columns: 39px minmax(0,1fr) auto 15px;
+            gap: 10px; align-items: center; min-height: 61px; padding: 0 10px;
+            cursor: pointer; list-style: none; transition: background .18s; }
+          .remaining-row::-webkit-details-marker { display: none; }
+          .remaining-row:hover, .remaining-row:focus-visible { background: rgba(225,6,0,.09); outline: none; }
+          .remaining-row:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+          .remaining-detail.next > .remaining-row { background: linear-gradient(90deg,rgba(225,6,0,.11),transparent 85%); }
+          .remaining-round { font-weight: 950; font-size: 10px; color: var(--accent); }
+          .remaining-name { min-width: 0; }
+          .remaining-name strong { font-size: 12px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .remaining-name small { display: block; margin-top: 3px; color: var(--muted); font-size: 9px; }
+          .remaining-row time { color: var(--muted); font-size: 10px; font-weight: 800; white-space: nowrap; }
+          .remaining-expand { color: var(--accent); display: inline-block; font-size: 18px;
+            line-height: 1; transition: transform .18s; }
+          .remaining-detail[open] .remaining-expand { transform: rotate(180deg); }
+          .remaining-sessions { padding: 2px 16px 15px 59px; }
+          .remaining-session-heading { display: flex; justify-content: space-between; gap: 8px;
+            border-bottom: 1px solid var(--border); padding: 9px 0; }
+          .remaining-session-heading span { color: var(--muted); font-size: 8px; font-weight: 900; letter-spacing: .08em; }
+          .remaining-session-heading span:last-child { color: var(--accent); }
+          .remaining-session { display: flex; justify-content: space-between; gap: 12px;
+            align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+          .remaining-session:last-child { border-bottom: none; }
+          .remaining-session strong { color: var(--text); font-size: 10px; font-weight: 800; }
+          .remaining-session time { color: var(--muted); font-size: 10px; white-space: nowrap; }
+          .remaining-session.race-session strong, .remaining-session.race-session time { color: var(--accent); font-weight: 950; }
+          .remaining-empty { padding: 40px 10px; font-size: 12px; color: var(--muted); }
+
+          .weekly-editorial { margin-top: 14px; overflow: hidden; border-radius: 18px;
+            border: 1px solid var(--border); background: linear-gradient(145deg,var(--panel),var(--panel-deep)); }
+          .weekly-editorial-head { display: flex; align-items: baseline; flex-wrap: wrap;
+            column-gap: 17px; row-gap: 7px; padding: 19px 27px; border-bottom: 1px solid var(--border);
+            background: linear-gradient(90deg,rgba(225,6,0,.1),transparent); }
+          .weekly-editorial-head span { color: var(--accent); font-size: 9px; font-weight: 1000; letter-spacing: .13em; }
+          .weekly-editorial-head strong { color: var(--text); font-size: 21px; font-weight: 950; }
+          .weekly-editorial-head small { margin-left: auto; color: var(--muted); font-size: 9px; letter-spacing: .1em; }
+          .weekly-editorial-body { display: grid; grid-template-columns: minmax(0,1.3fr) minmax(210px,.7fr);
+            gap: 30px; padding: 30px; align-items: start; }
+          .weekly-editorial-body:not(:has(.weekly-image)) { grid-template-columns: 1fr; }
+          .weekly-edition { font-size: 10px; font-weight: 900; color: var(--accent); letter-spacing: .11em; }
+          .weekly-editorial-copy h2 { margin: 9px 0 13px; font-size: clamp(25px,3vw,38px); line-height: 1.15; }
+          .weekly-lead { font-size: 15px; font-weight: 650; color: var(--text); line-height: 1.6; }
+          .weekly-longtext { margin-top: 19px; max-width: 83ch; white-space: pre-line;
+            line-height: 1.9; color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+          .weekly-author { padding-top: 19px; margin-top: 23px; border-top: 1px solid var(--border);
+            color: var(--accent); letter-spacing: .08em; font-size: 9px; font-weight: 950; }
+          .weekly-image { width: 100%; overflow: hidden; border-radius: 12px; border: 1px solid var(--border); background: #11151c; }
+          .weekly-image img { width: 100%; max-height: 510px; object-fit: cover; display: block; }
+          .weekly-empty { display: flex; align-items: center; gap: 17px; padding: 40px 30px; }
+          .weekly-empty > span { font-size: 40px; color: var(--accent); }
+          .weekly-empty strong { display: block; font-size: 17px; }
+          .weekly-empty p { color: var(--muted); font-size: 12px; }
+
+          @media (max-width: 740px) {
+            .weekly-editorial-body { grid-template-columns: 1fr; padding: 21px; }
+            .weekly-editorial-head { padding: 18px 21px; }
+            .weekly-editorial-head small { margin-left: 0; }
+            .weekly-editorial-body:not(:has(.weekly-image)) { grid-template-columns: 1fr; }
+            .remaining-name strong { font-size: 11px; }
+            .remaining-sessions { padding-left: 14px; }
+            .remaining-session { flex-wrap: wrap; gap: 4px; }
+            .remaining-session time { white-space: normal; }
+            .feature-card.live .live-titleline h3 { font-size: 34px; }
+          }
+
+
+          /* 2026 Ana sayfa: yarış bilgileri ve sade analiz kartı */
+          .hero-race-brief {
+            display: flex; align-items: center; gap: 14px;
+            margin-top: 23px; max-width: 620px;
+            padding: 15px 18px; border-radius: 13px;
+            border: 1px solid rgba(255,255,255,.14);
+            background: linear-gradient(110deg,rgba(255,65,57,.13),rgba(8,12,18,.56));
+            box-shadow: 0 14px 28px rgba(0,0,0,.12);
+            backdrop-filter: blur(12px);
+          }
+          .hero-brief-mark { font-size: 25px; line-height: 1; color: var(--accent); }
+          .hero-brief-copy { flex: 1 1 auto; min-width: 120px; }
+          .hero-brief-side { flex: 1 1 0; min-width: 115px; text-align: left;
+            padding-left: 16px; border-left: 1px solid rgba(255,255,255,.12); }
+          .hero-brief-copy span, .hero-brief-side span {
+            display: block; margin-bottom: 5px; color: var(--hero-muted);
+            font-weight: 900; letter-spacing: .10em; font-size: 9px;
+          }
+          .hero-brief-copy strong, .hero-brief-side strong {
+            color: #fff; font-size: clamp(12px, 1.1vw, 15px); line-height: 1.45;
+          }
+          .intel-stage { height: 258px; }
+          .intel-slide { padding: 29px 24px; display: flex; flex-direction: column;
+            justify-content: center; gap: 13px; background: none !important; }
+          .intel-slide::after, .intel-slide::before { display: none !important; content: none !important; }
+          .intel-slide h3 { margin: 0; max-width: 23ch; font-size: clamp(23px,2.1vw,30px);
+            line-height: 1.18; letter-spacing: -.035em; }
+          .intel-slide p { max-width: 36ch; margin: 0; font-size: 12px; line-height: 1.65; }
+          .feature-card.live .live-titleline h3 { font-size: clamp(25px, 2.4vw, 33px); letter-spacing: -.035em; }
+          .prediction-card > h3 { font-size: clamp(27px, 2.5vw, 35px); }
+          @media (max-width: 740px) {
+            .hero-race-brief { flex-wrap: wrap; gap: 10px; padding: 13px 14px; }
+            .hero-brief-side { flex: 1 1 100%; text-align: left; padding: 10px 0 0;
+              border-left: 0; border-top: 1px solid rgba(255,255,255,.12); }
+            .feature-card.live .live-titleline h3 { font-size: 27px; }
+          }
+
+          /* Sağ sütunda kompakt pilot haberleri + haftalık yorum */
+          .intel { gap: 12px; padding: 24px; min-width: 0; }
+          .intel-head h2 { margin: 0; font-size: clamp(21px, 1.75vw, 25px); line-height: 1.15; }
+          .pilot-news-card {
+            position: relative; min-height: 176px; padding: 16px 17px;
+            border: 1px solid rgba(255,72,64,.25); border-radius: 13px;
+            background: linear-gradient(120deg,rgba(225,6,0,.075),rgba(255,255,255,.025));
+            color: #fff;
+          }
+          .pilot-news-topline { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+          .pilot-news-topline > span:first-child { color:var(--accent); font-size: 8px; font-weight:950; letter-spacing:.07em; }
+          .pilot-news-counter { color:var(--hero-muted); font-size:9px; white-space:nowrap; }
+          .pilot-news-content { margin-top: 17px; animation: pilotNewsFade .45s ease both; }
+          @keyframes pilotNewsFade { from { opacity:.45; transform:translateY(5px); } to {opacity:1; transform:none;} }
+          .pilot-news-title { color:#fff !important; text-decoration:none; display:-webkit-box;
+            -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+            font-size: 16px; font-weight:850; line-height:1.32; }
+          .pilot-news-title:hover { color:var(--accent) !important; }
+          .pilot-news-meta { margin-top: 10px; display:flex; align-items:center; justify-content:space-between; gap:8px;
+            color:var(--hero-muted); font-size: 9px; }
+          .pilot-news-meta a, .pilot-news-empty a { color:var(--accent) !important; text-decoration:none; font-weight:950;
+            font-size:9px; white-space:nowrap; }
+          .pilot-news-empty { margin-top: 17px; }
+          .pilot-news-empty strong { font-size: 15px; font-weight:900; }
+          .pilot-news-empty p { margin: 7px 0 10px; font-size:10px; color:var(--hero-muted); line-height:1.55; }
+          .pilot-news-controls { position:absolute; right:12px; bottom:9px; display:flex; gap:5px; }
+          .pilot-news-controls button { color:#fff; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.12);
+            width:26px; height:23px; border-radius:6px; cursor:pointer; font-size:18px; }
+          .pilot-news-controls button:hover { border-color:var(--accent); }
+          .pilot-news-card:has(.pilot-news-controls) .pilot-news-meta { padding-right:57px; }
+          .intel-weekly-note { margin-top:0; min-height:118px; justify-content:center; padding: 14px 17px; }
+          .intel-weekly-note strong { font-size: 15px; }
+          @media (prefers-reduced-motion: reduce) { .pilot-news-content { animation:none; } }
+          @media (max-width:740px) { .intel { padding:19px; } .pilot-news-card { min-height:160px; } }
+
+          /* Dört etkinlik görünür; liste kendi içerisinde kaydırılır. */
+          .events-stack {
+            max-height: 534px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 8px;
+            align-content: start;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,80,75,.55) rgba(255,255,255,.04);
+          }
+          .events-stack:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+          .events-stack::-webkit-scrollbar { width: 7px; }
+          .events-stack::-webkit-scrollbar-thumb { background: rgba(255,80,75,.46); border-radius: 20px; }
+          .events-stack::-webkit-scrollbar-track { background: rgba(255,255,255,.035); border-radius: 20px; }
+          @media(max-width:740px) {
+            .events-stack { max-height: 450px; padding-right: 4px; }
+          }
+
+          /* Pist hakkında kısa ve dönüşümlü bilgi kartı. */
+          .track-insight-card {
+            position:relative; margin-top:auto; padding: 15px 17px 36px;
+            border: 1px solid var(--hero-border); border-radius: 13px;
+            background: linear-gradient(130deg,rgba(255,255,255,.04),rgba(225,6,0,.045));
+            color: #fff; min-height: 145px;
+          }
+          .track-insight-text { animation: pilotNewsFade .36s ease both; }
+          .track-insight-text strong { display:block; font-size: 15px; line-height:1.35; font-weight:900; }
+          .track-insight-text p { margin:8px 0 0; font-size:11px; line-height:1.55; color:var(--hero-muted); }
+          .track-insight-source { display:inline-block; margin-top:8px; font-size:9px; font-weight:900; color:var(--accent)!important; text-decoration:none; }
+          .track-insight-actions { position:absolute; bottom:11px; left:17px; right:17px; display:flex; align-items:center; justify-content:space-between; }
+          .track-insight-count { font-size:9px; color:var(--hero-muted); font-weight:850; }
+          .track-insight-buttons { display:flex; gap:5px; }
+          .track-insight-buttons button { width:26px; height:24px; cursor:pointer; color:#fff;
+            border:1px solid rgba(255,255,255,.16); border-radius:6px; background:rgba(255,255,255,.04); }
+          .track-insight-buttons button:hover { border-color:var(--accent); }
+          @media(prefers-reduced-motion:reduce){ .track-insight-text{animation:none;} }
+          @media(max-width:740px){ .track-insight-card{margin-top:8px;min-height:128px;} }
+
+          /* Son duzenleme: sag kart metinleri ayni soldan baslar. */
+          .intel .intel-weekly-note {
+            justify-content: stretch;
+            justify-items: start;
+            grid-template-columns: minmax(0, 1fr);
+            align-content: center;
+            text-align: left;
+          }
+          .intel .intel-weekly-note > * { max-width: 100%; }
+          @media (min-width: 1051px) {
+            .intel {
+              display: grid;
+              grid-template-rows: auto minmax(170px, 1.1fr) minmax(110px, .72fr) minmax(150px, 1fr);
+              align-content: stretch;
+              gap: 12px;
+            }
+            .intel .pilot-news-card,
+            .intel .intel-weekly-note,
+            .intel .track-insight-card {
+              min-width: 0;
+              min-height: 0;
+              width: 100%;
+              height: 100%;
+              margin: 0;
+              box-sizing: border-box;
+            }
+            .intel .pilot-news-card { padding-bottom: 36px; overflow: hidden; }
+            .intel .intel-weekly-note { align-self: stretch; }
+          }
+          /* Takvim: ilk 4-5 satir gorunur, kalanlar kutuda kaydirilir.
+             Bir onceki sinirsiz yukseklik kartlari gereksiz uzatiyordu. */
+          /* Iki komsu kart, icerikleri farkli olsa da ayni alt hizada biter. */
+          .feature-grid { align-items: stretch; }
+          .feature-card.live {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            padding-bottom: 20px;
+          }
+          .feature-card.live .remaining-head { flex: 0 0 auto; }
+          .feature-card.live .remaining-list {
+            flex: 0 1 auto;
+            max-height: 305px;
+            min-height: 0;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+          }
+          .feature-card.live .feature-footer {
+            position: static;
+            flex: 0 0 auto;
+            margin-top: auto;
+          }
+          .remaining-name strong { font-size: 13px; }
+          @media (max-width: 740px) {
+            .feature-card.live { min-height: 0; }
+            .feature-card.live .feature-footer { margin-top: 12px; }
+            .feature-card.live .remaining-list { max-height: 305px; }
+          }
+
+          /* Son duzenleme: sol kart dort yarisi gosterir; sag kart
+             kompakt kalir. Sol karti boslukla uzatmiyoruz. */
+          .feature-card.live .remaining-list {
+            max-height: 248px;
+            flex: 0 1 auto;
+          }
+          .feature-card.live .feature-footer {
+            margin-top: 10px;
+          }
+          .prediction-card {
+            min-height: 0;
+            padding: 21px 23px 66px;
+          }
+          .prediction-card > h3 {
+            margin: 10px 0 0;
+            font-size: clamp(26px, 2.3vw, 33px);
+            line-height: 1.13;
+          }
+          .prediction-card .prediction-spotlight {
+            min-height: 190px;
+            margin-top: 15px;
+          }
+          .prediction-card .prediction-spotlight-inner {
+            padding: 18px 20px 16px;
+          }
+          .prediction-card .prediction-spotlight-question h4 {
+            min-height: 0;
+            margin: 12px 0 6px;
+            font-size: clamp(23px, 2.15vw, 29px);
+            line-height: 1.15;
+          }
+          .prediction-card .prediction-spotlight-question p {
+            font-size: 11px;
+            line-height: 1.4;
+          }
+          .prediction-card .prediction-spotlight-bottom {
+            margin-top: 13px;
+            padding-top: 11px;
+          }
+          .prediction-card .prediction-summary-line {
+            margin: 12px 0 0;
+          }
+          .prediction-card .feature-footer {
+            bottom: 17px;
+            left: 23px;
+            right: 23px;
+          }
+          @media (max-width: 740px) {
+            .feature-card.live .remaining-list { max-height: 248px; }
+            .prediction-card { padding: 21px 20px 68px; }
+            .prediction-card .prediction-spotlight { min-height: 195px; }
+            .prediction-card .prediction-spotlight-question h4 { font-size: 25px; }
+            .prediction-card .feature-footer { left: 20px; right: 20px; }
+          }
+
+          /* =================================================
              RESPONSIVE
              ================================================= */
 
@@ -3034,9 +3495,12 @@ export default async function HomePage() {
             }
 
             .feature-card.live {
-              grid-column:
-                1 / -1;
+              grid-column: auto;
             }
+            .paddock-wide {
+              grid-template-columns: 1fr;
+            }
+            .paddock-wide-intro p { max-width: none; }
 
             .champ-layout {
               grid-template-columns:
@@ -3063,9 +3527,13 @@ export default async function HomePage() {
             }
 
             .feature-card.live {
-              grid-column:
-                auto;
+              grid-column: auto;
             }
+            .paddock-wide { padding: 22px 20px; gap: 18px; }
+            .paddock-wide-links { grid-template-columns: 1fr; }
+            .paddock-wide-tile { min-height: 86px; padding: 13px 14px 13px 59px; justify-content: center; }
+            .paddock-wide-tile-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); margin: 0; }
+            .paddock-wide-tile small { margin-top: 3px; }
 
             .hero-main {
               padding:
@@ -3123,43 +3591,6 @@ export default async function HomePage() {
         <div className="racing-line three" />
 
         <div className="wrap">
-
-          {/* =================================================
-              TICKER
-              ================================================= */}
-
-          <div className="ticker">
-            <div className="ticker-track">
-              {[
-                ...ticker,
-                ...ticker,
-              ].map(
-                (
-                  item,
-                  index
-                ) => (
-                  <div
-                    className="tick"
-                    key={
-                      index
-                    }
-                  >
-                    <b>
-                      {
-                        item[0]
-                      }
-                    </b>
-
-                    <span>
-                      {
-                        item[1]
-                      }
-                    </span>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
 
           {/* =================================================
               HERO
@@ -3226,10 +3657,6 @@ export default async function HomePage() {
                   </span>
                 </h1>
 
-                <div className="hero-sub">
-                  F1 MEDİPOL · RACE WEEKEND
-                </div>
-
                 {race && (
                   <div className="race-signature">
                     <span>
@@ -3276,21 +3703,20 @@ export default async function HomePage() {
                   </div>
                 )}
 
-                <div className="buttons">
-                  <Link
-                    href="/live"
-                    className="red-btn"
-                  >
-                    YARIŞ MERKEZİNE GİT →
-                  </Link>
+                {race && (
+                  <div className="hero-race-brief" aria-label="Grand Prix hızlı yarış bilgileri">
+                    <div className="hero-brief-mark" aria-hidden="true">✦</div>
+                    <div className="hero-brief-copy">
+                      <span>YARIŞ BAŞLANGICI</span>
+                      <strong>{formatSessionTimeTR(race.raceDate, race.raceTime)}</strong>
+                    </div>
+                    <div className="hero-brief-side">
+                      <span>SIRADAKİ SEANS</span>
+                      <strong>{isLive ? (currentSession?.shortLabel ?? "Canlı") : nextSession ? `${nextSession.shortLabel} · ${formatF1SessionTimeTR(nextSession.startTimestamp)}` : "Program bekleniyor"}</strong>
+                    </div>
 
-                  <Link
-                    href="/predict"
-                    className="ghost-btn"
-                  >
-                    TAHMİN YAP
-                  </Link>
-                </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -3298,87 +3724,28 @@ export default async function HomePage() {
 
             <aside className="intel">
               <div className="intel-head">
-                <div>
-                  <div className="eyebrow">
-                    THIS WEEKEND
-                  </div>
-
-                  <h2>
-                    Quick Intel
-                  </h2>
-                </div>
-
-                <div className="intel-status">
-                  AUTO
-                </div>
+                <h2>Yarışa Başlarken</h2>
               </div>
 
-              <div className="intel-stage">
-                <div className="intel-track">
-                  {quickIntel.map(
-                    (
-                      item,
-                      index
-                    ) => (
-                      <article
-                        className="intel-slide"
-                        key={
-                          item.label
-                        }
-                      >
-                        <div className="intel-number">
-                          0
-                          {index +
-                            1}
-                        </div>
+              <DriverNewsCarousel
+                items={pilotNews}
+                raceName={race?.raceName ?? "Gelecek Grand Prix"}
+              />
 
-                        <span className="intel-label">
-                          {
-                            item.label
-                          }
-                        </span>
+              <a href="#haftalik-yorum" className="intel-weekly-note">
+                <span>HAFTALIK MAGAZİN</span>
+                <strong>İdil Boyalı'dan Haftalık Yorum</strong>
+                <small>{weeklyCommentary?.summary || "Haftanın yarış değerlendirmesi burada yayınlanacak."}</small>
+                <em>YORUMU OKU →</em>
+              </a>
 
-                        <h3>
-                          {
-                            item.title
-                          }
-                        </h3>
+              <TrackInsightCarousel items={trackInsights} raceName={race?.raceName ?? "Formula 1"} />
 
-                        <p>
-                          {
-                            item.text
-                          }
-                        </p>
-                      </article>
-                    )
-                  )}
-                </div>
-              </div>
-
-              <div className="intel-circuit-band">
-                <div className="intel-circuit-copy">
-                  <small>
-                    CIRCUIT FOCUS
-                  </small>
-
-                  <strong>
-                    {race
-                      ?.circuitName ??
-                      "Formula 1 Circuit"}
-                  </strong>
-                </div>
-
-                <div className="intel-circuit-round">
-                  R
-                  {race?.round ??
-                    "—"}
-                </div>
-              </div>
             </aside>
           </section>
 
           {/* =================================================
-              THREE CARDS
+              PRIMARY FEATURES — TWO CARDS
               ================================================= */}
 
           <section className="feature-grid">
@@ -3386,129 +3753,53 @@ export default async function HomePage() {
             {/* LIVE */}
 
             <article className="feature-card live">
-              <div className="feature-top">
-                <div className="feature-kicker">
-                  {isLive
-                    ? "LIVE TIMING"
-                    : "RACE WEEKEND"}
-                </div>
-
-                <div className="feature-icon">
-                  {isLive
-                    ? "●"
-                    : "◷"}
-                </div>
+              <div className="live-titleline">
+                <h3>Canlı Yarış Merkezi</h3>
+                <div className="feature-icon" aria-hidden="true">{isLive ? "●" : "◷"}</div>
               </div>
 
-              <h3>
-                Canlı Yarış Merkezi
-              </h3>
+              <div className="remaining-head">
+                <strong>KALAN YARIŞ TAKVİMİ</strong>
+                <span>{remainingRaces.length} GRAND PRIX</span>
+              </div>
 
-              {isLive ? (
-                <div className="live-active-box">
-                  <div className="live-active-label">
-                    <span className="live-dot" />
-
-                    SESSION LIVE
-                  </div>
-
-                  <h4>
-                    {currentSession
-                      ?.label ??
-                      "Formula 1 Session"}
-                  </h4>
-
-                  <p>
-                    Takvim üzerinden canlı seans doğrulandı.
-                    Yarış merkezinde gerçek zamanlı timing
-                    kullanılabilir olduğunda veriler otomatik
-                    olarak görüntülenecek.
-                  </p>
+              {remainingRaces.length > 0 ? (
+                <div className="remaining-list">
+                  {remainingRaces.map((item, index) => (
+                    <details className={`remaining-detail ${index === 0 ? "next" : ""}`} key={`${seasonYear}-${item.round}`}>
+                      <summary className="remaining-row">
+                        <span className="remaining-round">R{String(item.round).padStart(2, "0")}</span>
+                        <span className="remaining-name">
+                          <strong>{item.raceName.replace(/ Grand Prix$/i, " GP")}</strong>
+                          <small>{item.city} · {item.country}</small>
+                        </span>
+                        <time dateTime={item.raceDate}>{formatCalendarDate(item.raceDate)}</time>
+                        <span className="remaining-expand" aria-hidden="true">⌄</span>
+                      </summary>
+                      <div className="remaining-sessions">
+                        <div className="remaining-session-heading">
+                          <span>HAFTA SONU PROGRAMI</span>
+                          <span>TÜRKİYE SAATİ</span>
+                        </div>
+                        {(item.sessions ?? []).map((session) => (
+                          <div className={`remaining-session ${session.name === "Yarış" ? "race-session" : ""}`} key={`${session.name}-${session.date}`}>
+                            <strong>{session.name}</strong>
+                            <time dateTime={session.time ? `${session.date}T${session.time}` : session.date}>
+                              {formatSessionTimeTR(session.date, session.time)}
+                            </time>
+                          </div>
+                        ))}
+                        {!item.sessions?.length && (
+                          <div className="remaining-session">Seans programı henüz açıklanmadı.</div>
+                        )}
+                      </div>
+                    </details>
+                  ))}
                 </div>
               ) : (
-                <>
-                  <p>
-                    Bu hafta sonunun Formula 1 programını takip
-                    et. Seans başladığında bu alan otomatik
-                    olarak canlı duruma geçer.
-                  </p>
-
-                  <div className="weekend-head">
-                    <strong>
-                      HAFTA SONU PROGRAMI
-                    </strong>
-
-                    <span>
-                      TÜRKİYE SAATİ
-                    </span>
-                  </div>
-
-                  <div className="weekend-schedule">
-                    {weekendSchedule.map(
-                      (
-                        session
-                      ) => {
-                        const done =
-                          nowTimestamp >
-                          session.endTimestamp;
-
-                        const next =
-                          nextSession
-                            ?.key ===
-                          session.key;
-
-                        return (
-                          <div
-                            key={
-                              session.key
-                            }
-                            className={`session-card ${
-                              next
-                                ? "next"
-                                : done
-                                ? "done"
-                                : ""
-                            }`}
-                          >
-                            <div className="session-card-top">
-                              <div className="session-code">
-                                {
-                                  session.shortLabel
-                                }
-                              </div>
-
-                              <div className="session-state">
-                                {next
-                                  ? "SIRADAKİ"
-                                  : done
-                                  ? "BİTTİ"
-                                  : "YAKLAŞIYOR"}
-                              </div>
-                            </div>
-
-                            <div className="session-name">
-                              {
-                                session.label
-                              }
-                            </div>
-
-                            <div className="session-day">
-                              {formatF1SessionDayTR(
-                                session.startTimestamp
-                              )}
-                            </div>
-
-                            <div className="session-time">
-                              {formatF1SessionTimeTR(
-                                session.startTimestamp
-                              )}
-                            </div>
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                </>
+                <div className="remaining-empty">
+                  Bu sezon için yaklaşan başka Grand Prix bulunmuyor.
+                </div>
               )}
 
               <Link
@@ -3527,177 +3818,101 @@ export default async function HomePage() {
               </Link>
             </article>
 
-            {/* PREDICTION */}
+            {/* PREDICTION — DÖNÜŞÜMLÜ SENARYO SORULARI */}
 
-            <Link
-              href="/predict"
-              className="feature-card"
-            >
+            <Link href="/predict" className="feature-card prediction-card">
               <div className="feature-top">
-                <div className="feature-kicker">
-                  PREDICTION CENTER
-                </div>
-
-                <div className="feature-icon">
-                  323
-                </div>
+                <div className="feature-kicker">PREDICTION CENTER</div>
+                <div className="prediction-top-points">323 <span>MAKS. PUAN</span></div>
               </div>
 
-              <h3>
-                Hafta Sonu Tahmini
-              </h3>
+              <h3>Hafta Sonu Tahmini</h3>
+              <RotatingPredictionPrompt />
 
-              <p>
-                Sadece ilk üçü değil; podyumu, yarışın
-                gidişatını ve kritik detayları tahmin et.
-              </p>
-
-              <div className="prediction-overview">
-                <div className="prediction-max">
-                  <strong>
-                    323
-                  </strong>
-
-                  <span>
-                    MAKS.
-                    <br />
-                    PUAN
-                  </span>
-                </div>
-
-                <div className="prediction-types">
-                  <div className="prediction-type">
-                    <span>
-                      🏁 Podyum
-                    </span>
-
-                    <b>
-                      110 P
-                    </b>
-                  </div>
-
-                  <div className="prediction-type">
-                    <span>
-                      ⚠️ 12 Senaryo
-                    </span>
-
-                    <b>
-                      133 P
-                    </b>
-                  </div>
-
-                  <div className="prediction-type">
-                    <span>
-                      ⚡ 4 Özel Seçim
-                    </span>
-
-                    <b>
-                      80 P
-                    </b>
-                  </div>
-                </div>
-              </div>
-
-              <div className="prediction-specials">
-                <span className="prediction-special">
-                  En Hızlı Tur
-                </span>
-
-                <span className="prediction-special">
-                  İlk DNF
-                </span>
-
-                <span className="prediction-special">
-                  En Çok Sıra
-                </span>
-
-                <span className="prediction-special">
-                  Kazanan Takım
-                </span>
+              <div className="prediction-summary-line">
+                <span>🏁 PODYUM</span>
+                <span>⚑ 12 SENARYO</span>
+                <span>⚡ 4 ÖZEL SEÇİM</span>
               </div>
 
               <div className="feature-footer">
-                <span>
-                  TAHMİN MERKEZİNE GİT
-                </span>
-
-                <div className="feature-arrow">
-                  →
-                </div>
+                <span>TAHMİNLERİNİ YAP →</span>
+                <div className="feature-arrow" aria-hidden="true">→</div>
               </div>
             </Link>
 
-            {/* PADDOCK */}
+          </section>
 
-            <Link
-              href="/paddock"
-              className="feature-card"
-            >
-              <div className="feature-top">
-                <div className="feature-kicker">
-                  PADDOCK
-                </div>
+          {/* =================================================
+              PADDOCK — YATAY TOPLULUK ALANI
+              ================================================= */}
 
-                <div className="feature-icon">
-                  F1
-                </div>
+          <section className="paddock-wide" aria-label="Paddock topluluğu">
+            <div className="paddock-wide-intro">
+              <div className="paddock-wide-kicker">
+                <span className="paddock-wide-pulse" aria-hidden="true" />
+                F1 MEDİPOL PADDOCK
               </div>
+              <h3>Paddock Nabzı</h3>
+              <p>Yarış heyecanının toplulukla buluştuğu yer.</p>
+              <Link href="/paddock" className="paddock-wide-cta">
+                PADDOCK'A GİT <span aria-hidden="true">→</span>
+              </Link>
+            </div>
 
-              <h3>
-                Paddock Nabzı
-              </h3>
+            <div className="paddock-wide-links">
+              <Link href="/paddock" className="paddock-wide-tile">
+                <span className="paddock-wide-tile-icon" aria-hidden="true">🏁</span>
+                <strong>Yarış Hafta Sonu</strong>
+                <small>Tahminler, yorumlar ve tartışmalar.</small>
+                <span className="paddock-wide-tile-arrow" aria-hidden="true">↗</span>
+              </Link>
+              <Link href="/arcade" className="paddock-wide-tile">
+                <span className="paddock-wide-tile-icon" aria-hidden="true">🎮</span>
+                <strong>Paddock Arcade</strong>
+                <small>Manager, Quiz ve mini oyunlar.</small>
+                <span className="paddock-wide-tile-arrow" aria-hidden="true">↗</span>
+              </Link>
+              <Link href="/paddock" className="paddock-wide-tile">
+                <span className="paddock-wide-tile-icon" aria-hidden="true">👥</span>
+                <strong>Topluluk</strong>
+                <small>Paylaş, takip et ve etkileşime geç.</small>
+                <span className="paddock-wide-tile-arrow" aria-hidden="true">↗</span>
+              </Link>
+            </div>
+          </section>
 
-              <p>
-                Topluluğun yarış hafta sonundaki merkezi.
-              </p>
+          {/* =================================================
+              HAFTALIK YORUM — ADMİN PANELİNDEN YÖNETİLİR
+              ================================================= */}
 
-              <div
-                style={{
-                  marginTop:
-                    "14px",
-                }}
-              >
-                <div className="paddock-line">
-                  <b>
-                    🏁 Yarış Hafta Sonu
-                  </b>
-
-                  <span>
-                    Tahminler, yorumlar ve tartışmalar.
-                  </span>
+          <section className="weekly-editorial" id="haftalik-yorum">
+            <div className="weekly-editorial-head">
+              <strong>İdil Boyalı'dan Haftalık Yorum</strong>
+              <small>HAFTALIK MAGAZİN</small>
+            </div>
+            {weeklyCommentary ? (
+              <article className="weekly-editorial-body">
+                <div className="weekly-editorial-copy">
+                  <div className="weekly-edition">{weeklyCommentary.week_label || "HAFTALIK DEĞERLENDİRME"}</div>
+                  <h2>{weeklyCommentary.title}</h2>
+                  {weeklyCommentary.summary && <p className="weekly-lead">{weeklyCommentary.summary}</p>}
+                  <div className="weekly-longtext">{weeklyCommentary.content}</div>
+                  <div className="weekly-author">İDİL BOYALI · F1 MEDİPOL YÖNETİM KURULU</div>
                 </div>
-
-                <div className="paddock-line">
-                  <b>
-                    🎮 Paddock Arcade
-                  </b>
-
-                  <span>
-                    Manager, Quiz ve mini oyunlar.
-                  </span>
-                </div>
-
-                <div className="paddock-line">
-                  <b>
-                    👥 Topluluk
-                  </b>
-
-                  <span>
-                    Paylaş, takip et ve etkileşime geç.
-                  </span>
-                </div>
+                {weeklyCommentary.image_url && (
+                  <div className="weekly-image">
+                    <img src={weeklyCommentary.image_url} alt={`${weeklyCommentary.title} — haftalık yorum görseli`} loading="lazy" />
+                  </div>
+                )}
+              </article>
+            ) : (
+              <div className="weekly-empty">
+                <span>✦</span>
+                <div><strong>Bu haftanın yorumu hazırlanıyor.</strong>
+                <p>Yeni analiz, yönetim panelinden yayımlandığında burada görünecek.</p></div>
               </div>
-
-              <div className="feature-footer">
-                <span>
-                  PADDOCK'A GİT
-                </span>
-
-                <div className="feature-arrow">
-                  →
-                </div>
-              </div>
-            </Link>
+            )}
           </section>
 
           {/* =================================================
@@ -3706,13 +3921,7 @@ export default async function HomePage() {
 
           <div className="section-head">
             <div className="section-title">
-              <h2>
-                Şampiyona & Form
-              </h2>
-
-              <p>
-                Güncel Formula 1 puan durumu.
-              </p>
+              <h2>Şampiyona Form Tablosu</h2>
             </div>
           </div>
 
@@ -3862,160 +4071,56 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <section className="events-duo">
-            <Link
-              href="/events"
-              className="event-rect"
-            >
-              <div className="event-media">
-                {upcomingEvent
-                  ?.cover_image_url && (
-                  <img
-                    src={
-                      upcomingEvent.cover_image_url
-                    }
-                    alt={
-                      upcomingEvent.title
-                    }
-                  />
-                )}
-              </div>
-
-              <div className="event-content">
-                <span className="event-label">
-                  YAKLAŞAN ETKİNLİK
-                </span>
-
-                <h3>
-                  {upcomingEvent
-                    ?.title ??
-                    "Yaklaşan Etkinlik Yok"}
-                </h3>
-
-                <p>
-                  {upcomingEvent
-                    ? `${formatEventType(
-                        upcomingEvent.event_type
-                      )} · ${formatEventDate(
-                        upcomingEvent.start_at
-                      )}`
-                    : "Yeni etkinlik yayınlandığında burada görünecek."}
-                </p>
-
-                <div className="event-go">
-                  DETAYLARI GÖR →
+          <section className="events-stack" tabIndex={0} aria-label="Kulüp etkinlikleri, daha fazlası için aşağı kaydırın">
+            {homeEvents.length ? homeEvents.map(({ event, upcoming }, index) => (
+              <Link href="/events" className="event-list-row" key={event.id}>
+                <div className="event-list-index">{String(index + 1).padStart(2, "0")}</div>
+                <div className="event-list-cover">
+                  {event.cover_image_url ? (
+                    <img src={event.cover_image_url} alt={`${event.title} etkinlik görseli`} loading="lazy" />
+                  ) : <span>F1</span>}
                 </div>
-              </div>
-            </Link>
-
-            <Link
-              href="/events"
-              className="event-rect"
-            >
-              <div className="event-media">
-                {previousEvent
-                  ?.cover_image_url && (
-                  <img
-                    src={
-                      previousEvent.cover_image_url
-                    }
-                    alt={
-                      previousEvent.title
-                    }
-                  />
-                )}
-              </div>
-
-              <div className="event-content">
-                <span className="event-label">
-                  GEÇMİŞ ETKİNLİK
-                </span>
-
-                <h3>
-                  {previousEvent
-                    ?.title ??
-                    "Geçmiş Etkinlik Yok"}
-                </h3>
-
-                <p>
-                  {previousEvent
-                    ? `${formatEventType(
-                        previousEvent.event_type
-                      )} · ${formatEventDate(
-                        previousEvent.start_at
-                      )}`
-                    : "Tamamlanan etkinlikler burada görüntülenecek."}
-                </p>
-
-                <div className="event-go">
-                  ETKİNLİK ARŞİVİ →
+                <div className="event-list-info">
+                  <span className="event-list-meta">
+                    {upcoming ? "YAKLAŞAN ETKİNLİK" : "GEÇMİŞ ETKİNLİK"}
+                    <i aria-hidden="true">·</i>
+                    {formatEventType(event.event_type)}
+                  </span>
+                  <h3>{event.title}</h3>
+                  <p>{formatEventDate(event.start_at)}{event.location_name ? ` · ${event.location_name}` : ""}</p>
                 </div>
-              </div>
-            </Link>
+                <span className="event-list-arrow" aria-hidden="true">↗</span>
+              </Link>
+            )) : (
+              <div className="events-stack-empty">Henüz yayımlanmış etkinlik bulunmuyor. Yeni etkinlikler burada sıralanacak.</div>
+            )}
           </section>
 
           {/* =================================================
-              MANAGER
+              ARCADE — İKİ EŞİT OYUN KARTI
               ================================================= */}
 
           <div className="section-head">
             <div className="section-title">
-              <h2>
-                F1 Manager
-              </h2>
-
-              <p>
-                Kendi Formula 1 kariyerini yönet.
-              </p>
+              <h2>F1 Arcade</h2>
+              <p>Takımını yönet veya alternatif yarış sonuçlarıyla şampiyonayı yeniden yaz.</p>
             </div>
           </div>
 
-          <Link
-            href="/arcade/manager"
-            className="manager-banner"
-          >
-            <div className="eyebrow">
-              MANAGER CAREER
-            </div>
-
-            <h2>
-              Pit Wall senin.
-              <br />
-              Takımı sen yönet.
-            </h2>
-
-            <p>
-              Pilot kontratlarından transfer pazarına,
-              Ar-Ge yatırımlarından yarış stratejilerine
-              kadar bütün kariyer sistemi burada.
-            </p>
-
-            <div className="features">
-              <span>
-                DRIVER MARKET
-              </span>
-
-              <span>
-                R&D
-              </span>
-
-              <span>
-                STRATEGY
-              </span>
-
-              <span>
-                AI TEAMS
-              </span>
-
-              <span>
-                LIVE RACE
-              </span>
-
-              <span>
-                MULTI-SEASON
-              </span>
-            </div>
-          </Link>
+          <section className="arcade-home-grid" aria-label="F1 Arcade oyunları">
+            <Link href="/arcade/manager" className="arcade-home-card arcade-home-manager">
+              <span className="arcade-home-kicker">01 · MANAGER CAREER</span>
+              <h3>Pit Wall senin.<br />Takımı sen yönet.</h3>
+              <p>Pilot transferleri, Ar-Ge, yarış stratejisi ve çok sezonlu F1 menajerliği.</p>
+              <span className="arcade-home-bottom">MANAGER'I AÇ <b aria-hidden="true">↗</b></span>
+            </Link>
+            <Link href="/arcade/what-if" className="arcade-home-card arcade-home-whatif">
+              <span className="arcade-home-kicker">02 · WHAT IF</span>
+              <h3>Ya o yarışı<br />başkası kazansaydı?</h3>
+              <p>Finiş sırasını sen belirle. Alternatif pilot ve takım puan tablolarını anında gör.</p>
+              <span className="arcade-home-bottom">WHAT IF OYNA <b aria-hidden="true">↗</b></span>
+            </Link>
+          </section>
         </div>
       </main>
     </>

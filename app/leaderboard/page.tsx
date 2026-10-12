@@ -405,17 +405,17 @@ export default async function LeaderboardPage() {
               gridTemplateColumns:
                 "repeat(3,minmax(0,1fr))",
 
-              gap: "14px",
+              gap: "10px",
 
               marginTop:
-                "24px",
+                "13px",
             }}
           >
             <div
               className="card"
               style={{
                 padding:
-                  "22px",
+                  "13px 17px",
               }}
             >
               <div className="eyebrow">
@@ -428,7 +428,7 @@ export default async function LeaderboardPage() {
                     "7px",
 
                   fontSize:
-                    "38px",
+                    "27px",
 
                   fontWeight:
                     1000,
@@ -443,7 +443,7 @@ export default async function LeaderboardPage() {
                     "#7e8997",
 
                   fontSize:
-                    "10px",
+                    "9px",
                 }}
               >
                 Şampiyonadaki
@@ -455,7 +455,7 @@ export default async function LeaderboardPage() {
               className="card"
               style={{
                 padding:
-                  "22px",
+                  "13px 17px",
               }}
             >
               <div className="eyebrow">
@@ -468,7 +468,7 @@ export default async function LeaderboardPage() {
                     "7px",
 
                   fontSize:
-                    "38px",
+                    "27px",
 
                   fontWeight:
                     1000,
@@ -485,7 +485,7 @@ export default async function LeaderboardPage() {
                     "#7e8997",
 
                   fontSize:
-                    "10px",
+                    "9px",
                 }}
               >
                 Race + Sprint
@@ -497,7 +497,7 @@ export default async function LeaderboardPage() {
               className="card"
               style={{
                 padding:
-                  "22px",
+                  "13px 17px",
               }}
             >
               <div className="eyebrow">
@@ -510,7 +510,7 @@ export default async function LeaderboardPage() {
                     "7px",
 
                   fontSize:
-                    "38px",
+                    "27px",
 
                   fontWeight:
                     1000,
@@ -527,7 +527,7 @@ export default async function LeaderboardPage() {
                     "#7e8997",
 
                   fontSize:
-                    "10px",
+                    "9px",
                 }}
               >
                 Toplam

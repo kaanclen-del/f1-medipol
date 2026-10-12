@@ -78,6 +78,9 @@ export default function LobbyRoomPage({
   const [leaving, setLeaving] =
     useState(false);
 
+  const [starting, setStarting] =
+    useState(false);
+
   const [message, setMessage] =
     useState("");
 
@@ -112,6 +115,16 @@ export default function LobbyRoomPage({
         return;
       }
 
+      if (
+        result?.lobby?.status ===
+        "team_selection"
+      ) {
+        window.location.href =
+          `/arcade/manager/lobbies/${lobbyId}/team-select`;
+
+        return;
+      }
+
       setData(result);
     } catch {
       setMessage(
@@ -123,10 +136,6 @@ export default function LobbyRoomPage({
       }
     }
   }
-
-  /*
-    LOBİ BİLGİLERİNİ 3 SANİYEDE BİR YENİLE
-  */
 
   useEffect(() => {
     loadLobby();
@@ -141,13 +150,6 @@ export default function LobbyRoomPage({
     };
   }, [lobbyId]);
 
-  /*
-    HEARTBEAT
-
-    Kullanıcı bu sayfadayken her 10 saniyede
-    bir sunucuya "hala lobideyim" bilgisi gider.
-  */
-
   useEffect(() => {
     async function sendHeartbeat() {
       try {
@@ -158,10 +160,7 @@ export default function LobbyRoomPage({
           }
         );
       } catch {
-        /*
-          Bağlantı geçici olarak kesilirse
-          sonraki heartbeat tekrar deneyecek.
-        */
+        // sonraki heartbeat tekrar dener
       }
     }
 
@@ -178,10 +177,6 @@ export default function LobbyRoomPage({
       );
     };
   }, [lobbyId]);
-
-  /*
-    HAZIR / HAZIR DEĞİL
-  */
 
   async function toggleReady() {
     if (!data?.currentMember) {
@@ -232,20 +227,70 @@ export default function LobbyRoomPage({
     }
   }
 
-  /*
-    LOBİDEN AYRIL
-  */
+  async function startGame() {
+    if (starting) {
+      return;
+    }
+
+    setMessage("");
+    setStarting(true);
+
+    try {
+      const response = await fetch(
+        `/api/arcade/manager/lobbies/${lobbyId}`,
+        {
+          method: "PATCH",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify({
+            action: "start",
+          }),
+        }
+      );
+
+      const result =
+        await response.json();
+
+      if (!response.ok) {
+        setMessage(
+          result?.error ||
+            "Oyun başlatılamadı."
+        );
+
+        return;
+      }
+
+      window.location.href =
+        result?.next ||
+        `/arcade/manager/lobbies/${lobbyId}/team-select`;
+    } catch {
+      setMessage(
+        "Oyun başlatılırken bağlantı hatası oluştu."
+      );
+    } finally {
+      setStarting(false);
+    }
+  }
 
   async function leaveLobby() {
     if (!data?.currentMember) {
       return;
     }
 
+    const isHost =
+      data.isOwner ||
+      data.currentMember.role ===
+        "owner";
+
     const confirmed =
       window.confirm(
         data.memberCount === 1
           ? "Lobiden ayrılırsan bu lobi tamamen silinecek. Ayrılmak istiyor musun?"
-          : data.isOwner
+          : isHost
           ? "Lobi sahibisin. Ayrılırsan sahiplik başka bir oyuncuya aktarılacak. Devam etmek istiyor musun?"
           : "Lobiden ayrılmak istiyor musun?"
       );
@@ -290,10 +335,6 @@ export default function LobbyRoomPage({
     }
   }
 
-  /*
-    LOADING
-  */
-
   if (loading) {
     return (
       <>
@@ -302,12 +343,9 @@ export default function LobbyRoomPage({
         <main
           style={{
             minHeight: "100vh",
-
             background:
               "radial-gradient(circle at top, #181010 0%, #080808 42%, #050505 100%)",
-
             color: "#fff",
-
             padding: "80px 24px",
           }}
         >
@@ -324,10 +362,6 @@ export default function LobbyRoomPage({
       </>
     );
   }
-
-  /*
-    LOBİ BULUNAMADI
-  */
 
   if (!data) {
     return (
@@ -384,6 +418,16 @@ export default function LobbyRoomPage({
         member.is_ready
     ).length;
 
+  /*
+    ÖNEMLİ:
+    Backend isOwner false dönse bile
+    member role owner ise host kabul ediyoruz.
+  */
+
+  const isHost =
+    data.isOwner ||
+    currentMember?.role === "owner";
+
   return (
     <>
       <Header />
@@ -418,8 +462,6 @@ export default function LobbyRoomPage({
           >
             ← Manager
           </Link>
-
-          {/* LOBİ BAŞLIĞI */}
 
           <div
             style={{
@@ -477,7 +519,8 @@ export default function LobbyRoomPage({
                 </Badge>
 
                 <Badge>
-                  {data.lobby.visibility ===
+                  {data.lobby
+                    .visibility ===
                   "private"
                     ? "ÖZEL"
                     : "AÇIK"}
@@ -485,21 +528,30 @@ export default function LobbyRoomPage({
 
                 <Badge>
                   {data.memberCount}/
-                  {data.lobby.max_players}{" "}
+                  {
+                    data.lobby
+                      .max_players
+                  }{" "}
                   OYUNCU
                 </Badge>
+
+                {isHost && (
+                  <Badge>
+                    HOST
+                  </Badge>
+                )}
               </div>
             </div>
-
-            {/* DAVET KODU */}
 
             <div
               style={{
                 minWidth: "220px",
                 border:
                   "1px solid rgba(210,38,61,.28)",
-                borderRadius: "16px",
-                padding: "17px 20px",
+                borderRadius:
+                  "16px",
+                padding:
+                  "17px 20px",
                 background:
                   "rgba(210,38,61,.08)",
               }}
@@ -521,10 +573,14 @@ export default function LobbyRoomPage({
                 style={{
                   fontSize: "26px",
                   fontWeight: 900,
-                  letterSpacing: "5px",
+                  letterSpacing:
+                    "5px",
                 }}
               >
-                {data.lobby.join_code}
+                {
+                  data.lobby
+                    .join_code
+                }
               </div>
             </div>
           </div>
@@ -538,13 +594,12 @@ export default function LobbyRoomPage({
               alignItems: "start",
             }}
           >
-            {/* OYUNCULAR */}
-
             <section
               style={{
                 border:
                   "1px solid rgba(255,255,255,.08)",
-                borderRadius: "22px",
+                borderRadius:
+                  "22px",
                 background:
                   "rgba(255,255,255,.025)",
                 overflow: "hidden",
@@ -559,16 +614,20 @@ export default function LobbyRoomPage({
                   display: "flex",
                   justifyContent:
                     "space-between",
-                  alignItems: "center",
+                  alignItems:
+                    "center",
                   gap: "15px",
                 }}
               >
                 <div>
                   <div
                     style={{
-                      fontSize: "11px",
-                      color: "#d2263d",
-                      fontWeight: 900,
+                      fontSize:
+                        "11px",
+                      color:
+                        "#d2263d",
+                      fontWeight:
+                        900,
                       letterSpacing:
                         "1.4px",
                     }}
@@ -578,8 +637,10 @@ export default function LobbyRoomPage({
 
                   <h2
                     style={{
-                      margin: "5px 0 0",
-                      fontSize: "24px",
+                      margin:
+                        "5px 0 0",
+                      fontSize:
+                        "24px",
                     }}
                   >
                     Oyuncular
@@ -588,11 +649,15 @@ export default function LobbyRoomPage({
 
                 <div
                   style={{
-                    color: "#9299a3",
-                    fontSize: "12px",
+                    color:
+                      "#9299a3",
+                    fontSize:
+                      "12px",
                   }}
                 >
-                  {readyCount} hazır
+                  {readyCount} /{" "}
+                  {data.memberCount}{" "}
+                  hazır
                 </div>
               </div>
 
@@ -611,14 +676,18 @@ export default function LobbyRoomPage({
 
                     return (
                       <div
-                        key={member.id}
+                        key={
+                          member.id
+                        }
                         style={{
-                          display: "flex",
+                          display:
+                            "flex",
                           alignItems:
                             "center",
                           gap: "14px",
                           padding:
                             "17px 22px",
+
                           borderBottom:
                             index ===
                             data.members
@@ -628,24 +697,26 @@ export default function LobbyRoomPage({
                               : "1px solid rgba(255,255,255,.055)",
                         }}
                       >
-                        {/* AVATAR */}
-
                         <div
                           style={{
-                            width: "48px",
-                            height: "48px",
+                            width:
+                              "48px",
+                            height:
+                              "48px",
                             borderRadius:
                               "50%",
                             overflow:
                               "hidden",
                             background:
                               "#181b20",
-                            display: "flex",
+                            display:
+                              "flex",
                             alignItems:
                               "center",
                             justifyContent:
                               "center",
                             flexShrink: 0,
+
                             border:
                               member.role ===
                               "owner"
@@ -661,7 +732,9 @@ export default function LobbyRoomPage({
                                   .profile
                                   .avatar_url
                               }
-                              alt={name}
+                              alt={
+                                name
+                              }
                               style={{
                                 width:
                                   "100%",
@@ -678,8 +751,6 @@ export default function LobbyRoomPage({
                           )}
                         </div>
 
-                        {/* KULLANICI */}
-
                         <div
                           style={{
                             flex: 1,
@@ -692,7 +763,8 @@ export default function LobbyRoomPage({
                                 "flex",
                               alignItems:
                                 "center",
-                              gap: "8px",
+                              gap:
+                                "8px",
                               flexWrap:
                                 "wrap",
                             }}
@@ -703,7 +775,9 @@ export default function LobbyRoomPage({
                                   "14px",
                               }}
                             >
-                              {name}
+                              {
+                                name
+                              }
                             </strong>
 
                             {member.role ===
@@ -759,8 +833,6 @@ export default function LobbyRoomPage({
                           )}
                         </div>
 
-                        {/* HAZIR DURUMU */}
-
                         <div
                           style={{
                             padding:
@@ -771,14 +843,17 @@ export default function LobbyRoomPage({
                               "10px",
                             fontWeight:
                               900,
+
                             background:
                               member.is_ready
                                 ? "rgba(80,200,120,.10)"
                                 : "rgba(255,255,255,.04)",
+
                             color:
                               member.is_ready
                                 ? "#8de3a5"
                                 : "#777f88",
+
                             border:
                               member.is_ready
                                 ? "1px solid rgba(80,200,120,.2)"
@@ -796,31 +871,32 @@ export default function LobbyRoomPage({
               </div>
             </section>
 
-            {/* SAĞ PANEL */}
-
             <aside
               style={{
                 display: "grid",
                 gap: "16px",
               }}
             >
-              {/* HAZIR DURUMU */}
-
               <section
                 style={{
                   border:
                     "1px solid rgba(255,255,255,.08)",
-                  borderRadius: "20px",
+                  borderRadius:
+                    "20px",
                   background:
                     "rgba(255,255,255,.025)",
-                  padding: "22px",
+                  padding:
+                    "22px",
                 }}
               >
                 <div
                   style={{
-                    color: "#d2263d",
-                    fontSize: "11px",
-                    fontWeight: 900,
+                    color:
+                      "#d2263d",
+                    fontSize:
+                      "11px",
+                    fontWeight:
+                      900,
                     letterSpacing:
                       "1.4px",
                   }}
@@ -830,8 +906,10 @@ export default function LobbyRoomPage({
 
                 <h3
                   style={{
-                    margin: "8px 0 8px",
-                    fontSize: "21px",
+                    margin:
+                      "8px 0 8px",
+                    fontSize:
+                      "21px",
                   }}
                 >
                   Hazır mısın?
@@ -839,10 +917,14 @@ export default function LobbyRoomPage({
 
                 <p
                   style={{
-                    margin: "0 0 18px",
-                    color: "#7d8590",
-                    fontSize: "12px",
-                    lineHeight: 1.6,
+                    margin:
+                      "0 0 18px",
+                    color:
+                      "#7d8590",
+                    fontSize:
+                      "12px",
+                    lineHeight:
+                      1.6,
                   }}
                 >
                   Oyuna başlamadan önce
@@ -852,27 +934,39 @@ export default function LobbyRoomPage({
                 {currentMember ? (
                   <button
                     type="button"
-                    onClick={toggleReady}
+                    onClick={
+                      toggleReady
+                    }
                     disabled={
                       updatingReady ||
-                      data.lobby.status !==
+                      data.lobby
+                        .status !==
                         "waiting"
                     }
                     style={{
-                      width: "100%",
-                      minHeight: "48px",
+                      width:
+                        "100%",
+                      minHeight:
+                        "48px",
                       border: 0,
-                      borderRadius: "11px",
+                      borderRadius:
+                        "11px",
+
                       background:
                         currentMember.is_ready
                           ? "rgba(255,255,255,.08)"
                           : "#d2263d",
-                      color: "#fff",
-                      fontWeight: 900,
+
+                      color:
+                        "#fff",
+                      fontWeight:
+                        900,
+
                       cursor:
                         updatingReady
                           ? "wait"
                           : "pointer",
+
                       opacity:
                         updatingReady
                           ? 0.6
@@ -888,34 +982,45 @@ export default function LobbyRoomPage({
                 ) : (
                   <div
                     style={{
-                      color: "#ff9ca9",
-                      fontSize: "12px",
-                      lineHeight: 1.5,
+                      color:
+                        "#ff9ca9",
+                      fontSize:
+                        "12px",
                     }}
                   >
-                    Bu lobinin üyesi değilsin.
+                    Bu lobinin üyesi
+                    değilsin.
                   </div>
                 )}
               </section>
 
-              {/* HOST CONTROL */}
-
-              {data.isOwner && (
+              {isHost && (
                 <section
                   style={{
                     border:
-                      "1px solid rgba(210,38,61,.22)",
-                    borderRadius: "20px",
+                      "1px solid rgba(210,38,61,.35)",
+
+                    borderRadius:
+                      "20px",
+
                     background:
-                      "rgba(210,38,61,.06)",
-                    padding: "22px",
+                      "linear-gradient(145deg, rgba(210,38,61,.13), rgba(210,38,61,.035))",
+
+                    padding:
+                      "22px",
+
+                    boxShadow:
+                      "0 18px 50px rgba(0,0,0,.18)",
                   }}
                 >
                   <div
                     style={{
-                      color: "#d2263d",
-                      fontSize: "11px",
-                      fontWeight: 900,
+                      color:
+                        "#d2263d",
+                      fontSize:
+                        "11px",
+                      fontWeight:
+                        900,
                       letterSpacing:
                         "1.4px",
                     }}
@@ -925,8 +1030,10 @@ export default function LobbyRoomPage({
 
                   <h3
                     style={{
-                      margin: "8px 0 8px",
-                      fontSize: "21px",
+                      margin:
+                        "8px 0 8px",
+                      fontSize:
+                        "21px",
                     }}
                   >
                     Oyunu Başlat
@@ -934,57 +1041,111 @@ export default function LobbyRoomPage({
 
                   <p
                     style={{
-                      margin: "0 0 18px",
-                      color: "#858d98",
-                      fontSize: "12px",
-                      lineHeight: 1.6,
+                      margin:
+                        "0 0 18px",
+                      color:
+                        "#858d98",
+                      fontSize:
+                        "12px",
+                      lineHeight:
+                        1.6,
                     }}
                   >
-                    Takım seçimi sistemi
-                    bir sonraki adımda
-                    buraya bağlanacak.
+                    Oyuncular hazır
+                    olduğunda takım seçimi
+                    aşamasına geç.
                   </p>
 
                   <button
                     type="button"
-                    disabled
+                    onClick={
+                      startGame
+                    }
+                    disabled={
+                      starting
+                    }
                     style={{
-                      width: "100%",
-                      minHeight: "48px",
-                      border:
-                        "1px solid rgba(255,255,255,.08)",
-                      borderRadius: "11px",
+                      width:
+                        "100%",
+
+                      minHeight:
+                        "50px",
+
+                      border: 0,
+
+                      borderRadius:
+                        "11px",
+
                       background:
-                        "rgba(255,255,255,.04)",
-                      color: "#626a74",
-                      fontWeight: 900,
+                        starting
+                          ? "rgba(210,38,61,.45)"
+                          : "#d2263d",
+
+                      color:
+                        "#fff",
+
+                      fontWeight:
+                        900,
+
                       cursor:
-                        "not-allowed",
+                        starting
+                          ? "wait"
+                          : "pointer",
+
+                      opacity:
+                        starting
+                          ? 0.65
+                          : 1,
+
+                      boxShadow:
+                        starting
+                          ? "none"
+                          : "0 10px 30px rgba(210,38,61,.22)",
                     }}
                   >
-                    Oyunu Başlat
+                    {starting
+                      ? "Başlatılıyor..."
+                      : "Oyunu Başlat"}
                   </button>
+
+                  <div
+                    style={{
+                      marginTop:
+                        "12px",
+                      color:
+                        "#777f89",
+                      fontSize:
+                        "11px",
+                    }}
+                  >
+                    {readyCount} /{" "}
+                    {data.memberCount}{" "}
+                    oyuncu hazır
+                  </div>
                 </section>
               )}
-
-              {/* LOBİDEN AYRIL */}
 
               {currentMember && (
                 <section
                   style={{
                     border:
                       "1px solid rgba(210,38,61,.18)",
-                    borderRadius: "20px",
+                    borderRadius:
+                      "20px",
                     background:
                       "rgba(210,38,61,.035)",
-                    padding: "22px",
+                    padding:
+                      "22px",
                   }}
                 >
                   <div
                     style={{
-                      color: "#8e5f66",
-                      fontSize: "10px",
-                      fontWeight: 900,
+                      color:
+                        "#8e5f66",
+                      fontSize:
+                        "10px",
+                      fontWeight:
+                        900,
                       letterSpacing:
                         "1.4px",
                     }}
@@ -994,8 +1155,10 @@ export default function LobbyRoomPage({
 
                   <h3
                     style={{
-                      margin: "8px 0 8px",
-                      fontSize: "18px",
+                      margin:
+                        "8px 0 8px",
+                      fontSize:
+                        "18px",
                     }}
                   >
                     Lobiden Ayrıl
@@ -1003,39 +1166,63 @@ export default function LobbyRoomPage({
 
                   <p
                     style={{
-                      margin: "0 0 16px",
-                      color: "#747d87",
-                      fontSize: "11px",
-                      lineHeight: 1.6,
+                      margin:
+                        "0 0 16px",
+                      color:
+                        "#747d87",
+                      fontSize:
+                        "11px",
+                      lineHeight:
+                        1.6,
                     }}
                   >
-                    {data.memberCount === 1
+                    {data.memberCount ===
+                    1
                       ? "Lobide yalnızca sen varsın. Ayrıldığında lobi tamamen silinir."
-                      : data.isOwner
+                      : isHost
                       ? "Ayrıldığında lobi sahipliği sıradaki oyuncuya aktarılır."
                       : "Lobiden ayrıldıktan sonra tekrar katılabilirsin."}
                   </p>
 
                   <button
                     type="button"
-                    onClick={leaveLobby}
-                    disabled={leaving}
+                    onClick={
+                      leaveLobby
+                    }
+                    disabled={
+                      leaving
+                    }
                     style={{
-                      width: "100%",
-                      minHeight: "44px",
+                      width:
+                        "100%",
+
+                      minHeight:
+                        "44px",
+
                       border:
                         "1px solid rgba(210,38,61,.32)",
-                      borderRadius: "10px",
+
+                      borderRadius:
+                        "10px",
+
                       background:
                         "rgba(210,38,61,.08)",
-                      color: "#ff8c9b",
-                      fontWeight: 900,
-                      cursor: leaving
-                        ? "wait"
-                        : "pointer",
-                      opacity: leaving
-                        ? 0.6
-                        : 1,
+
+                      color:
+                        "#ff8c9b",
+
+                      fontWeight:
+                        900,
+
+                      cursor:
+                        leaving
+                          ? "wait"
+                          : "pointer",
+
+                      opacity:
+                        leaving
+                          ? 0.6
+                          : 1,
                     }}
                   >
                     {leaving
@@ -1047,20 +1234,29 @@ export default function LobbyRoomPage({
             </aside>
           </div>
 
-          {/* HATA MESAJI */}
-
           {message && (
             <div
               style={{
-                marginTop: "20px",
-                padding: "14px 16px",
-                borderRadius: "11px",
+                marginTop:
+                  "20px",
+
+                padding:
+                  "14px 16px",
+
+                borderRadius:
+                  "11px",
+
                 border:
                   "1px solid rgba(210,38,61,.25)",
+
                 background:
                   "rgba(210,38,61,.08)",
-                color: "#ff9ca9",
-                fontSize: "13px",
+
+                color:
+                  "#ff9ca9",
+
+                fontSize:
+                  "13px",
               }}
             >
               {message}
@@ -1081,15 +1277,20 @@ function Badge({
     <span
       style={{
         padding: "7px 10px",
-        borderRadius: "999px",
+        borderRadius:
+          "999px",
         border:
           "1px solid rgba(255,255,255,.08)",
         background:
           "rgba(255,255,255,.03)",
-        color: "#9aa2ad",
-        fontSize: "10px",
-        fontWeight: 900,
-        letterSpacing: ".8px",
+        color:
+          "#9aa2ad",
+        fontSize:
+          "10px",
+        fontWeight:
+          900,
+        letterSpacing:
+          ".8px",
       }}
     >
       {children}

@@ -2231,4 +2231,31 @@ const styles = `
       display:none;
     }
   }
+  /* Responsive readability: keep every driver's tyre visible in the grid. */
+  .spotlight-driver, .spotlight-p1 {
+    grid-template-columns: 53px 75px minmax(145px,1.1fr) minmax(125px,.9fr) minmax(110px,.75fr) minmax(145px,1fr) 53px;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  .spotlight-p1 .portrait-ring { width: 76px; height: 76px; }
+  .spotlight-position small, .spotlight-timing small, .sector-title,
+  .performance-head small, .performance-laps small, .spotlight-team { font-size: 9px; }
+  .spotlight-driver-info h3 { font-size: clamp(16px,1.15vw,20px); }
+  .spotlight-p1 .spotlight-driver-info h3 { font-size: clamp(18px,1.4vw,23px); }
+  .spotlight-acronym-row span { font-size: 11px; }
+  .spotlight-timing strong { font-size: 12px; }
+  .spotlight-timing .current { font-size: 17px; }
+  .spotlight-tyre-zone { min-width: 48px; overflow: visible; }
+  .spotlight-tyre { width: 37px; height: 37px; font-size: 13px; }
+  .spotlight-tyre-zone span { font-size: 10px; }
+  .spotlight-driver .portrait-ring { max-width: 100%; }
+  @media (max-width: 1150px) and (min-width: 901px) {
+    .spotlight-driver, .spotlight-p1 {
+      grid-template-columns: 46px 59px minmax(135px,1.2fr) minmax(110px,1fr) minmax(80px,.65fr) 48px;
+      gap: 7px;
+    }
+    .spotlight-driver .performance-panel { display: none; }
+    .spotlight-driver .portrait-ring { width: 58px; height: 58px; }
+  }
+
 `;
