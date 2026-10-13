@@ -192,6 +192,13 @@ export default async function AdminPage() {
             <h2>Kontrol Merkezi</h2>
 
             <div className="admin-module-grid">
+                <Link href="/admin/profile-wallpapers" className="admin-module">
+                  <div className="module-icon">🎨</div>
+                  <span>NEW MODULE</span>
+                  <h3>Profil Arka Planları</h3>
+                  <p>Üyelerin kullanacağı arka planları ekle, yayınla ve yönet.</p>
+                  <strong>KOLEKSİYONU YÖNET →</strong>
+                </Link>
               {ownerConfig?.owner_id === user.id && (
                 <Link href="/admin/permissions" className="admin-module">
                   <div className="module-icon">🛡️</div>

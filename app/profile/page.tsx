@@ -1,11 +1,13 @@
 import Link from "next/link";
 import Header from "@/components/Header";
+import ProfileWallpaperBackdrop from "@/components/ProfileWallpaperBackdrop";
 import ProfileActions from "@/components/ProfileActions";
 import ProfileAchievements from "@/components/ProfileAchievements";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { getTeamBranding } from "@/lib/team-branding";
 import { getProfileWallpaper, getWallpaperBackground } from "@/lib/profile-wallpapers";
+import { managedToWallpaper, type ManagedWallpaper } from "@/lib/profile-wallpaper-catalog";
 import { getProfileAccent } from "@/lib/profile-accents";
 import { getLatestF1Drivers, type OpenF1Driver } from "@/lib/openf1";
 export const dynamic = "force-dynamic";
@@ -230,7 +232,16 @@ export default async function ProfilePage() {
   const favoriteDriverImage = favoriteDriverData?.headshot_url || null;
   const favoriteDriverTeamColor = favoriteDriverData?.team_colour
     ? `#${favoriteDriverData.team_colour.replace("#", "")}` : null;
-  const wallpaper = getProfileWallpaper(profile?.profile_wallpaper);
+  const wallpaperId = profile?.profile_wallpaper;
+  const { data: customWallpaperData } =
+    typeof wallpaperId === "string" && wallpaperId.startsWith("custom-")
+      ? await supabase.from("profile_wallpaper_options")
+          .select("id,name,description,image_url,color_a,color_b,accent,motion,is_published,sort_order")
+          .eq("id", wallpaperId).eq("is_published", true).maybeSingle()
+      : { data: null };
+  const wallpaper = customWallpaperData
+    ? managedToWallpaper(customWallpaperData as ManagedWallpaper)
+    : getProfileWallpaper(wallpaperId);
   const profileAccent = getProfileAccent(profile?.profile_accent);
   const background = getWallpaperBackground(wallpaper);
   return <>
@@ -242,7 +253,7 @@ export default async function ProfilePage() {
       ["--profile-accent-glow" as string]: profileAccent.glow,
     }}>
       <style>{styles}</style>
-      <div className="profile-wallpaper-layer" aria-hidden="true" style={{ backgroundImage: background }} />
+      <ProfileWallpaperBackdrop wallpaper={wallpaper} />
       <div className="profile-page-shade" />
       <div className="profile-container">
         <div className="profile-top-strip">
@@ -274,12 +285,27 @@ export default async function ProfilePage() {
               <p className="profile-bio">{profile?.bio || "Bu kullanıcı henüz profil açıklaması eklemedi."}</p>
               <div className="identity-accent"><span /><small>{totalXp} XP · LEVEL {currentLevel}</small></div>
             </div>
-            <aside className="profile-summary">
-              <div className="summary-title">DRIVER SUMMARY</div>
-              <SummaryRow label="Seviye" value={`LEVEL ${currentLevel}`} />
-              <SummaryRow label="Toplam XP" value={`${totalXp} XP`} />
-              <SummaryRow label="Tahmin Puanı" value={`${totalPoints}`} />
-              <SummaryRow label="Başarım" value={`${unlockedAchievementCount}/${totalAchievementCount}`} />
+            <aside className="profile-summary profile-summary-favorites">
+              <div className="summary-title">FAVORİLER</div>
+              <div className="summary-favorite" style={{ ["--pick-accent" as string]: teamBrand?.color || profileAccent.primary }}>
+                <div className="summary-favorite-visual summary-favorite-logo">
+                  {teamBrand ? <img src={teamBrand.logoUrl} alt={teamBrand.name} /> : <span>F1</span>}
+                </div>
+                <div className="summary-favorite-content">
+                  <span>FAVORİ TAKIM</span>
+                  <strong>{teamBrand?.name || "Seçilmedi"}</strong>
+                </div>
+              </div>
+              <div className="summary-favorite" style={{ ["--pick-accent" as string]: favoriteDriverTeamColor || profileAccent.primary }}>
+                <div className="summary-favorite-visual summary-favorite-driver">
+                  {favoriteDriverImage ? <img src={favoriteDriverImage} alt={profile?.favorite_driver || "Favori pilot"} /> : <span>{driverInitials(profile?.favorite_driver)}</span>}
+                </div>
+                <div className="summary-favorite-content">
+                  <span>FAVORİ PİLOT</span>
+                  <strong>{profile?.favorite_driver || "Seçilmedi"}</strong>
+                  {favoriteDriverData?.team_name && <small>{favoriteDriverData.team_name}</small>}
+                </div>
+              </div>
             </aside>
           </div>
         </section>
@@ -316,25 +342,7 @@ export default async function ProfilePage() {
         </section>
         <section className="profile-content-grid">
           <div className="profile-column">
-            <section className="profile-stats-layout">
-              <div className="profile-stats-primary">
-                <StatCard label="LEVEL" value={`${currentLevel}`} description={`${xpRemaining} XP sonraki seviyeye`} accent />
-                <StatCard label="TOTAL XP" value={`${totalXp}`} description="Toplam profil deneyimi" accent />
-              </div>
-              <div className="profile-stats-secondary">
-                <StatCard label="CHAMPIONSHIP POINTS" value={`${totalPoints}`} description={`${predictionXp} XP katkısı`} />
-                <StatCard label="ACHIEVEMENTS" value={`${unlockedAchievementCount}/${totalAchievementCount}`} description={`${achievementXp} XP kazanıldı`} />
-              </div>
-            </section>
-            <section className="glass-panel showcase-panel">
-              <PanelHeader kicker="PROFILE SHOWCASE" title="Sürücü Vitrini" />
-              <div className="showcase-grid">
-                <ShowcaseItem icon="⚡" label="Level" title={`LEVEL ${currentLevel}`} text={`${xpRemaining} XP daha kazanarak Level ${nextLevel}'e ulaş.`} />
-                <ShowcaseItem icon="🏁" label="Prediction XP" title={`+${predictionXp} XP`} text="Tahmin puanlarından kazanılan deneyim." />
-                <ShowcaseItem icon="🏆" label="Achievement XP" title={`+${achievementXp} XP`} text="Rozet ve başarımlardan kazanılan deneyim." />
-              </div>
-            </section>
-            <section className="glass-panel">
+<section className="glass-panel">
               <div className="panel-header-row">
                 <PanelHeader kicker="PADDOCK ACTIVITY" title="Paddock Paylaşımları" />
                 <Link href="/paddock" className="panel-link">PADDOCK'A GİT →</Link>
@@ -505,31 +513,6 @@ export default async function ProfilePage() {
             </section>
           </div>
           <aside className="profile-sidebar">
-            <section className="glass-panel">
-              <PanelHeader kicker="GRID PICKS" title="Favoriler" />
-              <div className="favorites-grid">
-                <div className="favorite-pick" style={{ ["--pick-accent" as string]: teamBrand?.color || profileAccent.primary }}>
-                  <div className="favorite-pick-glow" />
-                  <span>FAVORİ TAKIM</span>
-                  <div className="favorite-pick-main">
-                    {teamBrand ? <div className="favorite-logo"><img src={teamBrand.logoUrl} alt={teamBrand.name} /></div> : <div className="favorite-monogram">F1</div>}
-                    <div className="favorite-pick-copy"><small>TEAM</small><strong>{teamBrand ? teamBrand.name : "Seçilmedi"}</strong></div>
-                  </div>
-                  <div className="favorite-line" />
-                </div>
-                <div className="favorite-pick" style={{ ["--pick-accent" as string]: favoriteDriverTeamColor || profileAccent.primary }}>
-                  <div className="favorite-pick-glow" />
-                  <span>FAVORİ PİLOT</span>
-                  <div className="favorite-pick-main">
-                    <div className="driver-visual">
-                      {favoriteDriverImage ? <img src={favoriteDriverImage} alt={profile?.favorite_driver || "Favori pilot"} /> : <div className="driver-monogram">{driverInitials(profile?.favorite_driver)}</div>}
-                    </div>
-                    <div className="favorite-pick-copy"><small>DRIVER</small><strong>{profile?.favorite_driver || "Seçilmedi"}</strong>{favoriteDriverData?.team_name && <em>{favoriteDriverData.team_name}</em>}</div>
-                  </div>
-                  <div className="favorite-line" />
-                </div>
-              </div>
-            </section>
             <ProfileAchievements achievements={achievements} userAchievements={userAchievements}
               stats={{ paddockPostCount, predictionCount, totalPoints, bestScore }} />
             <section className="glass-panel">
@@ -549,7 +532,7 @@ export default async function ProfilePage() {
               <div className="wallpaper-thumb" style={{ backgroundImage: background }} />
               <strong>{wallpaper.name}</strong>
               <p>{wallpaper.description}</p>
-              <Link href="/profile/edit#wallpaper">ARKA PLANI DEĞİŞTİR →</Link>
+              <Link href="/profile/wallpapers">ARKA PLANI DEĞİŞTİR →</Link>
             </section>
           </aside>
         </section>
@@ -569,18 +552,8 @@ export default async function ProfilePage() {
 function SummaryRow({ label, value }: { label: string; value: string }) {
   return <div className="summary-row"><span>{label}</span><strong>{value}</strong></div>;
 }
-function StatCard({ label, value, description, accent = false }: {
-  label: string; value: string; description: string; accent?: boolean;
-}) {
-  return <div className="stat-card">
-    <span>{label}</span><strong className={accent ? "stat-accent" : ""}>{value}</strong><small>{description}</small>
-  </div>;
-}
 function PanelHeader({ kicker, title }: { kicker: string; title: string }) {
   return <div className="panel-header"><span>{kicker}</span><h2>{title}</h2></div>;
-}
-function ShowcaseItem({ icon, label, title, text }: { icon: string; label: string; title: string; text: string }) {
-  return <div className="showcase-item"><div className="showcase-icon">{icon}</div><span>{label}</span><strong>{title}</strong><p>{text}</p></div>;
 }
 function InfoRow({ label, value }: { label: string; value: string }) {
   return <div className="info-row"><span>{label}</span><strong>{value}</strong></div>;
@@ -803,4 +776,28 @@ const styles = `
 .prediction-answer > div small { display:block; margin-top:5px; color:#929eaa; font-size:9px; line-height:1.5; overflow-wrap:anywhere; }
 .prediction-answer > b { white-space:nowrap; font-size:10px; color:#79e3aa; }
 @media(max-width:650px) { .prediction-history-card .prediction-row { gap:10px; padding:15px 12px; } .prediction-summary-meta { width:100%; margin-left:0; order:3; } .prediction-toggle-icon { margin-left:auto; } .prediction-breakdown-content { padding:4px 12px 16px; } .prediction-podium-item { padding:9px; } .prediction-podium-item > strong { font-size:16px; } }
+
+/* PROFILE LAYOUT V2: Favoriler yalnizca profil ozetinde */
+.profile-summary-favorites { padding:17px; display:grid; gap:9px; align-content:center; }
+.profile-summary-favorites .summary-title { margin:0 0 5px; font-size:9px; letter-spacing:.12em; }
+.summary-favorite { min-width:0; min-height:83px; display:flex; align-items:center; gap:13px; padding:10px 11px; border:1px solid rgba(255,255,255,.095); border-radius:10px; background:linear-gradient(112deg,rgba(255,255,255,.045),rgba(255,255,255,.012)); position:relative; overflow:hidden; }
+.summary-favorite::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background:var(--pick-accent); opacity:.88; }
+.summary-favorite-visual { width:59px; height:59px; flex:0 0 59px; border-radius:8px; display:flex; align-items:center; justify-content:center; overflow:hidden; background:rgba(255,255,255,.075); }
+.summary-favorite-logo { background:#fff; }
+.summary-favorite-logo img { display:block; width:49px; height:49px; object-fit:contain; }
+.summary-favorite-logo span { color:#171b24; font-size:22px; font-style:italic; font-weight:950; }
+.summary-favorite-driver { align-items:flex-end; background:rgba(255,255,255,.045); }
+.summary-favorite-driver img { display:block; max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; object-position:center bottom; }
+.summary-favorite-driver span { color:var(--pick-accent); font-size:17px; font-weight:900; }
+.summary-favorite-content { min-width:0; display:flex; flex-direction:column; gap:5px; }
+.summary-favorite-content > span { color:#9ba8b5; font-size:9px; font-weight:800; letter-spacing:.07em; }
+.summary-favorite-content > strong { overflow-wrap:anywhere; font-size:15px; line-height:1.25; font-weight:900; }
+.summary-favorite-content > small { color:var(--pick-accent); font-size:9px; font-weight:800; }
+/* Tekrar eden kartlar kaldigi icin Paddock yukaridan baslar. */
+.profile-content-grid { align-items:start; }
+/* Guncel secili arka plan kucuk onizlemede de kesilmesin. */
+.wallpaper-thumb { background-color:#080d15; background-size:contain; background-position:center top; background-repeat:no-repeat; }
+@media (max-width:1150px) { .profile-summary-favorites { grid-column:1 / -1; grid-template-columns:repeat(2,minmax(0,1fr)); } .profile-summary-favorites .summary-title { grid-column:1 / -1; } }
+@media (max-width:650px) { .profile-summary-favorites { grid-template-columns:1fr; text-align:left; } .profile-summary-favorites .summary-title { grid-column:auto; } .summary-favorite { min-height:75px; } }
+
 `;

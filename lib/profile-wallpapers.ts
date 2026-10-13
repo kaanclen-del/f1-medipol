@@ -18,6 +18,7 @@ export type ProfileWallpaper = {
   fallback: string;
 
   accent: string;
+  motion?: "drift" | "pulse" | "rain" | "aurora" | "speed";
 };
 
 export const DEFAULT_PROFILE_WALLPAPER =
@@ -540,6 +541,63 @@ export const PROFILE_WALLPAPERS: ProfileWallpaper[] = [
       linear-gradient(112deg, transparent 0 55%, rgba(50,225,148,.35) 55.2% 55.5%, transparent 55.8%),
       radial-gradient(ellipse at 16% 82%, rgba(50,225,148,.35), transparent 38%),
       linear-gradient(135deg, #061f16 0%, #12523a 58%, #061f16 100%)
+    `,
+  },
+  {
+    id: "solar-flare",
+    name: "Solar Flare",
+    description: "Turuncu gun batimi, altin isik halkalari ve sicak pit cizgileri.",
+    image: null,
+    accent: "#ff914d",
+    fallback: `
+      radial-gradient(ellipse at 82% 29%, rgba(255,187,90,.65) 0%, transparent 11%),
+      radial-gradient(ellipse at 78% 34%, rgba(255,114,42,.50) 0%, transparent 29%),
+      linear-gradient(115deg, transparent 0 49%, rgba(255,225,164,.24) 49.2% 49.6%, transparent 49.9%),
+      repeating-linear-gradient(7deg, transparent 0 80px, rgba(255,230,174,.05) 81px, transparent 82px),
+      linear-gradient(135deg, #160907 2%, #783118 48%, #bd571f 72%, #190b0a 100%)
+    `,
+  },
+  {
+    id: "polar-ice",
+    name: "Polar Ice",
+    description: "Buz mavisi aurora, saydam katmanlar ve soguk isik akisi.",
+    image: null,
+    accent: "#8deaff",
+    fallback: `
+      radial-gradient(ellipse at 26% 20%, rgba(159,247,255,.55) 0%, transparent 19%),
+      radial-gradient(ellipse at 83% 61%, rgba(24,195,229,.35), transparent 31%),
+      linear-gradient(125deg, transparent 0 32%, rgba(203,255,255,.17) 32.2% 33%, transparent 33.2% 68%, rgba(203,255,255,.08) 68.2% 69%, transparent 69.2%),
+      repeating-linear-gradient(95deg, transparent 0 100px, rgba(203,255,255,.035) 101px, transparent 102px),
+      linear-gradient(138deg, #02131c 0%, #12546c 50%, #257f96 76%, #03151e 100%)
+    `,
+  },
+  {
+    id: "magenta-rush",
+    name: "Magenta Rush",
+    description: "Fusya-mor neon, hareketli hiz izleri ve gece yarisi enerjisi.",
+    image: null,
+    accent: "#ff59cc",
+    fallback: `
+      linear-gradient(145deg, transparent 0 33%, rgba(255,76,206,.65) 33.12% 33.38%, transparent 33.5%),
+      linear-gradient(145deg, transparent 0 59%, rgba(255,126,224,.22) 59.1% 59.35%, transparent 59.5%),
+      radial-gradient(ellipse at 82% 16%, rgba(255,48,202,.54), transparent 34%),
+      radial-gradient(ellipse at 20% 80%, rgba(92,45,225,.45), transparent 40%),
+      repeating-linear-gradient(140deg, transparent 0 58px, rgba(255,255,255,.035) 59px, transparent 60px),
+      linear-gradient(135deg, #1b051c, #591249 51%, #8a207f 72%, #12071d)
+    `,
+  },
+  {
+    id: "copper-night",
+    name: "Copper Night",
+    description: "Bakir isiklar, koyu toprak tonlari ve metalik yarismaci atmosferi.",
+    image: null,
+    accent: "#eeb58b",
+    fallback: `
+      repeating-linear-gradient(90deg, transparent 0 115px, rgba(255,194,141,.07) 116px, transparent 117px),
+      linear-gradient(120deg, transparent 0 59%, rgba(255,198,136,.29) 59.1% 59.4%, transparent 59.5%),
+      radial-gradient(ellipse at 76% 27%, rgba(245,168,106,.43), transparent 29%),
+      radial-gradient(ellipse at 24% 70%, rgba(146,74,36,.29), transparent 42%),
+      linear-gradient(140deg, #100b0b, #3c221c 47%, #855137 75%, #120b0a)
     `,
   },
 ];
