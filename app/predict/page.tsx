@@ -251,6 +251,14 @@ export default async function PredictPage({
       <Header />
 
       <main className="predict-page">
+        {/* F1_MEDIPOL_RACE_CHAT_LINK_V1 */}
+        <div className="site-container" style={{ paddingTop: "16px", paddingBottom: "5px" }}>
+          <Link href="/race-chat" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", padding: "14px 18px", borderRadius: "13px", background: "linear-gradient(100deg,rgba(218,25,44,.19),rgba(218,25,44,.045))", border: "1px solid rgba(229,55,70,.34)", color: "inherit", textDecoration: "none", fontSize: "13px", fontWeight: 850 }}>
+            <span>💬 GRAND PRIX CANLI SOHBET <small style={{ display:"block", marginTop: "4px", opacity: .7, fontWeight: 500 }}>Yarış hakkında diğer üyelerle konuş</small></span>
+            <span aria-hidden="true" style={{ fontSize: "25px", color: "#ef4654" }}>↗</span>
+          </Link>
+        </div>
+
         <style>{`
           .predict-page {
             min-height:

@@ -1,0 +1,8 @@
+/* F1 Medipol V12 — quoted replies */
+.quote{width:100%;display:flex;flex-direction:column;gap:3px;align-items:flex-start;text-align:left;min-width:0;padding:7px 10px;border:0!important;border-left:3px solid #f4404c!important;border-radius:8px!important;background:rgba(119,129,155,.16)!important;color:inherit!important;cursor:pointer!important;margin:0 0 7px!important;font-size:11px!important;flex:0 1 auto!important;white-space:normal}
+.quote strong{font-size:11px!important;font-weight:850!important;color:inherit!important;line-height:1.2}
+.quote span{font-size:11px!important;color:inherit!important;opacity:.79;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;display:block;max-width:100%}
+.composing{background:rgba(76,88,113,.13)!important}
+.focused{animation:f1-reply-highlight 1.6s ease-out!important}
+@keyframes f1-reply-highlight{0%,20%{outline:3px solid #ffcc50;outline-offset:4px;background-color:rgba(255,205,80,.23)}100%{outline:3px solid transparent;outline-offset:4px;background-color:transparent}}
+@media(prefers-reduced-motion:reduce){.focused{animation:none!important;outline:2px solid #ffcc50!important}}

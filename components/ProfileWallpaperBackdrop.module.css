@@ -140,3 +140,6 @@
     min-width: 100%;
   }
 }
+
+/* Optimization: expensive blur effects are toned down on small devices. */
+@media(max-width:800px){.glow{filter:blur(45px);opacity:.12}.beam{opacity:.24}.grain{opacity:.14}}

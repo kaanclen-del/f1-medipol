@@ -2434,3 +2434,108 @@ svg {
   }
 
 }
+
+/* F1 MOBILE HOME V3 START */
+/* F1 MEDIPOL - MOBILE HERO FIT V3
+   Site genel renklerini etkilemez. Ana sayfanin grand prix hero alanina ozeldir. */
+@media (max-width: 740px) {
+  .hero-main {
+    min-width: 0 !important;
+    padding: 24px 18px 22px !important;
+  }
+  .hero-copy {
+    min-width: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 7.6vw, 43px) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -.058em !important;
+    max-width: 100% !important;
+    margin-top: 17px !important;
+  }
+  .hero-title-top,
+  .hero-title-bottom {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    padding-right: 0 !important;
+  }
+  .hero-title-bottom {
+    font-size: .92em !important;
+  }
+  .hero .eyebrow {
+    font-size: 9px !important;
+    letter-spacing: .095em !important;
+    line-height: 1.5 !important;
+    overflow-wrap: anywhere;
+  }
+  .hero .race-signature {
+    width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    line-height: 1.55 !important;
+    font-size: 10px !important;
+  }
+  .hero-countdown {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin-top: 12px !important;
+    padding: 12px 0 16px !important;
+  }
+  .countdown-scale {
+    transform: none !important;
+    scale: 1 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .countdown-scale > div {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    column-gap: 10px !important;
+    row-gap: 10px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 10px 0 0 !important;
+  }
+  .countdown-scale > div > div {
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    padding: 13px 9px !important;
+    box-sizing: border-box !important;
+  }
+  .countdown-scale > div > div b {
+    font-size: clamp(23px, 6.2vw, 30px) !important;
+  }
+  .countdown-scale > div > div small {
+    display: block;
+    margin-top: 3px;
+    letter-spacing: .05em;
+    font-size: 10px !important;
+  }
+  .hero-race-brief {
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+}
+@media (max-width: 355px) {
+  .hero h1 { font-size: clamp(26px, 7.35vw, 30px) !important; }
+  .hero-main { padding-inline: 14px !important; }
+}
+/* F1 MOBILE HOME V3 END */
+
+/* F1 MEDIPOL DM V6 — HEADER THEME PICKER */
+
+.global-theme-switcher, .global-theme-switcher * {display:none !important;}
+@media(max-width:470px){
+ .medipol-header-inner {width:calc(100% - 18px) !important;gap:7px !important;}
+ .medipol-header-right {gap:5px !important;}
+ .medipol-header-logo {min-width:105px !important;width:105px !important;max-width:105px !important;flex:0 0 105px !important;}
+ .medipol-header-logo-art {width:105px !important;min-width:105px !important;max-width:105px !important;}
+}

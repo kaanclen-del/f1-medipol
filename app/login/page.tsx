@@ -182,14 +182,14 @@ export default function LoginPage() {
         });
         if (error) throw error;
         if (data.session) {
-          window.location.assign("/predict");
+          window.location.assign("/");
           return;
         }
         setFeedback({ type: "success", text: "Kayıt isteğin alındı. E-posta doğrulaması açıksa, gelen kutundaki bağlantıyı onayla." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
-        window.location.assign("/predict");
+        window.location.assign("/");
       }
     } catch (error) {
       const text = error instanceof Error ? error.message : "İşlem sırasında hata oluştu. Tekrar dene.";
@@ -215,7 +215,7 @@ export default function LoginPage() {
           <div className={`${styles.beam} ${styles.beamTwo}`} />
         </div>
         <div className={styles.shell}>
-          <div className={styles.columns}>
+          <div className={`${styles.columns} ${register ? styles.registerLayout : ""}`}>
             <section className={styles.story} aria-labelledby="auth-hero">
               <h1 id="auth-hero" className={styles.hero}>
                 <span className={styles.heroLine}>SADECE</span>

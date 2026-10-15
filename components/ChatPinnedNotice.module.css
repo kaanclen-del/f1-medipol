@@ -1,0 +1,5 @@
+.notice{display:flex;gap:10px;align-items:center;padding:8px 12px;min-height:48px;background:var(--surface,#282d38);border-bottom:1px solid var(--edge,#5b6272);color:var(--text,#fff);flex:0 0 auto;position:relative;z-index:2}
+.mark{font-size:15px;flex:0 0 auto}
+.preview{border:0;background:transparent;color:inherit;min-width:0;flex:1;display:flex;flex-direction:column;gap:2px;align-items:flex-start;cursor:pointer;text-align:left;padding:0}
+.preview strong{font-size:11px}.preview span{font-size:11px;max-width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;opacity:.74}
+.remove{border:0;background:transparent;font-size:22px;font-weight:500;width:28px;height:28px;color:inherit;cursor:pointer;flex:0 0 auto}

@@ -29,6 +29,15 @@ export default function PaddockPostFocus() {
         );
 
       if (!element) {
+        // Önceki sayfalara düşen gönderiye direkt linkle erişimi koru.
+        const postId = id.slice(5);
+        const url = new URL(window.location.href);
+        if (/^[0-9a-f-]{36}$/i.test(postId) && url.searchParams.get("focus") !== postId) {
+          url.searchParams.set("feed", "for-you");
+          url.searchParams.set("page", "1");
+          url.searchParams.set("focus", postId);
+          window.location.replace(url.toString());
+        }
         return;
       }
 

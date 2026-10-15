@@ -18,6 +18,8 @@ export const dynamic = "force-dynamic";
 type PageProps = {
   searchParams: Promise<{
     feed?: string | string[];
+    page?: string | string[];
+    focus?: string | string[];
   }>;
 };
 
@@ -167,6 +169,8 @@ function PostMediaGrid({
             <img
               src={item.media_url}
               alt="Paddock gönderi görseli"
+              loading="lazy"
+              decoding="async"
               style={{
                 width: "100%",
                 height: "100%",
@@ -178,7 +182,7 @@ function PostMediaGrid({
             <video
               src={item.media_url}
               controls
-              preload="metadata"
+              preload="none"
               style={{
                 width: "100%",
                 height: "100%",
@@ -210,396 +214,210 @@ export default async function PaddockPage({
         ? "saved"
         : "for-you";
 
+  // Sayfa başına yalnızca 20 gönderi + sonraki sayfa kontrolü için 1 kayıt.
+  const PAGE_SIZE = 20;
+  const pageValue = Array.isArray(params.page) ? params.page[0] : params.page;
+  const requestedPage = Number(pageValue || 1);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0
+    ? Math.min(requestedPage, 1000)
+    : 1;
+  const focusParam = Array.isArray(params.focus) ? params.focus[0] : params.focus;
+  const focusId = focusParam && /^[0-9a-f-]{36}$/i.test(focusParam)
+    ? focusParam
+    : null;
+
   const admin = createAdminClient();
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Önemli: Birbirinden bağımsız işlemler ardışık değil paralel.
+  const [authResult, profilesResult, followsResult] = await Promise.all([
+    supabase.auth.getUser(),
+    admin.from("profiles").select("id, username, display_name, avatar_url, is_admin"),
+    admin.from("paddock_follows").select("follower_id, following_id"),
+  ]);
 
-  const {
-    data: rawPosts,
-    error,
-  } = await admin
-    .from("paddock_posts")
-    .select(
-      `
-        id,
-        user_id,
-        content,
-        is_admin_post,
-        is_pinned,
-        created_at
-      `
-    )
-    .eq("is_published", true)
-    .order("is_pinned", {
-      ascending: false,
-    })
-    .order("created_at", {
-      ascending: false,
-    });
-
-  const postIds = (rawPosts ?? []).map(
-    (post) => post.id
+  const user = authResult.data.user;
+  const allProfiles = (profilesResult.data ?? []) as Profile[];
+  const follows = (followsResult.data ?? []) as Follow[];
+  const profileById = new Map(allProfiles.map((profile) => [profile.id, profile]));
+  const currentProfile = user ? profileById.get(user.id) ?? null : null;
+  const followedUserIds = new Set(
+    user ? follows.filter((follow) => follow.follower_id === user.id)
+      .map((follow) => follow.following_id) : []
   );
 
-  let allProfiles: Profile[] = [];
-  let allMedia: PostMedia[] = [];
-
-  let polls: {
-    id: string;
-    post_id: string;
-    question: string;
-  }[] = [];
-
-  let pollOptions: {
-    id: string;
-    poll_id: string;
-    option_text: string;
-    sort_order: number;
-  }[] = [];
-
-  let pollVotes: {
-    id: string;
-    poll_id: string;
-    option_id: string;
-  }[] = [];
-
-  let postLikes: {
-    post_id: string;
-    user_id: string;
-  }[] = [];
-
-  let postComments: {
-    post_id: string;
-  }[] = [];
-
-  let userBookmarks: {
-    post_id: string;
-    user_id: string;
-  }[] = [];
-
-  let follows: Follow[] = [];
-
-  const { data: profileData } = await admin
-    .from("profiles")
-    .select(
-      `
-        id,
-        username,
-        display_name,
-        avatar_url,
-        is_admin
-      `
-    );
-
-  allProfiles =
-    (profileData ?? []) as Profile[];
-
-  const currentProfile =
-    user
-      ? allProfiles.find(
-          (profile) =>
-            profile.id === user.id
-        ) ?? null
-      : null;
-
-  const { data: followData } = await admin
-    .from("paddock_follows")
-    .select(
-      `
-        follower_id,
-        following_id
-      `
-    );
-
-  follows =
-    (followData ?? []) as Follow[];
-
-  if (postIds.length > 0) {
-    const { data: mediaData } = await admin
-      .from("paddock_post_media")
-      .select(
-        `
-          id,
-          post_id,
-          media_url,
-          media_type,
-          sort_order
-        `
-      )
-      .in("post_id", postIds)
-      .order("sort_order", {
-        ascending: true,
-      });
-
-    allMedia =
-      (mediaData ?? []) as PostMedia[];
-
-    const { data: pollData } = await admin
-      .from("paddock_polls")
-      .select(
-        `
-          id,
-          post_id,
-          question
-        `
-      )
-      .in("post_id", postIds);
-
-    polls = pollData ?? [];
-
-    const { data: likeData } = await admin
-      .from("paddock_post_likes")
-      .select(
-        `
-          post_id,
-          user_id
-        `
-      )
-      .in("post_id", postIds);
-
-    postLikes = likeData ?? [];
-
-    const { data: commentData } = await admin
-      .from("paddock_comments")
+  let savedPostIds: string[] = [];
+  if (feedMode === "saved" && user) {
+    const savedResult = await admin
+      .from("paddock_post_bookmarks")
       .select("post_id")
-      .in("post_id", postIds);
+      .eq("user_id", user.id);
+    savedPostIds = (savedResult.data ?? []).map((row) => row.post_id);
+  }
 
-    postComments = commentData ?? [];
+  let rawPosts: {
+    id: string;
+    user_id: string;
+    content: string | null;
+    is_admin_post: boolean;
+    is_pinned: boolean;
+    created_at: string;
+  }[] = [];
+  let error: { message: string } | null = null;
+  let hasNextPage = false;
 
-    if (user) {
-      const { data: bookmarkData } =
-        await admin
-          .from("paddock_post_bookmarks")
-          .select(
-            `
-              post_id,
-              user_id
-            `
-          )
-          .eq("user_id", user.id)
-          .in("post_id", postIds);
+  // Filtreleri sunucuda uygula; önce bütün gönderileri indirmiyoruz.
+  const canQuery = feedMode === "for-you" ||
+    (Boolean(user) && (feedMode === "following"
+      ? followedUserIds.size > 0 : savedPostIds.length > 0));
 
-      userBookmarks =
-        bookmarkData ?? [];
+  if (canQuery) {
+    let query = admin
+      .from("paddock_posts")
+      .select("id, user_id, content, is_admin_post, is_pinned, created_at")
+      .eq("is_published", true)
+      .order("is_pinned", { ascending: false })
+      .order("created_at", { ascending: false });
+
+    if (feedMode === "following") {
+      query = query.in("user_id", [...followedUserIds]);
+    } else if (feedMode === "saved") {
+      query = query.in("id", savedPostIds);
     }
+
+    const first = (page - 1) * PAGE_SIZE;
+    const postResult = await query.range(first, first + PAGE_SIZE);
+    error = postResult.error;
+    const fetched = postResult.data ?? [];
+    hasNextPage = fetched.length > PAGE_SIZE;
+    rawPosts = fetched.slice(0, PAGE_SIZE);
   }
 
-  const pollIds = polls.map(
-    (poll) => poll.id
-  );
-
-  if (pollIds.length > 0) {
-    const { data: optionData } = await admin
-      .from("paddock_poll_options")
-      .select(
-        `
-          id,
-          poll_id,
-          option_text,
-          sort_order
-        `
-      )
-      .in("poll_id", pollIds)
-      .order("sort_order", {
-        ascending: true,
-      });
-
-    pollOptions = optionData ?? [];
-
-    const { data: voteData } = await admin
-      .from("paddock_poll_votes")
-      .select(
-        `
-          id,
-          poll_id,
-          option_id
-        `
-      )
-      .in("poll_id", pollIds);
-
-    pollVotes = voteData ?? [];
+  // Eski bildirimlerin #post-UUID bağlantılarını koru.
+  if (focusId && feedMode === "for-you" && !rawPosts.some((post) => post.id === focusId)) {
+    const focused = await admin
+      .from("paddock_posts")
+      .select("id, user_id, content, is_admin_post, is_pinned, created_at")
+      .eq("is_published", true)
+      .eq("id", focusId)
+      .maybeSingle();
+    if (focused.data) rawPosts = [focused.data, ...rawPosts];
   }
 
-  const posts: Post[] = (rawPosts ?? []).map(
-    (post) => {
-      const profile =
-        allProfiles.find(
-          (item) =>
-            item.id === post.user_id
-        ) ?? null;
+  const postIds = rawPosts.map((post) => post.id);
+  let allMedia: PostMedia[] = [];
+  let polls: { id: string; post_id: string; question: string }[] = [];
+  let pollOptions: { id: string; poll_id: string; option_text: string; sort_order: number }[] = [];
+  let pollVotes: { id: string; poll_id: string; option_id: string }[] = [];
+  let postLikes: { post_id: string; user_id: string }[] = [];
+  let postComments: { post_id: string }[] = [];
+  let userBookmarks: { post_id: string; user_id: string }[] = [];
 
-      const media = allMedia.filter(
-        (item) =>
-          item.post_id === post.id
-      );
+  if (postIds.length) {
+    // Aynı sayfanın medya, anket, beğeni ve yorum sorguları paralel.
+    const [mediaRes, pollRes, likesRes, commentsRes, bookmarkRes] = await Promise.all([
+      admin.from("paddock_post_media")
+        .select("id, post_id, media_url, media_type, sort_order")
+        .in("post_id", postIds).order("sort_order", { ascending: true }),
+      admin.from("paddock_polls")
+        .select("id, post_id, question").in("post_id", postIds),
+      admin.from("paddock_post_likes")
+        .select("post_id, user_id").in("post_id", postIds),
+      admin.from("paddock_comments")
+        .select("post_id").in("post_id", postIds),
+      user ? admin.from("paddock_post_bookmarks")
+        .select("post_id, user_id").eq("user_id", user.id)
+        .in("post_id", postIds) : Promise.resolve({ data: [] }),
+    ]);
+    allMedia = (mediaRes.data ?? []) as PostMedia[];
+    polls = pollRes.data ?? [];
+    postLikes = likesRes.data ?? [];
+    postComments = commentsRes.data ?? [];
+    userBookmarks = bookmarkRes.data ?? [];
+  }
 
-      const likes = postLikes.filter(
-        (like) =>
-          like.post_id === post.id
-      );
+  const pollIds = polls.map((poll) => poll.id);
+  if (pollIds.length) {
+    const [optionsRes, votesRes] = await Promise.all([
+      admin.from("paddock_poll_options")
+        .select("id, poll_id, option_text, sort_order")
+        .in("poll_id", pollIds).order("sort_order", { ascending: true }),
+      admin.from("paddock_poll_votes")
+        .select("id, poll_id, option_id").in("poll_id", pollIds),
+    ]);
+    pollOptions = optionsRes.data ?? [];
+    pollVotes = votesRes.data ?? [];
+  }
 
-      const comments =
-        postComments.filter(
-          (comment) =>
-            comment.post_id === post.id
-        );
+  // Taramaları Map ile bir seferde hazırla (her gönderi için tekrar filtreleme yok).
+  const groupBy = <T,>(rows: T[], keyFn: (row: T) => string) => {
+    const grouped = new Map<string, T[]>();
+    rows.forEach((row) => {
+      const key = keyFn(row);
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)!.push(row);
+    });
+    return grouped;
+  };
+  const mediaByPost = groupBy(allMedia, (row) => row.post_id);
+  const pollsByPost = new Map(polls.map((poll) => [poll.post_id, poll]));
+  const likesByPost = groupBy(postLikes, (row) => row.post_id);
+  const commentsByPost = groupBy(postComments, (row) => row.post_id);
+  const bookmarksSet = new Set(userBookmarks.map((bookmark) => bookmark.post_id));
+  const optionsByPoll = groupBy(pollOptions, (option) => option.poll_id);
+  const votesByPoll = groupBy(pollVotes, (vote) => vote.poll_id);
 
-      const likedByCurrentUser =
-        user
-          ? likes.some(
-              (like) =>
-                like.user_id === user.id
-            )
-          : false;
-
-      const bookmarkedByCurrentUser =
-        user
-          ? userBookmarks.some(
-              (bookmark) =>
-                bookmark.post_id ===
-                post.id
-            )
-          : false;
-
-      const pollData =
-        polls.find(
-          (item) =>
-            item.post_id === post.id
-        ) ?? null;
-
-      let poll: Poll | null = null;
-
-      if (pollData) {
-        const options = pollOptions
-          .filter(
-            (option) =>
-              option.poll_id ===
-              pollData.id
-          )
-          .map((option) => ({
-            ...option,
-
-            vote_count:
-              pollVotes.filter(
-                (vote) =>
-                  vote.option_id ===
-                  option.id
-              ).length,
-          }));
-
-        const totalVotes =
-          pollVotes.filter(
-            (vote) =>
-              vote.poll_id ===
-              pollData.id
-          ).length;
-
-        poll = {
-          id: pollData.id,
-          question: pollData.question,
-          options,
-          total_votes: totalVotes,
-        };
-      }
-
-      return {
-        ...post,
-        profile,
-        media,
-        poll,
-
-        like_count: likes.length,
-
-        liked_by_current_user:
-          likedByCurrentUser,
-
-        comment_count:
-          comments.length,
-
-        bookmarked_by_current_user:
-          bookmarkedByCurrentUser,
-      };
+  const posts: Post[] = rawPosts.map((post) => {
+    const rawPoll = pollsByPost.get(post.id);
+    const votes = rawPoll ? votesByPoll.get(rawPoll.id) ?? [] : [];
+    const votesPerOption = new Map<string, number>();
+    for (const vote of votes) {
+      votesPerOption.set(vote.option_id, (votesPerOption.get(vote.option_id) ?? 0) + 1);
     }
-  );
+    const poll: Poll | null = rawPoll ? {
+      id: rawPoll.id,
+      question: rawPoll.question,
+      options: (optionsByPoll.get(rawPoll.id) ?? []).map((option) => ({
+        ...option,
+        vote_count: votesPerOption.get(option.id) ?? 0,
+      })),
+      total_votes: votes.length,
+    } : null;
+    const likes = likesByPost.get(post.id) ?? [];
 
-  const followedUserIds =
-    new Set<string>();
+    return {
+      ...post,
+      profile: profileById.get(post.user_id) ?? null,
+      media: mediaByPost.get(post.id) ?? [],
+      poll,
+      like_count: likes.length,
+      liked_by_current_user: Boolean(user && likes.some((like) => like.user_id === user.id)),
+      comment_count: commentsByPost.get(post.id)?.length ?? 0,
+      bookmarked_by_current_user: bookmarksSet.has(post.id),
+    };
+  });
 
-  if (user) {
-    for (const follow of follows) {
-      if (
-        follow.follower_id === user.id
-      ) {
-        followedUserIds.add(
-          follow.following_id
-        );
-      }
-    }
-  }
-
-  let visiblePosts = posts;
-
-  if (feedMode === "following") {
-    visiblePosts = posts.filter(
-      (post) =>
-        followedUserIds.has(
-          post.user_id
-        )
-    );
-  }
-
-  if (feedMode === "saved") {
-    visiblePosts = posts.filter(
-      (post) =>
-        post.bookmarked_by_current_user
-    );
-  }
-
+  // Artık sunucuda filtreleniyor; sayfadaki kart sayısı sınırlı.
+  const visiblePosts = posts;
   const adminPosts = posts
-    .filter(
-      (post) =>
-        post.is_admin_post ||
-        post.profile?.is_admin
-    )
+    .filter((post) => post.is_admin_post || post.profile?.is_admin)
     .slice(0, 8);
-
   const hashtags = extractHashtags(posts);
 
-  const suggestedProfiles =
-    allProfiles
-      .filter(
-        (profile) =>
-          profile.id !== user?.id
-      )
-      .sort((a, b) => {
-        if (a.is_admin && !b.is_admin) {
-          return -1;
-        }
+  const followerCounts = new Map<string, number>();
+  for (const follow of follows) {
+    followerCounts.set(follow.following_id, (followerCounts.get(follow.following_id) ?? 0) + 1);
+  }
+  const suggestedProfiles = allProfiles
+    .filter((profile) => profile.id !== user?.id)
+    .sort((a, b) => {
+      if (a.is_admin !== b.is_admin) return a.is_admin ? -1 : 1;
+      return (followerCounts.get(b.id) ?? 0) - (followerCounts.get(a.id) ?? 0);
+    })
+    .slice(0, 5);
 
-        if (!a.is_admin && b.is_admin) {
-          return 1;
-        }
-
-        const aFollowers =
-          follows.filter(
-            (follow) =>
-              follow.following_id ===
-              a.id
-          ).length;
-
-        const bFollowers =
-          follows.filter(
-            (follow) =>
-              follow.following_id ===
-              b.id
-          ).length;
-
-        return bFollowers - aFollowers;
-      })
-      .slice(0, 5);
+  const feedQuery = feedMode === "for-you" ? "" : `feed=${encodeURIComponent(feedMode)}&`;
+  const paginationUrl = (targetPage: number) => `/paddock?${feedQuery}page=${targetPage}`;
 
   return (
     <main
@@ -721,7 +539,7 @@ export default async function PaddockPage({
                       marginBottom: "14px",
                     }}
                   >
-                    <div
+                    <Link href={`/members/${post.user_id}`} aria-label="Gönderi sahibinin profilini ziyaret et" style={{display:"block",flex:"0 0 auto",borderRadius:"50%"}}><div
                       style={{
                         width: "38px",
                         height: "38px",
@@ -756,7 +574,7 @@ export default async function PaddockPage({
                           post.profile
                         )
                       )}
-                    </div>
+                    </div></Link>
 
                     <div>
                       <div
@@ -767,7 +585,7 @@ export default async function PaddockPage({
                           flexWrap: "wrap",
                         }}
                       >
-                        <strong
+                        <Link href={`/members/${post.user_id}`} style={{color:"inherit",textDecoration:"none"}} aria-label="Profili ziyaret et"><strong
                           style={{
                             fontSize: "13px",
                           }}
@@ -777,7 +595,7 @@ export default async function PaddockPage({
                             post.profile
                               ?.username ||
                             "Medipol F1"}
-                        </strong>
+                        </strong></Link>
 
                         {post.is_pinned && (
                           <span
@@ -1066,7 +884,7 @@ export default async function PaddockPage({
                           "flex-start",
                       }}
                     >
-                      <div
+                      <Link href={`/members/${post.user_id}`} aria-label="Gönderi sahibinin profilini ziyaret et" style={{display:"block",flex:"0 0 auto",borderRadius:"50%"}}><div
                         style={{
                           width: "46px",
                           height: "46px",
@@ -1107,7 +925,7 @@ export default async function PaddockPage({
                             post.profile
                           )
                         )}
-                      </div>
+                      </div></Link>
 
                       <div
                         style={{
@@ -1141,13 +959,13 @@ export default async function PaddockPage({
                                   "center",
                               }}
                             >
-                              <strong>
+                              <Link href={`/members/${post.user_id}`} style={{color:"inherit",textDecoration:"none"}} aria-label="Profili ziyaret et"><strong>
                                 {post.profile
                                   ?.display_name ||
                                   post.profile
                                     ?.username ||
                                   "Kullanıcı"}
-                              </strong>
+                              </strong></Link>
 
                               {post.is_admin_post && (
                                 <span
@@ -1338,6 +1156,20 @@ export default async function PaddockPage({
                 );
               })
             )}
+            {(page > 1 || hasNextPage) && (
+              <nav aria-label="Paddock sayfaları" style={{
+                display: "flex", justifyContent: "space-between", alignItems: "center",
+                gap: "12px", margin: "24px 0 6px", padding: "12px 0",
+              }}>
+                {page > 1 ? (
+                  <Link href={paginationUrl(page - 1)} style={{ color: "#fff", background: "#1c1c1c", border: "1px solid #414141", borderRadius: 10, textDecoration: "none", padding: "12px 16px", fontSize: 13 }}>← Önceki</Link>
+                ) : <span />}
+                <span style={{ color: "#aaa", fontSize: 12 }}>{page}. sayfa</span>
+                {hasNextPage ? (
+                  <Link href={paginationUrl(page + 1)} style={{ color: "#fff", background: "#b71c31", borderRadius: 10, textDecoration: "none", padding: "12px 16px", fontWeight: 700, fontSize: 13 }}>Daha fazla gönderi →</Link>
+                ) : <span />}
+              </nav>
+            )}
           </section>
 
           <aside
@@ -1508,7 +1340,7 @@ export default async function PaddockPage({
                               flex: 1,
                             }}
                           >
-                            <div
+                            <Link href={`/members/${profile.id}`} aria-label="Önerilen üyenin profilini ziyaret et" style={{display:"block",flex:"0 0 auto"}}><div
                               style={{
                                 width:
                                   "42px",
@@ -1554,7 +1386,7 @@ export default async function PaddockPage({
                                   profile
                                 )
                               )}
-                            </div>
+                            </div></Link>
 
                             <div
                               style={{
@@ -1570,7 +1402,7 @@ export default async function PaddockPage({
                                     "center",
                                 }}
                               >
-                                <strong
+                                <Link href={`/members/${profile.id}`} style={{color:"inherit",textDecoration:"none"}} aria-label="Profili ziyaret et"><strong
                                   style={{
                                     fontSize:
                                       "12px",
@@ -1585,7 +1417,7 @@ export default async function PaddockPage({
                                   {profile.display_name ||
                                     profile.username ||
                                     "Kullanıcı"}
-                                </strong>
+                                </strong></Link>
 
                                 {profile.is_admin && (
                                   <span

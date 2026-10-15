@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { listUserPushDevices } from "@/lib/push/list-user-devices";
 import { configuredWebPush, isSupportedPushEndpoint } from "@/lib/push/web-push";
 
 export const dynamic = "force-dynamic";
@@ -22,11 +23,8 @@ export async function POST() {
     }
 
     const admin = createAdminClient();
-    const { data, error } = await admin.from("push_subscriptions")
-      .select("id,endpoint,p256dh,auth,last_test_sent_at")
-      .eq("user_id", user.id).limit(5);
-    if (error) throw error;
-    const devices = (data ?? []) as Device[];
+    const devices = await listUserPushDevices<Device>(admin, user.id,
+      "id,endpoint,p256dh,auth,last_test_sent_at");
     if (devices.length === 0) {
       return NextResponse.json({ error: "Önce bildirimleri etkinleştir." }, { status: 400 });
     }
@@ -41,8 +39,9 @@ export async function POST() {
     let sent = 0;
     let rateLimited = 0;
     const cutoff = new Date(Date.now() - 45_000).toISOString();
-    for (const device of devices) {
-      if (!isSupportedPushEndpoint(device.endpoint)) continue;
+    for (let start = 0; start < devices.length; start += 8) {
+      await Promise.all(devices.slice(start, start + 8).map(async device => {
+      if (!isSupportedPushEndpoint(device.endpoint)) return;
       // Atomik koşullu UPDATE: aynı cihaza 45 saniyede birden çok test engellenir.
       const { data: claimed, error: claimError } = await admin
         .from("push_subscriptions")
@@ -52,7 +51,7 @@ export async function POST() {
         .or(`last_test_sent_at.is.null,last_test_sent_at.lt.${cutoff}`)
         .select("id");
       if (claimError) throw claimError;
-      if (!claimed?.length) { rateLimited++; continue; }
+      if (!claimed?.length) { rateLimited++; return; }
 
       try {
         await push.sendNotification(
@@ -74,6 +73,7 @@ export async function POST() {
           console.error("PUSH SEND ERROR:", status ?? "unknown");
         }
       }
+      }));
     }
     if (sent === 0) {
       return NextResponse.json({

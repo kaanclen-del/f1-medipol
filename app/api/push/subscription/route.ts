@@ -46,15 +46,6 @@ export async function POST(request: Request) {
     if (existing && existing.user_id !== userId) {
       return respond("Bu cihaz aboneliği başka bir hesaba kayıtlı.", 409);
     }
-    if (!existing) {
-      const { count, error: countError } = await admin
-        .from("push_subscriptions")
-        .select("id", { count: "exact", head: true })
-        .eq("user_id", userId);
-      if (countError) throw countError;
-      if ((count ?? 0) >= 5) return respond("En fazla 5 cihaz kaydedebilirsin.", 409);
-    }
-
     const { error: saveError } = await admin
       .from("push_subscriptions")
       .upsert({

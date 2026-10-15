@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 
 type Profile = {
   id: string;
@@ -342,7 +343,7 @@ export default function PaddockComments({
                     gap: "10px",
                   }}
                 >
-                  <div
+                  <Link href={`/members/${comment.user_id}`} aria-label="Yorum sahibinin profilini ziyaret et" style={{display:"block",flex:"0 0 auto",borderRadius:"50%"}}><div
                     style={{
                       width: "34px",
                       height: "34px",
@@ -376,7 +377,7 @@ export default function PaddockComments({
                         comment.profile
                       )
                     )}
-                  </div>
+                  </div></Link>
 
                   <div
                     style={{
@@ -392,7 +393,7 @@ export default function PaddockComments({
                         gap: "6px",
                       }}
                     >
-                      <strong
+                      <Link href={`/members/${comment.user_id}`} style={{color:"inherit",textDecoration:"none"}} aria-label="Profili ziyaret et"><strong
                         style={{
                           fontSize: "12px",
                         }}
@@ -402,7 +403,7 @@ export default function PaddockComments({
                           comment.profile
                             ?.username ||
                           "Kullanıcı"}
-                      </strong>
+                      </strong></Link>
 
                       {comment.profile
                         ?.is_admin && (

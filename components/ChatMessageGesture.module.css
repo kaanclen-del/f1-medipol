@@ -1,0 +1,13 @@
+.shell{position:relative;display:block;min-width:0;max-width:100%;touch-action:pan-y;isolation:isolate}
+.content{position:relative;min-width:0;max-width:100%;transition:transform .15s ease;display:flex;align-items:center}
+.shell:active .content{transition:none}
+.more{position:absolute;right:-12px;top:-8px;opacity:0;pointer-events:none;z-index:2;border:1px solid rgba(135,145,164,.35);background:var(--surface,#242832);color:var(--text,#fff);border-radius:50%;font-size:11px;font-weight:850;width:26px;height:26px;cursor:pointer;display:grid;place-items:center;box-shadow:0 2px 10px #0003;line-height:1}
+.shell:hover .more,.shell:focus-within .more{opacity:1;pointer-events:auto}
+.swipeHint{pointer-events:none;position:absolute;left:0;top:50%;transform:translate(-50%,-50%);font-size:22px;color:var(--text,#fff)}
+.dismiss{position:fixed;inset:0;background:transparent;border:0;z-index:2147483600;cursor:default}
+.menu{position:fixed;width:188px;padding:6px;background:var(--surface,#252936);color:var(--text,#fff);border:1px solid var(--edge,#565b68);border-radius:14px;box-shadow:0 12px 42px #0006;z-index:2147483601;display:grid;gap:2px}
+.menu button{background:transparent;border:0;border-radius:9px;color:inherit;min-height:39px;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:650;text-align:left;cursor:pointer;padding:7px 10px;width:100%}
+.menu button:hover,.menu button:focus-visible{background:rgba(130,146,177,.18);outline:none}
+.menu button:disabled{opacity:.4;cursor:wait}
+@media(hover:none){.more{display:none}.content{-webkit-touch-callout:none}}
+@media(prefers-reduced-motion:reduce){.content{transition:none}}

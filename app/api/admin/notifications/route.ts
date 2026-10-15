@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
+import { listUserPushDevices } from "@/lib/push/list-user-devices";
 import { configuredWebPush, isSupportedPushEndpoint } from "@/lib/push/web-push";
 
 export const dynamic = "force-dynamic";
@@ -95,13 +96,20 @@ export async function POST(request: Request) {
     if (recentError) throw recentError;
     if (recent?.length) return failure("Yeni bildirim göndermek için 60 saniye bekle.", 429);
 
-    let query = admin.from("push_subscriptions")
-      .select("id,user_id,endpoint,p256dh,auth")
-      .order("created_at", { ascending: false })
-      .limit(data.target === "self" ? 6 : MAX_TARGET_DEVICES + 1);
-    if (data.target === "self") query = query.eq("user_id", access.userId);
-    const { data: rawDevices, error: deviceError } = await query;
-    if (deviceError) throw deviceError;
+    // Kendi hesabi icin tum kayitli cihazlar kullanilir. Toplu duyuru icin
+    // mevcut 100 cihazlik guvenli gonderim limiti ayri tutulur.
+    let rawDevices: PushDevice[];
+    if (data.target === "self") {
+      rawDevices = await listUserPushDevices<PushDevice>(admin, access.userId,
+        "id,user_id,endpoint,p256dh,auth");
+    } else {
+      const { data: subscriberDevices, error: deviceError } = await admin.from("push_subscriptions")
+        .select("id,user_id,endpoint,p256dh,auth")
+        .order("created_at", { ascending: false })
+        .limit(MAX_TARGET_DEVICES + 1);
+      if (deviceError) throw deviceError;
+      rawDevices = (subscriberDevices ?? []) as PushDevice[];
+    }
     const devices = ((rawDevices ?? []) as PushDevice[]).filter(d => isSupportedPushEndpoint(d.endpoint));
 
     if (data.target === "subscribers" && (rawDevices?.length ?? 0) > MAX_TARGET_DEVICES) {

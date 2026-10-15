@@ -1,4 +1,7 @@
 "use client";
+import HeaderThemeMenu from "@/components/HeaderThemeMenu";
+import WelcomeTour from "@/components/WelcomeTour";
+import DmDock from "@/components/DmDock";
 
 import Link from "next/link";
 import NotificationBell from "@/components/NotificationBell";
@@ -158,6 +161,26 @@ export default function Header() {
     setMenuOpen,
   ] =
     useState(false);
+
+  const [mobileHeaderHidden, setMobileHeaderHidden] = useState(false);
+  useEffect(() => {
+    let previousY = window.scrollY;
+    let frame = 0;
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
+        const nextY = window.scrollY;
+        const difference = nextY - previousY;
+        if (nextY < 80 || menuOpen) setMobileHeaderHidden(false);
+        else if (difference > 7) setMobileHeaderHidden(true);
+        else if (difference < -5) setMobileHeaderHidden(false);
+        previousY = nextY;
+      });
+    };
+    window.addEventListener("scroll", onScroll, {passive:true});
+    return () => {window.removeEventListener("scroll",onScroll); if(frame)window.cancelAnimationFrame(frame);};
+  }, [menuOpen]);
 
   /* =======================================================
      PROFILE
@@ -552,7 +575,8 @@ export default function Header() {
   ];
 
   return (
-    <header className="medipol-header">
+    <>
+    <header className="medipol-header" data-scroll-hidden={mobileHeaderHidden && !menuOpen ? "true" : "false"}>
       <style>
         {`
           /* ===============================================
@@ -1485,6 +1509,14 @@ export default function Header() {
                 auto;
             }
           }
+          /* V12 scroll-up header — pinned to viewport only on mobile */
+          .medipol-mobile-header-spacer { display:none; }
+          @media (max-width:700px) {
+            .medipol-header {position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;z-index:1900!important;transition:transform .22s ease-out!important;will-change:transform;}
+            .medipol-header[data-scroll-hidden="true"] {transform:translate3d(0,-105%,0)!important;pointer-events:none!important;}
+            .medipol-mobile-header-spacer {display:block;height:68px;min-height:68px;flex:none;}
+          }
+          @media (prefers-reduced-motion:reduce){.medipol-header{transition:none!important;}}
         `}
       </style>
 
@@ -1542,9 +1574,12 @@ export default function Header() {
             ================================================= */}
 
         <div className="medipol-header-right">
+          <HeaderThemeMenu />
 
           {/* NOTIFICATIONS */}
           <NotificationBell isLight={isLight} />
+          <WelcomeTour />
+          <DmDock isLight={isLight} />
 
           {/* PROFILE */}
 
@@ -1757,5 +1792,7 @@ export default function Header() {
         </nav>
       </div>
     </header>
+    <div className="medipol-mobile-header-spacer" aria-hidden="true" />
+    </>
   );
 }

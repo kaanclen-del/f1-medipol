@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createClient } from "@/utils/supabase/client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./NotificationBell.module.css";
 
@@ -59,7 +60,7 @@ export default function NotificationBell({ isLight = false }: { isLight?: boolea
     window.addEventListener("f1-notifications-updated", refresh);
     const timer = window.setInterval(() => {
       if (!document.hidden) void reload();
-    }, 90000);
+    }, 30000);
     return () => {
       window.removeEventListener("focus", refresh);
       window.removeEventListener("f1-notifications-updated", refresh);
@@ -80,6 +81,20 @@ export default function NotificationBell({ isLight = false }: { isLight?: boolea
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open]);
+
+  // dm-v2-notification-channel: realtime + hafif polling yedegi
+  useEffect(() => {
+    const supabase=createClient();
+    let active=true;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    void supabase.auth.getUser().then(({data})=>{
+      if(!active||!data.user)return;
+      channel=supabase.channel('bell-dm-v2-'+data.user.id)
+        .on('postgres_changes',{event:'INSERT',schema:'public',table:'site_notifications',filter:'user_id=eq.'+data.user.id},()=>void reload())
+        .subscribe();
+    });
+    return ()=>{active=false;if(channel)void supabase.removeChannel(channel);};
+  },[reload]);
 
   const unread = items.filter(item => item.read_at === null).length;
   async function markRead(id?: string) {

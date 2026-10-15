@@ -1,0 +1,74 @@
+.root{display:flex;flex-direction:column;min-height:0;flex:1;color:var(--text);background:var(--bg)}
+.root *{box-sizing:border-box}
+.root button,.root input{font:inherit}
+.root button{cursor:pointer}
+.toolbar{display:flex;align-items:center;gap:9px;border-bottom:1px solid var(--edge);padding:11px 12px;background:var(--surface2);min-height:59px;flex:0 0 auto}
+.toolbar>strong{font-size:14px;flex:1;min-width:0}
+.back,.new,.leave{background:transparent;border:1px solid var(--edge);color:var(--text);border-radius:9px;padding:10px 11px;font-weight:800;white-space:nowrap}
+.new{background:var(--soft);border-color:var(--accent);color:var(--text)}
+.leave{font-size:12px;color:#fd7d85}
+.groupList,.creation{overflow:auto;flex:1;min-height:0;padding:14px;display:flex;flex-direction:column;gap:11px;overscroll-behavior:contain}
+.groupItem{display:flex;align-items:center;gap:12px;border:1px solid var(--edge);border-radius:12px;background:var(--surface2);padding:13px;text-align:left;color:var(--text);width:100%;min-width:0}
+.groupItem:hover{background:var(--soft)}
+.groupIcon{height:43px;width:43px;flex:0 0 43px;display:grid;place-items:center;background:var(--soft);border-radius:13px;color:var(--accent);font-size:24px}
+.groupCopy{min-width:0;flex:1;display:grid;gap:5px}.groupCopy strong{font-size:14px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}.groupCopy small{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.badge{background:var(--accent);color:var(--accentText);border-radius:99px;padding:4px 8px;font-size:11px}
+.empty{padding:22px 14px;color:var(--muted);text-align:center;font-size:13px;line-height:1.6}
+.label{font-size:12px;font-weight:850;display:flex;justify-content:space-between;color:var(--text)}.label small{font-size:11px;font-weight:500;color:var(--muted)}
+.creation>input{border:1px solid var(--edge);background:var(--surface2);color:var(--text);border-radius:10px;padding:13px;font-size:16px;min-height:48px;width:100%}
+.members{display:flex;flex-direction:column;gap:7px;min-height:0;max-height:40vh;overflow:auto;padding-bottom:10px}
+.member{display:flex;gap:11px;align-items:center;border:1px solid var(--edge);border-radius:11px;padding:10px;background:var(--surface2);font-size:13px;cursor:pointer}
+.member input{width:18px;height:18px;accent-color:#e72737;flex:0 0 18px}
+.avatar{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#76243e;color:white;overflow:hidden;flex:0 0 32px}.avatar img{width:100%;height:100%;object-fit:cover}
+.primary{background:var(--accent);color:var(--accentText);border:0;border-radius:11px;padding:14px;font-weight:850;min-height:48px}.primary:disabled,.composer button:disabled{opacity:.5;cursor:not-allowed}
+.groupIdentity{min-width:0;flex:1;display:grid;gap:5px}.groupIdentity strong{font-size:14px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.groupIdentity small{font-size:11px;color:var(--muted)}
+.messages{display:flex;flex:1;min-height:0;overflow-y:auto;flex-direction:column;gap:12px;padding:16px;background:radial-gradient(ellipse at 80% 10%,rgba(225,48,61,.09),transparent 50%),var(--bg)}
+.msgRow{display:flex;justify-content:flex-start}.mine{justify-content:flex-end}
+.bubble{max-width:84%;min-width:0;padding:11px 13px;background:var(--surface2);border:1px solid var(--edge);border-radius:13px;overflow-wrap:anywhere}
+.mine .bubble{background:#dd2337;color:#fff;border-color:transparent}.bubble p{font-size:13px;line-height:1.55;white-space:pre-wrap;margin:5px 0 7px}
+.bubble small{font-size:10px;color:var(--muted)}.mine .bubble small{color:#ffe3e6}.author{font-size:11px;color:var(--accent)}
+.composer{display:flex;gap:8px;padding:12px;background:var(--surface2);border-top:1px solid var(--edge);flex:0 0 auto}
+.composer input{flex:1;min-width:0;font-size:16px!important;color:var(--text);background:var(--bg);border:1px solid var(--edge);outline:0;border-radius:12px;padding:12px;min-height:46px}
+.composer button{background:var(--accent);color:var(--accentText);border:0;border-radius:12px;width:47px;flex:0 0 47px;font-size:20px}
+.error{color:#ffb4ba;background:rgba(180,20,30,.18);padding:11px 13px;font-size:12px;border-top:1px solid var(--edge);max-height:85px;overflow:auto}
+@media(max-width:600px){.toolbar{gap:6px;padding:10px}.back,.new,.leave{font-size:12px;padding:9px}.groupItem{padding:14px}.members{max-height:36vh}}
+
+/* DM V9: group expressions + send status */
+.expressionAnchor{position:relative;flex:0 0 38px;display:flex;align-items:center;justify-content:center;z-index:30}
+.expressionButton{width:38px!important;height:46px!important;flex:0 0 38px!important;border:1px solid var(--edge)!important;background:var(--bg)!important;color:var(--text)!important;border-radius:10px!important;font-size:25px!important;line-height:1}
+.retrySend{display:block!important;width:auto!important;height:auto!important;margin:6px 0 0!important;background:rgba(0,0,0,.2)!important;border:1px solid #f6bdc2!important;font-size:11px!important;padding:6px 8px!important;color:inherit!important}
+
+/* F1 V12: group message quoted replies */
+.msgRow{align-items:center;gap:6px}
+.msgRow.mine{flex-direction:row-reverse}
+.replyAction{border:0!important;background:transparent!important;color:var(--muted)!important;font-size:10px!important;font-weight:750;padding:4px;flex:0 0 auto;opacity:.82}
+.replyAction:hover{opacity:1;text-decoration:underline}
+.replyDraft{display:flex;align-items:center;gap:7px;padding:8px 12px;background:var(--surface2);border-top:1px solid var(--edge)}
+.replyDraft>button{background:transparent;border:1px solid var(--edge);color:var(--text);border-radius:8px;padding:8px;cursor:pointer}
+.replyDraft>button:first-child{flex:1;min-width:0;margin:0}
+
+/* F1 V13: group gesture wrapper */
+.msgRow>div[class*="ChatMessageGesture_shell"]{max-width:84%;min-width:0}
+.msgRow>div[class*="ChatMessageGesture_shell"] .bubble{max-width:100%;min-width:70px}
+
+/* F1 MEDIPOL DM V17 — preserve the last visible group message above the iOS keyboard. */
+@media (max-width:1199px), (pointer:coarse) and (max-width:1500px){
+  .root .messages{overflow-anchor:none!important;scroll-behavior:auto!important;}
+}
+
+/* DM V16 — same compact keyboard layout and unobtrusive history indicator in groups. */
+.historyGhost{display:grid;gap:9px;align-content:end;padding:10px 14px;margin:auto 0 14px;opacity:.45;pointer-events:none}
+.historyGhost span{width:140px;height:12px;border-radius:8px;background:var(--edge);animation:f1GroupGhost 1.5s ease-in-out infinite alternate}
+.historyGhost span:nth-child(2){width:100px;animation-delay:.2s}
+.historyGhost span:nth-child(3){width:122px;animation-delay:.4s}
+@keyframes f1GroupGhost{from{opacity:.3}to{opacity:.75}}
+@media(prefers-reduced-motion:reduce){.historyGhost span{animation:none}}
+@media(max-width:1199px){
+  .root.compact .toolbar{min-height:43px!important;padding:4px 8px!important;gap:6px}
+  .root.compact .groupIdentity small{display:none}
+  .root.compact .back,.root.compact .leave{padding:7px 8px!important;font-size:11px!important}
+  .root.compact .composer{padding:5px 7px 4px!important;gap:5px!important}
+  .root.compact .composer input{min-height:39px!important;height:39px!important;padding:6px 10px!important}
+  .root.compact .composer button{min-height:39px!important;height:39px!important;flex-basis:39px!important;width:39px!important}
+  .root.compact .messages{padding:9px 11px!important}
+}

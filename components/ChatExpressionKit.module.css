@@ -1,0 +1,18 @@
+.picker{position:absolute;right:0;bottom:calc(100% + 12px);z-index:70;width:min(340px,calc(100vw - 28px));max-height:min(350px,60dvh);overflow:hidden;border:1px solid rgba(255,255,255,.19);background:#171b25;color:#f8f9fc;border-radius:17px;box-shadow:0 15px 55px rgba(0,0,0,.57);display:flex;flex-direction:column;font-size:13px;pointer-events:auto}
+.header{display:flex;justify-content:space-between;align-items:center;padding:11px 13px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.1)}
+.header button{width:27px!important;height:27px!important;border-radius:7px!important;background:#343b4b!important;color:#fff!important;font-size:19px!important;display:grid;place-items:center;flex:0 0 27px!important}
+.tabs{display:grid;grid-template-columns:1fr 1fr;padding:6px;gap:4px}
+.tabs button{width:auto!important;height:38px!important;background:transparent!important;color:#b9c0cf!important;border-radius:9px!important;flex:auto!important;font-size:12px!important}
+.tabs button.active{background:#383f51!important;color:#fff!important}
+.emojiGrid{padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;overflow-y:auto;min-height:120px}
+.emojiGrid button{width:auto!important;min-width:0;height:38px!important;background:transparent!important;font-size:23px!important;border:0!important;flex:auto!important;line-height:1!important}
+.emojiGrid button:hover,.stickerChoice:hover{background:rgba(255,255,255,.12)!important}
+.stickerGrid{padding:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;overflow-y:auto;min-height:130px}
+.stickerChoice{width:100%!important;height:92px!important;display:flex!important;flex-direction:column;gap:4px;align-items:center;justify-content:center;border-radius:13px!important;background:#262c3b!important;border:1px solid rgba(255,255,255,.1)!important;flex:auto!important;color:#fff!important;padding:6px!important}
+.stickerChoice span{font-size:33px}.stickerChoice strong{font-size:9px;white-space:nowrap;letter-spacing:.3px}
+.sticker{position:relative;isolation:isolate;overflow:hidden;display:flex;flex-direction:column;gap:0;align-items:center;justify-content:center;padding:9px;border-radius:14px;width:106px;height:112px;box-shadow:0 6px 22px #0004;margin:0 0 5px;color:#fff;background:linear-gradient(140deg,#e31e39,#742149);transform:rotate(-2deg)}
+.stickerEmoji{position:relative;z-index:1;font-size:57px;line-height:1.12;filter:drop-shadow(0 3px 4px #0003)}
+.stickerTitle{position:relative;z-index:1;font-size:11px;font-weight:950;letter-spacing:.65px;color:#fff;line-height:1.1;text-align:center;text-shadow:0 1px 3px #0008}
+.stickerStripe{position:absolute;inset:-40%;background:repeating-linear-gradient(132deg,transparent 0 17px,rgba(255,255,255,.06) 17px 19px);z-index:0}
+.gold{background:linear-gradient(130deg,#bf7b13,#fac85b)}.blue{background:linear-gradient(130deg,#134d9a,#31a7da)}.pink{background:linear-gradient(130deg,#c8247d,#6c2379)}.red{background:linear-gradient(140deg,#e31e39,#742149)}
+@media(max-width:680px){.picker{width:min(325px,calc(100vw - 18px));right:-2px;max-height:min(340px,54dvh)}.sticker{width:98px;height:104px}}
