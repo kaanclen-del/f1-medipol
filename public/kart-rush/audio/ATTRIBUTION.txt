@@ -1,0 +1,7 @@
+Recording: Williams-Cosworth FW32 (2010).ogg
+Creator: Edvvc / Ed Pond
+URL: https://commons.wikimedia.org/wiki/File:Williams-Cosworth_FW32_(2010).ogg
+License: Creative Commons Attribution-ShareAlike 3.0 Unported
+https://creativecommons.org/licenses/by-sa/3.0/
+Changes: excerpted, selected for sustained engine noise, crossfaded for looping, and pitched and filtered dynamically by the game.
+The adapted audio remains under CC BY-SA 3.0. This license applies to the adapted audio recording, not automatically to the entire game.

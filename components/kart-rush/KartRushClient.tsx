@@ -1,22 +1,32 @@
 "use client";
-import { useCallback, useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import KartRushTrack from './KartRushTrack';
-import type { KartDifficulty, KartGraphics, KartPace } from './engine';
+import type { KartDifficulty, KartGraphics, KartPace, KartWeather } from './engine';
 import s from './kartRush.module.css';
 
-type Room={id:string;code:string;title:string;host_id:string;is_public:boolean;status:'lobby'|'racing';max_players:number;member_count:number;created_at:string;started_at:string|null};
-type Racer={room_id:string;user_id:string;nickname:string;color:string;ready:boolean;joined_at:string;finish_ms:number|null;best_lap_ms:number|null};
-const COLORS=['#EF263E','#FFB225','#289FEA','#42C68A','#A981FF','#F7F7F7'];
+type Room={id:string;code:string;title:string;host_id:string;is_public:boolean;status:'lobby'|'racing';max_players:number;member_count:number;created_at:string;started_at:string|null;kr_championship_enabled?:boolean;kr_target_points?:number;kr_round?:number;kr_round_scored?:boolean;kr_champion_user_id?:string|null;kr_weather?:KartWeather};
+type Racer={room_id:string;user_id:string;nickname:string;color:string;ready:boolean;joined_at:string;finish_ms:number|null;best_lap_ms:number|null;kr_points?:number;kr_last_award?:number};
+const RACE_POINTS=[25,18,15,12,10,8,6,4,2,1] as const;
+// Garage colour is the existing DB-compatible car identifier; no lobby schema change.
+// Unofficial liveries inspired by the teams' primary colours, without licensed logos or sponsor marks.
 const GARAGE=[
- {color:'#EF263E',name:'CRIMSON 26',team:'Kırmızı yarış takımı',tag:'AGRESİF'},
- {color:'#FFB225',name:'PAPAYA GP',team:'Turuncu yarış takımı',tag:'HIZ'},
- {color:'#289FEA',name:'AZURE GP',team:'Mavi yarış takımı',tag:'AERO'},
- {color:'#42C68A',name:'EMERALD',team:'Yeşil yarış takımı',tag:'PRECISION'},
- {color:'#A981FF',name:'VIOLET X',team:'Mor yarış takımı',tag:'APEX'},
- {color:'#F7F7F7',name:'SILVER ONE',team:'Beyaz / gümüş takım',tag:'CLASSIC'},
-];
+ {color:'#E32636',name:'FERRARI',team:'Scuderia Ferrari',tag:'SCUDERIA',secondary:'#F5D34F'},
+ {color:'#FF8000',name:'McLAREN',team:'McLaren Formula 1 Team',tag:'PAPAYA',secondary:'#60C6E8'},
+ {color:'#00D2BE',name:'MERCEDES',team:'Mercedes-AMG F1',tag:'SILVER ARROW',secondary:'#E8F3F6'},
+ {color:'#173B8A',name:'RED BULL RACING',team:'Oracle Red Bull Racing',tag:'RACING',secondary:'#F3C846'},
+ {color:'#006A4E',name:'ASTON MARTIN',team:'Aston Martin F1',tag:'RACING GREEN',secondary:'#C4D0A1'},
+ {color:'#2B7BFF',name:'WILLIAMS',team:'Williams Racing',tag:'BLUE',secondary:'#EFF3F8'},
+ {color:'#FF6DAE',name:'ALPINE',team:'BWT Alpine F1',tag:'PINK & BLUE',secondary:'#2875C8'},
+ {color:'#C4CFD8',name:'HAAS',team:'Haas F1 Team',tag:'GRAPHITE',secondary:'#D63746'},
+ {color:'#F4F5F7',name:'RACING BULLS',team:'Racing Bulls',tag:'WHITE & BLUE',secondary:'#476AD6'},
+ {color:'#B11F26',name:'AUDI',team:'Audi F1 Team',tag:'BLACK & RED',secondary:'#C6C9CD'},
+ {color:'#B4AA78',name:'CADILLAC',team:'Cadillac Formula 1 Team',tag:'GOLD & BLACK',secondary:'#F2E9CE'},
+] as const;
+const COLORS:string[]=GARAGE.map(car=>car.color);
+const LEGACY_COLORS:Record<string,string>={'#EF263E':'#E32636','#FFB225':'#FF8000','#289FEA':'#2B7BFF','#42C68A':'#006A4E','#A981FF':'#FF6DAE','#F7F7F7':'#F4F5F7'};
+const teamAccent=(color:string)=>GARAGE.find(car=>car.color===color)?.secondary||'#DFE5EB';
 function GaragePreview({color}:{color:string}){
  const id=useId().replace(/:/g,'');
  return <svg className={s.garageSvg} viewBox="0 0 500 250" fill="none" role="img" aria-label="Seçili Formula yarış aracı, yandan görünüm">
@@ -42,6 +52,9 @@ function GaragePreview({color}:{color:string}){
   <path d="M258 157 L338 161 L384 171 L399 181 H282 L265 173Z" fill="#101820" stroke="#bac3cc" strokeOpacity=".32" />
   <path d="M226 158 Q286 156 330 160 L388 174" stroke="#f6f8fa" strokeOpacity=".70" strokeWidth="3" />
   <path d="M279 173 H400" stroke={color} strokeWidth="5" />
+  <path d="M88 176 L155 150 L193 140" stroke={teamAccent(color)} strokeWidth="5" opacity=".90" />
+  <path d="M235 164 L362 173" stroke={teamAccent(color)} strokeWidth="7" opacity=".90" />
+  <path d="M391 180 H457" stroke={teamAccent(color)} strokeWidth="4" opacity=".90" />
   <path d="M361 171 L438 174 L448 178 L448 190 L387 190Z" fill="#202d3b" />
   <path d="M379 181 L468 179 L478 188 L468 193 H377Z" fill="#131b24" stroke="#98a9b7" strokeOpacity=".5" />
   <path d="M388 175 L468 175" stroke="#e8eef3" strokeOpacity=".7" strokeWidth="2" />
@@ -63,14 +76,16 @@ export default function KartRushClient(){
  const [userId,setUserId]=useState('');const [name,setName]=useState('Racer');const [color,setColor]=useState(COLORS[0]);
  const [difficulty,setDifficulty]=useState<KartDifficulty>('normal');
  const [laps,setLaps]=useState(3);const [pace,setPace]=useState<KartPace>('standard');
- const [graphics,setGraphics]=useState<KartGraphics>('balanced');
+ const [graphics,setGraphics]=useState<KartGraphics>('balanced');const [weather,setWeather]=useState<KartWeather>('clear');
  const [volume,setVolume]=useState(.45);
  const [menuTab,setMenuTab]=useState<'home'|'garage'|'settings'|'online'>('home');
- useEffect(()=>{try{const saved=window.localStorage.getItem('f1-kr-graphics');if(saved==='low'||saved==='balanced'||saved==='high')setGraphics(saved);const v=Number(window.localStorage.getItem('f1-kr-volume'));if(Number.isFinite(v)&&window.localStorage.getItem('f1-kr-volume')!==null)setVolume(Math.max(0,Math.min(1,v)));const c=window.localStorage.getItem('f1-kr-car');if(c&&COLORS.includes(c))setColor(c);const storedLaps=Number(window.localStorage.getItem('f1-kr-laps'));if([1,2,3,5].includes(storedLaps))setLaps(storedLaps);const savedPace=window.localStorage.getItem('f1-kr-pace');if(savedPace==='fast'||savedPace==='standard'||savedPace==='long')setPace(savedPace);}catch{}},[]);
+ useEffect(()=>{try{const saved=window.localStorage.getItem('f1-kr-graphics');if(saved==='low'||saved==='balanced'||saved==='high'||saved==='ultra')setGraphics(saved);const v=Number(window.localStorage.getItem('f1-kr-volume'));if(Number.isFinite(v)&&window.localStorage.getItem('f1-kr-volume')!==null)setVolume(Math.max(0,Math.min(1,v)));const c=window.localStorage.getItem('f1-kr-car');if(c){const v=LEGACY_COLORS[c]||c;if(COLORS.includes(v))setColor(v);}const storedLaps=Number(window.localStorage.getItem('f1-kr-laps'));if([1,2,3,5].includes(storedLaps))setLaps(storedLaps);const savedWeather=window.localStorage.getItem('f1-kr-weather');if(savedWeather==='rain')setWeather('rain');const savedPace=window.localStorage.getItem('f1-kr-pace');if(savedPace==='fast'||savedPace==='standard'||savedPace==='long')setPace(savedPace);}catch{}},[]);
  const changeGraphics=useCallback((value:KartGraphics)=>{setGraphics(value);try{window.localStorage.setItem('f1-kr-graphics',value);}catch{}},[]);
  const changeVolume=useCallback((v:number)=>{const value=Math.max(0,Math.min(1,v));setVolume(value);try{window.localStorage.setItem('f1-kr-volume',String(value));}catch{}},[]);
  const changeColor=useCallback((c:string)=>{setColor(c);try{window.localStorage.setItem('f1-kr-car',c);}catch{}},[]);
  const [lobbyName,setLobbyName]=useState('Medipol Grand Prix');const [privateRoom,setPrivateRoom]=useState(false);const [code,setCode]=useState('');
+ const [championshipEnabled,setChampionshipEnabled]=useState(true);const [pointsTarget,setPointsTarget]=useState(50);
+ const autoFinalized=useRef<string|null>(null);
  const [rooms,setRooms]=useState<Room[]>([]);const [room,setRoom]=useState<Room|null>(null);const [members,setMembers]=useState<Racer[]>([]);
  const [view,setView]=useState<'hub'|'practice'|'online'>('hub');const [practiceStart,setPracticeStart]=useState(0);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [loading,setLoading]=useState(true);
  const loadRooms=useCallback(async()=>{
@@ -105,11 +120,32 @@ export default function KartRushClient(){
   setBusy(true);setError('');try{const {data,error}=await fn();if(error)throw Error(error.message);after?.(data);}catch(e){setError(e instanceof Error?e.message:'İşlem başarısız.');}finally{setBusy(false);}
  },[]);
  const createRoom=()=>{if(!userId){setError('Çevrim içi lobi kurmak için giriş yapmalısın.');return;}
-  void op(()=>supabase.rpc('f1_kr_create_room',{p_title:lobbyName.trim(),p_nickname:name.trim(),p_color:color,p_public:!privateRoom,p_max_players:8}),id=>{const v=String(id);setRoom({id:v,code:'',title:lobbyName,host_id:userId,is_public:!privateRoom,status:'lobby',max_players:8,member_count:1,created_at:new Date().toISOString(),started_at:null});setView('online');void loadRoom(v);});};
+  void op(async()=>{
+   const created=await supabase.rpc('f1_kr_create_room',{p_title:lobbyName.trim(),p_nickname:name.trim(),p_color:color,p_public:!privateRoom,p_max_players:8});
+   if(created.error)return {data:null,error:created.error};
+   const id=String(created.data);
+   const configured=await supabase.rpc('f1_kr_configure_championship',{p_room_id:id,p_enabled:championshipEnabled,p_target:pointsTarget});
+   if(configured.error)return {data:null,error:{message:'Şampiyona ayarları kaydedilemedi. Önce ZIP içindeki SUPABASE_CHAMPIONSHIP.sql dosyasını SQL Editor üzerinde bir kez çalıştır. Teknik bilgi: '+configured.error.message}};
+   if(weather==='rain'){const applied=await supabase.rpc('f1_kr_set_weather',{p_room_id:id,p_weather:weather});if(applied.error)return {data:null,error:{message:'Yağmurlu lobi için paketteki SUPABASE_WEATHER.sql dosyasını Supabase üzerinde çalıştır: '+applied.error.message}};}
+   return {data:id,error:null};
+  },id=>{const v=String(id);setRoom({id:v,code:'',title:lobbyName,host_id:userId,is_public:!privateRoom,status:'lobby',max_players:8,member_count:1,created_at:new Date().toISOString(),started_at:null,kr_championship_enabled:championshipEnabled,kr_target_points:pointsTarget,kr_round:1,kr_round_scored:false,kr_champion_user_id:null,kr_weather:weather});setView('online');void loadRoom(v);});};
  const joinRoom=(joinCode:string)=>{if(!userId){setError('Lobiye katılmak için giriş yapmalısın.');return;}
   void op(()=>supabase.rpc('f1_kr_join_room',{p_code:joinCode.trim().toUpperCase(),p_nickname:name.trim(),p_color:color}),id=>{const v=String(id);setRoom({id:v,code:joinCode.toUpperCase(),title:'Lobi',host_id:'',is_public:false,status:'lobby',max_players:8,member_count:1,created_at:new Date().toISOString(),started_at:null});setView('online');void loadRoom(v);});};
  const leaveRoom=()=>{if(!room){setView('hub');return;}const id=room.id;
   void op(()=>supabase.rpc('f1_kr_leave_room',{p_room_id:id}),()=>{setRoom(null);setMembers([]);setView('hub');void loadRooms();});};
+ useEffect(()=>{
+  if(!room?.id||room.status!=='racing'||!room.kr_championship_enabled||room.kr_round_scored||room.kr_champion_user_id||room.host_id!==userId)return;
+  if(members.length<2||!members.every(x=>x.finish_ms!==null))return;
+  const key=room.id+':'+(room.kr_round||1);
+  if(autoFinalized.current===key)return;
+  autoFinalized.current=key;
+  void supabase.rpc('f1_kr_finalize_championship_round',{p_room_id:room.id}).then(({error})=>{
+   if(error){setError('Puanlar hesaplanamadı: '+error.message);return;}
+   void loadRoom(room.id);
+  });
+ },[room,members,userId,supabase,loadRoom]);
+ const finalizePoints=()=>{if(!room)return;void op(()=>supabase.rpc('f1_kr_finalize_championship_round',{p_room_id:room.id}),()=>{void loadRoom(room.id);});};
+ const nextChampionshipRound=()=>{if(!room)return;void op(()=>supabase.rpc('f1_kr_next_championship_round',{p_room_id:room.id}),()=>{autoFinalized.current=null;void loadRoom(room.id);});};
  const me=members.find(x=>x.user_id===userId);const everyoneReady=members.length>=2 && members.every(x=>x.ready);
  const started=room?.status==='racing' && room.started_at;
  return <div className={s.page}>
@@ -118,15 +154,20 @@ export default function KartRushClient(){
    <div className={s.heroGrid}><div><h1>KART <em>RUSH</em> <span>3D</span></h1><p>22 araçlık Grand Prix. Direksiyon, gaz ve fren tamamen sende. Kendi Formula aracını seç, start gridine gir ve damalı bayrağa ulaş.</p></div></div>
   </header>
   {error&&<div className={s.error} role="alert">{error}<button onClick={()=>setError('')}>×</button></div>}
-  {view==='practice' && <KartRushTrack key={practiceStart} supabase={supabase} roomId={null} userId="practice" displayName={name} color={color} startAt={practiceStart} members={[]} difficulty={difficulty} laps={laps} pace={pace} graphics={graphics} onGraphicsChange={changeGraphics} volume={volume} onVolumeChange={changeVolume} onRetry={()=>setPracticeStart(Date.now()+6200)} onExit={()=>setView('hub')} onReload={()=>{}}/>}
-  {view==='online' && room && started && <KartRushTrack key={room.id+'-'+room.started_at} supabase={supabase} roomId={room.id} userId={userId} displayName={name} color={me?.color||color} startAt={Date.parse(started)} members={members} graphics={graphics} onGraphicsChange={changeGraphics} volume={volume} onVolumeChange={changeVolume} isHost={room.host_id===userId} onExit={leaveRoom} onReset={()=>{void op(()=>supabase.rpc('f1_kr_reset_room',{p_room_id:room.id}),()=>{void loadRoom(room.id);});}} onReload={()=>{void loadRoom(room.id);}}/>}
+  {view==='practice' && <KartRushTrack key={practiceStart} supabase={supabase} roomId={null} userId="practice" displayName={name} color={color} startAt={practiceStart} members={[]} difficulty={difficulty} laps={laps} pace={pace} weather={weather} graphics={graphics} onGraphicsChange={changeGraphics} volume={volume} onVolumeChange={changeVolume} onRetry={()=>setPracticeStart(Date.now()+6200)} onExit={()=>setView('hub')} onReload={()=>{}}/>}
+  {view==='online' && room && started && <KartRushTrack key={room.id+'-'+room.started_at} supabase={supabase} roomId={room.id} userId={userId} displayName={name} color={me?.color||color} startAt={Date.parse(started)} members={members} weather={room.kr_weather==='rain'?'rain':'clear'} graphics={graphics} onGraphicsChange={changeGraphics} volume={volume} onVolumeChange={changeVolume} isHost={room.host_id===userId} championshipEnabled={Boolean(room.kr_championship_enabled)} pointsTarget={room.kr_target_points||50} roundNo={room.kr_round||1} roundScored={Boolean(room.kr_round_scored)} championId={room.kr_champion_user_id||null} onFinalize={finalizePoints} onNextRound={nextChampionshipRound} onExit={leaveRoom} onReset={()=>{void op(()=>supabase.rpc('f1_kr_reset_room',{p_room_id:room.id}),()=>{void loadRoom(room.id);});}} onReload={()=>{void loadRoom(room.id);}}/>}
   {view==='online' && room && !started && <div className={s.lobbyPanel}>
     <div className={s.lobbyHead}><div><span>YARIŞ LOBİSİ</span><h2>{room.title}</h2><p>Arkadaşlarına şu kodu gönder:</p><div className={s.bigCode}>{room.code||'······'}</div></div><div className={s.status}>{members.length}/{room.max_players} OYUNCU</div></div>
+    {room.kr_championship_enabled&&<section style={{padding:'16px',margin:'12px 0',border:'1px solid #64748b70',borderRadius:14,background:'rgba(10,19,32,.72)'}}>
+     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:8,flexWrap:'wrap'}}><strong>🏆 ŞAMPİYONA PUANLARI · HEDEF {room.kr_target_points||50}</strong><span>YARIŞ {room.kr_round||1}</span></div>
+     <div style={{marginTop:10,display:'grid',gap:6}}>{[...members].sort((a,b)=>(b.kr_points||0)-(a.kr_points||0)).map((m,i)=><div key={m.user_id} style={{display:'flex',alignItems:'center',gap:9,padding:'9px 12px',borderRadius:8,background:'rgba(255,255,255,.055)'}}><b style={{width:24}}>{i+1}.</b><span style={{display:'inline-block',width:9,height:9,background:m.color,borderRadius:99}}/><span style={{flex:1}}>{m.nickname}</span><strong>{m.kr_points||0} PUAN</strong></div>)}</div>
+    </section>}
     <div className={s.memberGrid}>{members.map(x=><div key={x.user_id} className={s.member}><span className={s.colorDot} style={{background:x.color}}/><strong>{x.nickname}</strong>{x.user_id===room.host_id&&<small>👑 KURUCU</small>}<b className={x.ready?s.ready:s.notReady}>{x.ready?'HAZIR':'BEKLİYOR'}</b></div>)}</div>
+    <p className={s.hint}>Hava: {room.kr_weather==='rain'?'🌧 YAĞMURLU · KAYGAN PİST':'🌙 KURU PİST'}</p>
     <div className={s.lobbyActions}><button disabled={busy} onClick={()=>void op(()=>supabase.rpc('f1_kr_ready',{p_room_id:room.id,p_ready:!me?.ready}),()=>{void loadRoom(room.id);})}>{me?.ready?'Hazırım ✓ (Geri al)':'Hazırım ✓'}</button>
      {room.host_id===userId&&<button disabled={busy||!everyoneReady} className={s.primaryBtn} onClick={()=>void op(()=>supabase.rpc('f1_kr_start',{p_room_id:room.id}),()=>{void loadRoom(room.id);})}>🏁 Yarışı başlat</button>}
      <button className={s.secondaryBtn} disabled={busy} onClick={leaveRoom}>Lobiden çık</button></div>
-    <p className={s.hint}>En az 2 kişi ve herkesin hazır olması gerekir. Yarış 5 saniyelik geri sayımla başlar. Konuklar kodla katılabilir.</p>
+    <p className={s.hint}>En az 2 kişi ve herkesin hazır olması gerekir. Yarış 5 saniyelik geri sayımla başlar. {room.kr_championship_enabled?'Şampiyonada 1. 25, 2. 18, 3. 15 puan alır. Hedefe ilk ulaşan oyuncu şampiyon olur.':'Bu lobi tek yarışlık Grand Prix olarak ayarlandı.'}</p>
   </div>}
   {view==='hub' && <div className={s.mainMenu}>
    <div className={s.menuNav}>
@@ -141,6 +182,11 @@ export default function KartRushClient(){
      <div className={s.launchConfig}>
       <div className={s.launchConfigHeader}><strong>YARIŞ AYARLARI</strong></div>
       <div className={s.launchConfigGrid}>
+      <label style={{display:'grid',gap:8}}>HAVA DURUMU
+       <div className={s.difficultyChoices}>
+        {([{id:'clear',name:'🌙 KURU PİST',desc:'Normal yol tutuşu'},{id:'rain',name:'🌧 YAĞMURLU',desc:'Kaygan pist · uzun fren'}] as const).map(x=><button type="button" key={x.id} aria-pressed={weather===x.id} className={weather===x.id?s.difficultyActive:''} onClick={()=>{setWeather(x.id);try{localStorage.setItem('f1-kr-weather',x.id);}catch{}}}><strong>{x.name}</strong><small>{x.desc}</small></button>)}
+       </div>
+      </label>
        <label>TUR SAYISI<div className={s.raceSetupChoices}>{([1,2,3,5] as const).map(n=><button key={n} type="button" aria-pressed={laps===n} className={laps===n?s.raceSetupSelected:''} onClick={()=>{setLaps(n);try{localStorage.setItem('f1-kr-laps',String(n));}catch{}}}>{n} <small>TUR</small></button>)}</div></label>
       </div>
      </div>
@@ -155,7 +201,7 @@ export default function KartRushClient(){
     </aside>
    </div>}
    {menuTab==='garage'&&<section className={s.menuPanel}>
-    <span className={s.sectionTag}>F1 MEDİPOL · RACE CAR STUDIO</span><h2>FORMULA GARAJI</h2><p className={s.menuIntro}>Aracının yarış kaplamasını seç. Seçtiğin renk tek oyunculu yarışta ve çevrim içi lobide kullanılır.</p>
+    <span className={s.sectionTag}>F1 MEDİPOL · RACE CAR STUDIO</span><h2>FORMULA GARAJI</h2><p className={s.menuIntro}>11 gerçek F1 takımının renklerinden ilham alan kaplamalar. Seçimin yarışta ve çevrim içi lobide görünür. Resmî takım logoları kullanılmaz.</p>
     <div className={s.garageGrid}>{GARAGE.map(car=><button key={car.color} type="button" aria-pressed={car.color===color} className={`${s.garageChoice} ${car.color===color?s.garageSelected:''}`} onClick={()=>changeColor(car.color)}><div className={s.carVisual} style={{'--car-accent':car.color} as CSSProperties}><GaragePreview color={car.color}/></div><strong>{car.name}</strong><small>{car.team}</small><span>{car.color===color?'✓ SEÇİLİ ARAÇ':car.tag}</span></button>)}</div>
     <button className={s.practiceBtn} onClick={()=>setMenuTab('home')}>← ANA MENÜYE DÖN <span>{GARAGE.find(x=>x.color===color)?.name}</span></button>
    </section>}
@@ -163,9 +209,9 @@ export default function KartRushClient(){
     <span className={s.sectionTag}>PERFORMANS / SES / SÜRÜŞ</span><h2>OYUN AYARLARI</h2>
     <div className={s.settingsGrid}>
      <div className={s.settingsGroup}><h3>GRAFİK KALİTESİ</h3><p>Detay seviyesi ve çözünürlük seçimi</p>
-      <div className={s.preGameGraphics}>{([{id:'low',name:'DÜŞÜK',desc:'Daha fazla FPS'},{id:'balanced',name:'DENGELİ',desc:'Önerilen'},{id:'high',name:'YÜKSEK',desc:'Ultra doku / çevre'}] as const).map(x=><button key={x.id} aria-pressed={graphics===x.id} type="button" className={graphics===x.id?s.graphicsChosen:''} onClick={()=>changeGraphics(x.id)}><strong>{x.name}</strong><small>{x.desc}</small></button>)}</div>
+      <div className={s.preGameGraphics}>{([{id:'low',name:'DÜŞÜK',desc:'Daha fazla FPS'},{id:'balanced',name:'DENGELİ',desc:'Önerilen'},{id:'high',name:'YÜKSEK',desc:'Güçlü detay'},{id:'ultra',name:'ULTRA',desc:'Maksimum doku / tribün / gökyüzü'}] as const).map(x=><button key={x.id} aria-pressed={graphics===x.id} type="button" className={graphics===x.id?s.graphicsChosen:''} onClick={()=>changeGraphics(x.id)}><strong>{x.name}</strong><small>{x.desc}</small></button>)}</div>
      </div>
-     <div className={s.settingsGroup}><h3>SES AYARLARI</h3><p>Motor, güç ve çarpışma efektleri</p>
+     <div className={s.settingsGroup}><h3>SES AYARLARI</h3><p>Motor, güç ve çarpışma efektleri</p><p style={{fontSize:12,opacity:.72,marginTop:6}}>Gerçek F1 V8 kaydı: <a href="https://commons.wikimedia.org/wiki/File:Williams-Cosworth_FW32_(2010).ogg" target="_blank" rel="noopener noreferrer">Edvvc (Ed Pond)</a> · <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a> · Ses döngüye uygun düzenlenmiştir.</p>
        <label className={s.menuVolume}>SES DÜZEYİ <b>{Math.round(volume*100)}%</b><input type="range" min="0" max="100" value={Math.round(volume*100)} onChange={e=>changeVolume(Number(e.target.value)/100)} /></label>
        <button className={s.secondaryBtn} onClick={()=>changeVolume(volume===0?.45:0)}>{volume>0?'◖ SESİ KAPAT':'♫ SESİ AÇ'}</button>
      </div>
@@ -179,11 +225,28 @@ export default function KartRushClient(){
    </section>}
    {menuTab==='online'&&<div className={s.hub}>
     <section className={s.setup}><span className={s.sectionTag}>ÇEVRİM İÇİ GARAJ</span><label>Yarışçı adın<input value={name} maxLength={24} onChange={e=>setName(e.target.value)}/></label>
-     <p className={s.label}>Seçili araç: {GARAGE.find(x=>x.color===color)?.name}</p><div className={s.colors}>{COLORS.map(c=><button type="button" aria-label={'Renk '+c} aria-pressed={color===c} key={c} className={color===c?s.chosenColor:''} style={{background:c}} onClick={()=>changeColor(c)}/>)}</div>
+     <p className={s.label}>Seçili araç: {GARAGE.find(x=>x.color===color)?.team}</p><div className={s.colors}>{GARAGE.map(car=><button type="button" aria-label={'Takım '+car.name} title={car.team} aria-pressed={color===car.color} key={car.color} className={color===car.color?s.chosenColor:''} style={{background:car.color}} onClick={()=>changeColor(car.color)}/>)}</div>
      <button className={s.secondaryBtn} onClick={()=>setMenuTab('garage')}>Garajı aç →</button><p className={s.hint}>Lobi yarışlarında araç renkleri senkronize edilir. Her sürücünün gaz/fren kontrolü bağımsızdır.</p>
     </section>
     <section className={s.setup}><span className={s.sectionTag}>ARKADAŞLARINLA YARIŞ</span><label>Lobi adı<input maxLength={45} value={lobbyName} onChange={e=>setLobbyName(e.target.value)}/></label>
+     <label style={{display:'grid',gap:8}}>HAVA DURUMU
+       <div className={s.difficultyChoices}>
+        {([{id:'clear',name:'🌙 KURU PİST',desc:'Normal yol tutuşu'},{id:'rain',name:'🌧 YAĞMURLU',desc:'Kaygan pist · uzun fren'}] as const).map(x=><button type="button" key={x.id} aria-pressed={weather===x.id} className={weather===x.id?s.difficultyActive:''} onClick={()=>{setWeather(x.id);try{localStorage.setItem('f1-kr-weather',x.id);}catch{}}}><strong>{x.name}</strong><small>{x.desc}</small></button>)}
+       </div>
+      </label>
      <label className={s.checkLine}><input type="checkbox" checked={privateRoom} onChange={e=>setPrivateRoom(e.target.checked)}/> Özel lobi (yalnızca kodla girilebilir)</label>
+     <div style={{padding:'13px 14px',border:'1px solid #66738b65',borderRadius:12,background:'rgba(0,0,0,.16)',display:'grid',gap:10}}>
+      <strong>🏆 LOBİ YARIŞ TÜRÜ</strong>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+       <button type="button" className={s.secondaryBtn} style={{borderColor:!championshipEnabled?'#e5344b':undefined,flex:1}} onClick={()=>setChampionshipEnabled(false)}>🏁 TEK GRAND PRIX</button>
+       <button type="button" className={s.secondaryBtn} style={{borderColor:championshipEnabled?'#e5344b':undefined,flex:1}} onClick={()=>setChampionshipEnabled(true)}>🏆 PUANLI ŞAMPİYONA</button>
+      </div>
+      {championshipEnabled&&<><label>Şampiyonluk hedefi
+        <select value={pointsTarget} onChange={e=>setPointsTarget(Number(e.target.value))} style={{width:'100%',marginTop:6,padding:10,borderRadius:8,background:'#172232',color:'#f4f6fa',border:'1px solid #637086'}}>
+         {[25,50,75,100,150,200].map(n=><option key={n} value={n}>{n} PUAN · {n===50?'ÖNERİLEN':n===25?'ÇOK KISA':'ŞAMPİYONA'}</option>)}
+        </select></label>
+       <p className={s.hint}>F1 puanları: {RACE_POINTS.join(' / ')} · Sıralama yarışlar arasında korunur. {pointsTarget} puana ulaşılınca lobi şampiyonası tamamlanır.</p></>}
+     </div>
      <button disabled={busy||loading} className={s.primaryBtn} onClick={createRoom}>+ Yeni lobi kur</button>
      <div className={s.joinInput}><input placeholder="6 haneli lobi kodu" value={code} maxLength={6} onChange={e=>setCode(e.target.value.toUpperCase())}/><button disabled={busy||code.trim().length!==6} onClick={()=>joinRoom(code)}>Katıl →</button></div>
      {!userId&&<p className={s.notice}>Çevrim içi yarış için F1 Medipol hesabına giriş yapmalısın. <a href="/login">Giriş yap ↗</a></p>}
