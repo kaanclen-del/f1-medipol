@@ -1000,3 +1000,91 @@
   .menuHome .launchInviteActions{grid-template-columns:minmax(0,1fr)!important}
 }
 /* === /KART RUSH / YATAY AKSIYON ALANI TASMA FIX v17 === */
+
+/* KR-MOBILE-AUDIO-V18 */
+/* KART RUSH V18 MOBILE IMMERSIVE / HUD - scoped to the actual race element only. */
+.mobileCameraToggle{display:none}
+@media (pointer:coarse) and (max-width:1100px){
+ .raceScreen{position:fixed!important;inset:0!important;top:0!important;left:0!important;right:0!important;bottom:0!important;z-index:2147483000!important;width:100vw!important;width:100dvw!important;height:100vh!important;height:100dvh!important;min-height:0!important;max-width:none!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:hidden!important;overscroll-behavior:none!important;touch-action:none!important;background:#08111c!important}
+ .raceScreen:fullscreen{width:100vw!important;height:100dvh!important;border:0!important;border-radius:0!important}
+ .raceScreen .canvas{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;touch-action:none}
+ .raceScreen .qualityMark,.raceScreen .broadcastTag,.raceScreen .controlsCenter{display:none!important}
+ .raceScreen .topHud{top:calc(8px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;right:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;width:calc(100% - 185px - env(safe-area-inset-left,0px))!important;max-width:290px!important;z-index:9!important;pointer-events:none!important}
+ .raceScreen .topHud .hudBlock{min-width:0!important;min-height:36px!important;padding:5px 7px!important;border-radius:9px!important;background:rgba(7,14,25,.83)!important;backdrop-filter:blur(6px);white-space:nowrap}
+ .raceScreen .topHud .hudBlock span{font-size:8px!important;letter-spacing:.06em!important}
+ .raceScreen .topHud .hudBlock strong{font-size:17px!important;line-height:1.15!important;letter-spacing:-.03em!important}
+ .raceScreen .topHud .hudBlock small{font-size:9px!important}
+ .raceScreen .topHud .bestBlock{display:none!important}
+ .raceScreen .raceActions{position:absolute!important;top:calc(8px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;left:auto!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:5px!important;width:152px!important;max-width:none!important;z-index:21!important}
+ .raceScreen .raceActions button{position:static!important;min-width:0!important;min-height:34px!important;width:100%!important;max-width:none!important;display:block!important;margin:0!important;padding:5px 4px!important;border-radius:9px!important;font-size:9px!important;line-height:1.15!important;letter-spacing:0!important;white-space:nowrap!important;text-align:center!important}
+ .raceScreen .raceActions .graphicsToggle span{display:none!important}
+ .raceScreen .sideHud{display:none!important}
+ .raceScreen .leaderboardToggle{display:flex!important;top:calc(99px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;right:auto!important;z-index:15!important;position:absolute!important;align-items:center!important;gap:4px!important;font-size:9px!important;padding:8px 9px!important}
+ .raceScreen .mobileCameraToggle{display:flex;position:absolute;top:calc(100px + env(safe-area-inset-top,0px));right:calc(8px + env(safe-area-inset-right,0px));z-index:16;align-items:center;justify-content:center;min-height:30px;padding:6px 10px;border:1px solid #ffffff45;border-radius:9px;background:#111b2fe8;color:white;font-size:9px;font-weight:900}
+ .raceScreen>.standings{display:none!important;top:calc(138px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;bottom:calc(102px + env(safe-area-inset-bottom,0px))!important;width:min(310px,calc(100% - 16px))!important;z-index:17!important}
+ .raceScreen>.standings.boardOpen{display:block!important;top:calc(138px + env(safe-area-inset-top,0px))!important;width:min(310px,calc(100% - 16px))!important}
+ .raceScreen .speedHud{position:absolute!important;top:calc(153px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:calc(8px + env(safe-area-inset-left,0px))!important;right:auto!important;width:118px!important;max-width:none!important;min-height:82px!important;padding:8px 10px!important;z-index:8!important;border-radius:10px!important}
+ .raceScreen .speedHud small{font-size:8px!important;line-height:1.2!important}
+ .raceScreen .speedHud b{font-size:39px!important;line-height:1.01!important}
+ .raceScreen .speedHud span{font-size:8px!important}
+ .raceScreen .speedBar{margin-top:4px!important}
+ .raceScreen .damageHud{position:absolute!important;top:calc(155px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:calc(8px + env(safe-area-inset-right,0px))!important;left:auto!important;width:110px!important;min-width:0!important;padding:7px 8px!important;z-index:8!important}
+ .raceScreen .damageHud strong{font-size:16px!important}.raceScreen .damageHud span{font-size:8px!important}
+ .raceScreen .raceBottom{position:absolute!important;left:calc(8px + env(safe-area-inset-left,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;top:auto!important;display:flex!important;align-items:flex-end!important;justify-content:space-between!important;gap:3px!important;z-index:22!important;pointer-events:none!important}
+ .raceScreen .steerControls,.raceScreen .abilityControls{display:flex!important;flex-wrap:nowrap!important;align-items:flex-end!important;gap:4px!important;pointer-events:auto!important}
+ .raceScreen .steerControls button{width:clamp(43px,13vw,62px)!important;height:clamp(57px,17vw,75px)!important;min-width:0!important;max-width:none!important;border-radius:14px!important;font-size:23px!important;touch-action:none!important}
+ .raceScreen .abilityControls{position:relative!important}
+ .raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake{width:clamp(42px,13vw,58px)!important;min-width:0!important;max-width:none!important;height:clamp(57px,17vw,75px)!important;font-size:11px!important;border-radius:14px!important;touch-action:none!important}
+ .raceScreen .abilityControls .powerBtn{width:clamp(53px,16vw,77px)!important;min-width:0!important;max-width:none!important;height:clamp(57px,17vw,75px)!important;padding:3px!important;font-size:20px!important;border-radius:14px!important;touch-action:none!important}
+ .raceScreen .abilityControls .powerBtn small{font-size:8px!important;line-height:1.12!important;letter-spacing:0!important;overflow:hidden!important;text-overflow:ellipsis!important;max-width:100%!important}
+ .raceScreen .abilityControls .hornBtn{position:absolute!important;bottom:calc(100% + 8px)!important;right:0!important;left:auto!important;width:64px!important;height:32px!important;min-width:0!important;min-height:0!important;max-width:none!important;padding:5px!important;font-size:10px!important;border-radius:9px!important;touch-action:manipulation!important}
+ .raceScreen .progressLine{pointer-events:none!important}
+ .raceScreen .powerDescription{bottom:calc(105px + env(safe-area-inset-bottom,0px))!important;left:auto!important;right:8px!important;max-width:220px!important;font-size:9px!important;z-index:8!important}
+ .raceScreen .activeShield,.raceScreen .activeTurbo,.raceScreen .pitIndicator,.raceScreen .magnetIndicator{left:auto!important;right:8px!important;bottom:auto!important;top:calc(205px + env(safe-area-inset-top,0px))!important;font-size:9px!important;z-index:8!important}
+ .raceScreen .activeTurbo{top:calc(235px + env(safe-area-inset-top,0px))!important}
+ .raceScreen .cornerAlert,.raceScreen .offroad{position:absolute!important;top:calc(273px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important;max-width:90vw!important;width:max-content!important;font-size:9px!important;text-align:center!important;z-index:7!important;pointer-events:none!important}
+ .raceScreen .offroad{top:calc(300px + env(safe-area-inset-top,0px))!important}
+ .raceScreen .graphicsOverlay{top:calc(90px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;left:auto!important;width:min(325px,calc(100% - 16px))!important;max-width:none!important;max-height:calc(100% - 130px)!important;overflow-y:auto!important;z-index:25!important}
+ .raceScreen .pauseOverlay,.raceScreen .endOverlay{z-index:30!important;max-height:100%;overflow-y:auto!important}
+ .raceScreen .endCard,.raceScreen .pauseCard{max-width:min(430px,96vw)!important;max-height:92dvh!important;overflow-y:auto!important}
+}
+/* Landscape racing: keep HUD across top, speed on left, controls anchored to corners. */
+@media (pointer:coarse) and (orientation:landscape) and (max-height:650px){
+ .raceScreen .topHud{left:calc(8px + env(safe-area-inset-left,0px))!important;right:auto!important;width:min(400px,calc(100% - 280px))!important;max-width:400px!important;display:flex!important;gap:5px!important;grid-template-columns:none!important}
+ .raceScreen .topHud .hudBlock{flex:1!important;min-height:37px!important}
+ .raceScreen .raceActions{width:230px!important;grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .raceScreen .raceActions button{font-size:8px!important;min-height:35px!important}
+ .raceScreen .leaderboardToggle{top:calc(55px + env(safe-area-inset-top,0px))!important}
+ .raceScreen .mobileCameraToggle{top:calc(55px + env(safe-area-inset-top,0px))!important}
+ .raceScreen .speedHud{top:calc(102px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;width:123px!important}
+ .raceScreen .damageHud{top:calc(105px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important}
+ .raceScreen .cornerAlert{top:55%!important}
+ .raceScreen .offroad{top:65%!important}
+ .raceScreen .raceBottom{bottom:calc(7px + env(safe-area-inset-bottom,0px))!important}
+ .raceScreen .steerControls button{width:62px!important;height:64px!important}
+ .raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake{width:58px!important;height:64px!important}
+ .raceScreen .abilityControls .powerBtn{width:74px!important;height:64px!important}
+ .raceScreen .powerDescription{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}
+ .raceScreen>.standings.boardOpen{top:calc(95px + env(safe-area-inset-top,0px))!important;bottom:calc(82px + env(safe-area-inset-bottom,0px))!important}
+}
+@media (pointer:coarse) and (max-width:350px) and (orientation:portrait){
+ .raceScreen .topHud{width:calc(100% - 172px)!important}
+ .raceScreen .raceActions{width:144px!important}
+ .raceScreen .topHud .hudBlock{padding:4px!important}
+ .raceScreen .topHud .hudBlock strong{font-size:15px!important}
+ .raceScreen .raceBottom{left:4px!important;right:4px!important;gap:2px!important}
+ .raceScreen .steerControls,.raceScreen .abilityControls{gap:2px!important}
+ .raceScreen .steerControls button{width:43px!important;height:60px!important}
+ .raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake{width:43px!important;height:60px!important}
+ .raceScreen .abilityControls .powerBtn{width:54px!important;height:60px!important}
+}
+
+
+/* KR-V19.1-FINISH-NOTICE: non-blocking race finish UI; cars remain visible. */
+.paradeMode .raceBottom{display:none!important}
+.paradeMode .powerDescription{display:none!important}
+.paradeMode .cornerAlert,.paradeMode .offroad{display:none!important}
+.finishNotice{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);z-index:28;display:flex;align-items:center;justify-content:center;gap:12px;max-width:calc(100% - 24px);width:max-content;padding:10px 14px;border-radius:14px;background:rgba(10,19,32,.94);border:1px solid rgba(255,210,107,.65);box-shadow:0 12px 32px #0008;backdrop-filter:blur(10px);color:#fff;pointer-events:auto}
+.finishNotice span{color:#ffe0a2;font-size:13px;font-weight:950;font-variant-numeric:tabular-nums;white-space:nowrap}
+.finishNotice button{padding:10px 13px;border:0;border-radius:9px;background:#e9344b;color:#fff;cursor:pointer;font-size:12px;font-weight:950;white-space:nowrap}
+@media(max-width:760px){.raceScreen .finishNotice{bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 12px);gap:8px;padding:8px 9px}.raceScreen .finishNotice span{font-size:10px}.raceScreen .finishNotice button{font-size:10px;padding:8px 9px}}

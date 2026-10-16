@@ -1,27 +1,549 @@
-.page{position:relative;min-height:calc(100dvh - 64px);overflow:hidden;padding:54px 22px 85px;color:#f7f9fc;background:radial-gradient(ellipse 65% 54% at 9% 4%,#a20a1da8,transparent 75%),radial-gradient(ellipse 65% 54% at 95% 20%,#422037ab,transparent 75%),linear-gradient(145deg,#57060f,#280812 49%,#0a101c 100%)}
-.backdrop{position:absolute;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(120deg,#ffffff16 1px,transparent 1px),linear-gradient(#ffffff09 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(#000,transparent 92%)}
-.container{width:min(1240px,100%);margin:0 auto;position:relative;z-index:1}
-.hero{position:relative;width:min(860px,100%);margin:0 auto 46px;min-height:190px;padding:35px 24px;border:1px solid #ffffff32;border-radius:22px;background:radial-gradient(ellipse at 50% 105%,#e6345133,transparent 65%),linear-gradient(130deg,#281b30ed,#0b1526f5);box-shadow:0 22px 70px #07030b5c,inset 0 1px #ffffff14;overflow:hidden;display:grid;place-items:center;text-align:center}
-.hero:before{content:"";position:absolute;width:600px;height:600px;border:1px solid #ffffff0e;left:50%;top:50%;transform:translate(-50%,-50%) rotate(30deg);border-radius:50%;pointer-events:none}
-.heroDecor i{position:absolute;width:200px;height:1px;transform:rotate(-18deg);background:linear-gradient(90deg,transparent,#ff657540,transparent);top:36%;left:1%}.heroDecor i:nth-child(2){top:65%;left:auto;right:0}.heroDecor i:nth-child(3){top:75%;left:26%;width:140px}
-.heroCenter{position:relative;z-index:1}
-.heroEyebrow{display:block;margin-bottom:14px;font-size:10px;color:#ffa3ad;font-weight:900;letter-spacing:.22em}
-.hero h1{font-size:clamp(36px,5.4vw,70px);line-height:.95;letter-spacing:-.065em;margin:0;font-weight:950;white-space:normal}
-.hero h1 em{font-style:normal;color:#ff435e}
-.hero p{font-size:13px;color:#abb9cc;margin:16px 0 0;line-height:1.5}
-.sectionHead{display:flex;justify-content:space-between;align-items:end;gap:16px;margin-bottom:18px}.sectionHead span{display:block;color:#ff647c;letter-spacing:.2em;font-size:10px;font-weight:950}.sectionHead h2{font-size:clamp(22px,2.5vw,29px);margin:6px 0 0;letter-spacing:-.04em}.sectionHead small{font-size:10px;color:#aebdd0;font-weight:900;letter-spacing:.14em;white-space:nowrap}
-.games{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}
-.card{--accent:#ff5576;--soft:#ff557629;display:flex;flex-direction:column;min-width:0;overflow:hidden;isolation:isolate;position:relative;padding:18px;border-radius:20px;border:1px solid #ffffff24;background:radial-gradient(ellipse at 50% 0,var(--soft),transparent 55%),linear-gradient(160deg,#1e273b,#0b1524 82%);box-shadow:0 18px 38px #0004;transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
-.card:hover{transform:translateY(-5px);border-color:#ffffff65;box-shadow:0 28px 48px #0006}
-.card.manager{--accent:#ff637c;--soft:#ff587d48}.card.whatif{--accent:#ffc06c;--soft:#ffbf7740}.card.rush{--accent:#8bc8ff;--soft:#5eabf93a}.card.timing{--accent:#70e0ba;--soft:#2bd8ad3d}
-.cardTop{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:32px}.cardTop>span:first-child{font-size:9px;font-weight:1000;letter-spacing:.12em;color:var(--accent)}.cardIcon{width:32px;height:32px;display:grid;place-items:center;border-radius:10px;background:#ffffff14;border:1px solid #ffffff15;color:var(--accent);font-size:21px}
-.visual{height:145px;position:relative;display:grid;place-items:center;margin:7px -18px 12px;background:radial-gradient(ellipse at 50% 100%,var(--soft),transparent 65%);overflow:hidden}
-.managerGraphic{position:relative;width:170px;height:100px}.telemetry{display:flex;align-items:end;gap:10px;height:90px;position:absolute;bottom:2px;left:35px}.telemetry span{display:block;width:18px;height:40px;border-radius:4px 4px 0 0;border:1px solid #ff85a482;background:linear-gradient(#fd698b9e,#fc4f7614);transform:skewY(-9deg)}.telemetry span:nth-child(2){height:65px}.telemetry span:nth-child(3){height:84px}.telemetry span:nth-child(4){height:53px}.telemetry span:nth-child(5){height:29px}.timingLines b{position:absolute;width:100%;height:2px;background:linear-gradient(90deg,transparent,#ff607587,transparent);left:0;top:32px;transform:rotate(-13deg)}.timingLines b:nth-child(2){top:55px}.timingLines b:nth-child(3){top:78px}
-.whatifGraphic{position:relative;display:grid;place-items:center;width:140px;height:140px}.question{font-size:104px;font-weight:900;line-height:1;color:#ffca7c;text-shadow:0 0 35px #ffc56c8e}.orbit{position:absolute;inset:24px 10px;border-radius:50%;border:1px dashed #eebc7855;transform:rotate(-30deg)}.sparkOne,.sparkTwo{position:absolute;width:6px;height:6px;border-radius:50%;background:#ffc26c;left:25px;top:45px;box-shadow:0 0 14px #ffc56f}.sparkTwo{left:auto;top:auto;right:28px;bottom:37px}
-.rushGraphic{position:relative;width:220px;height:140px}.speedRing{position:absolute;left:0;right:0;bottom:-40px;height:120px;border:3px solid #a6d4ff77;border-radius:50%;transform:rotate(-10deg)}.carShape{width:97px;height:64px;position:absolute;top:36px;left:62px;transform:rotate(-12deg);clip-path:polygon(36% 0,64% 0,75% 25%,100% 46%,99% 75%,68% 87%,50% 100%,20% 85%,0 74%,0 44%,27% 26%);background:linear-gradient(145deg,#fb657c,#c01848 72%);box-shadow:0 5px 25px #0007}.carShape span{position:absolute;width:20px;height:15px;left:4px;top:17px;background:#15283c}.carShape span:nth-child(2){left:auto;right:4px}.carShape i{position:absolute;width:18px;height:28px;left:40px;top:23px;border-radius:11px;background:#111c2f}.roadLine{position:absolute;inset:0;background:repeating-linear-gradient(177deg,transparent 0 10px,#ffffff13 11px,transparent 12px);mask-image:linear-gradient(90deg,#000,transparent 45%,transparent 58%,#000)}
-.timingGraphic{position:relative;display:flex;align-items:center;gap:12px}.stopwatchCircle{width:114px;height:114px;border-radius:50%;display:flex;flex-direction:column;justify-content:center;align-items:center;background:radial-gradient(circle at 50% 50%,#123a38,#0b1c2b);border:6px solid #66deb1;box-shadow:inset 0 0 0 3px #142833,0 0 30px #40dcaa2c}.stopwatchCircle span{font-size:21px;letter-spacing:-.07em;font-weight:950;font-variant-numeric:tabular-nums}.stopwatchCircle small{font-size:12px;color:#77e5c4;font-weight:900}.timingList{display:grid;gap:11px}.timingList i{width:46px;height:10px;border-radius:10px;background:#9af0c7a1}.timingList i:nth-child(2){width:61px;opacity:.54}.timingList i:nth-child(3){width:36px;opacity:.3}
-.cardContent{flex:1;display:flex;flex-direction:column;min-width:0}.cardContent h3{margin:0;font-weight:950;font-size:clamp(22px,2.2vw,32px);letter-spacing:-.05em;line-height:1.1}.cardContent p{margin:12px 0 0;line-height:1.6;color:#b7c7da;font-size:12px;min-height:65px}.tags{margin:13px 0 22px;display:flex;flex-wrap:wrap;gap:5px}.tags span{border:1px solid #ffffff2b;background:#ffffff0a;color:#dce7f0;border-radius:40px;font-size:8px;letter-spacing:.04em;font-weight:950;padding:7px 8px}
-.cardLink{margin-top:auto;min-height:48px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-radius:11px;border:1px solid #ffffff2b;background:#ffffff0c;color:white;text-decoration:none;font-size:10px;font-weight:950;letter-spacing:.07em;transition:background .2s ease}.cardLink:hover{background:var(--soft);border-color:var(--accent)}.cardLink span:last-child{font-size:19px;color:var(--accent)}
-@media(max-width:1050px){.games{grid-template-columns:repeat(2,minmax(0,1fr))}.cardContent h3{font-size:30px}.cardContent p{min-height:0}}
-@media(max-width:620px){.page{padding:28px 14px 70px}.hero{padding:28px 15px;min-height:160px;margin-bottom:35px}.hero h1{font-size:clamp(34px,9vw,50px)}.heroEyebrow{font-size:8px}.hero p{font-size:12px}.games{grid-template-columns:1fr;gap:13px}.visual{height:125px}.card{padding:19px}.sectionHead h2{font-size:22px}}
-@media(prefers-reduced-motion:reduce){.card,.cardLink{transition:none}.card:hover{transform:none}}
+.page {
+  position: relative;
+  min-height: calc(100dvh - 64px);
+  overflow: hidden;
+  padding: 54px 22px 85px;
+  color: #f7f9fc;
+  background:
+    radial-gradient(ellipse 65% 54% at 9% 4%, #a20a1da8, transparent 75%),
+    radial-gradient(ellipse 65% 54% at 95% 20%, #422037ab, transparent 75%),
+    linear-gradient(145deg, #57060f, #280812 49%, #0a101c 100%);
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image:
+    linear-gradient(120deg, #ffffff16 1px, transparent 1px),
+    linear-gradient(#ffffff09 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: linear-gradient(#000, transparent 92%);
+}
+
+.container {
+  width: min(1240px, 100%);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  position: relative;
+  width: min(860px, 100%);
+  margin: 0 auto 46px;
+  min-height: 190px;
+  padding: 35px 24px;
+  border: 1px solid #ffffff32;
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 50% 105%, #e6345133, transparent 65%),
+    linear-gradient(130deg, #281b30ed, #0b1526f5);
+  box-shadow:
+    0 22px 70px #07030b5c,
+    inset 0 1px #ffffff14;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.hero::before {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border: 1px solid #ffffff0e;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(30deg);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.heroDecor i {
+  position: absolute;
+  width: 200px;
+  height: 1px;
+  transform: rotate(-18deg);
+  background: linear-gradient(90deg, transparent, #ff657540, transparent);
+  top: 36%;
+  left: 1%;
+}
+
+.heroDecor i:nth-child(2) {
+  top: 65%;
+  left: auto;
+  right: 0;
+}
+
+.heroDecor i:nth-child(3) {
+  top: 75%;
+  left: 26%;
+  width: 140px;
+}
+
+.heroCenter {
+  position: relative;
+  z-index: 1;
+}
+
+.heroEyebrow {
+  display: block;
+  margin-bottom: 14px;
+  font-size: 10px;
+  color: #ffa3ad;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+}
+
+.hero h1 {
+  font-size: clamp(36px, 5.4vw, 70px);
+  line-height: 0.95;
+  letter-spacing: -0.065em;
+  margin: 0;
+  font-weight: 950;
+  white-space: normal;
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: #ff435e;
+}
+
+.hero p {
+  font-size: 13px;
+  color: #abb9cc;
+  margin: 16px 0 0;
+  line-height: 1.5;
+}
+
+.sectionHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.sectionHead span {
+  display: block;
+  color: #ff647c;
+  letter-spacing: 0.2em;
+  font-size: 10px;
+  font-weight: 950;
+}
+
+.sectionHead h2 {
+  font-size: clamp(22px, 2.5vw, 29px);
+  margin: 6px 0 0;
+  letter-spacing: -0.04em;
+}
+
+.games {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.card {
+  --accent: #ff5576;
+  --soft: #ff557629;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  isolation: isolate;
+  position: relative;
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px solid #ffffff24;
+  background:
+    radial-gradient(ellipse at 50% 0, var(--soft), transparent 55%),
+    linear-gradient(160deg, #1e273b, #0b1524 82%);
+  box-shadow: 0 18px 38px #0004;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #ffffff65;
+  box-shadow: 0 28px 48px #0006;
+}
+
+.card.manager {
+  --accent: #ff637c;
+  --soft: #ff587d48;
+}
+
+.card.whatif {
+  --accent: #ffc06c;
+  --soft: #ffbf7740;
+}
+
+.card.rush {
+  --accent: #8bc8ff;
+  --soft: #5eabf93a;
+}
+
+.card.timing {
+  --accent: #70e0ba;
+  --soft: #2bd8ad3d;
+}
+
+.visual {
+  height: 145px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 2px -18px 14px;
+  background: radial-gradient(ellipse at 50% 100%, var(--soft), transparent 65%);
+  overflow: hidden;
+}
+
+.managerGraphic {
+  position: relative;
+  width: 170px;
+  height: 100px;
+}
+
+.telemetry {
+  display: flex;
+  align-items: end;
+  gap: 10px;
+  height: 90px;
+  position: absolute;
+  bottom: 2px;
+  left: 35px;
+}
+
+.telemetry span {
+  display: block;
+  width: 18px;
+  height: 40px;
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #ff85a482;
+  background: linear-gradient(#fd698b9e, #fc4f7614);
+  transform: skewY(-9deg);
+}
+
+.telemetry span:nth-child(2) {
+  height: 65px;
+}
+
+.telemetry span:nth-child(3) {
+  height: 84px;
+}
+
+.telemetry span:nth-child(4) {
+  height: 53px;
+}
+
+.telemetry span:nth-child(5) {
+  height: 29px;
+}
+
+.timingLines b {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ff607587, transparent);
+  left: 0;
+  top: 32px;
+  transform: rotate(-13deg);
+}
+
+.timingLines b:nth-child(2) {
+  top: 55px;
+}
+
+.timingLines b:nth-child(3) {
+  top: 78px;
+}
+
+.whatifGraphic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 140px;
+  height: 140px;
+}
+
+.question {
+  font-size: 104px;
+  font-weight: 900;
+  line-height: 1;
+  color: #ffca7c;
+  text-shadow: 0 0 35px #ffc56c8e;
+}
+
+.orbit {
+  position: absolute;
+  inset: 24px 10px;
+  border-radius: 50%;
+  border: 1px dashed #eebc7855;
+  transform: rotate(-30deg);
+}
+
+.sparkOne,
+.sparkTwo {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffc26c;
+  left: 25px;
+  top: 45px;
+  box-shadow: 0 0 14px #ffc56f;
+}
+
+.sparkTwo {
+  left: auto;
+  top: auto;
+  right: 28px;
+  bottom: 37px;
+}
+
+.rushGraphic {
+  position: relative;
+  width: 220px;
+  height: 140px;
+}
+
+.speedRing {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -40px;
+  height: 120px;
+  border: 3px solid #a6d4ff77;
+  border-radius: 50%;
+  transform: rotate(-10deg);
+}
+
+.carShape {
+  width: 97px;
+  height: 64px;
+  position: absolute;
+  top: 36px;
+  left: 62px;
+  transform: rotate(-12deg);
+  clip-path: polygon(36% 0, 64% 0, 75% 25%, 100% 46%, 99% 75%, 68% 87%, 50% 100%, 20% 85%, 0 74%, 0 44%, 27% 26%);
+  background: linear-gradient(145deg, #fb657c, #c01848 72%);
+  box-shadow: 0 5px 25px #0007;
+}
+
+.carShape span {
+  position: absolute;
+  width: 20px;
+  height: 15px;
+  left: 4px;
+  top: 17px;
+  background: #15283c;
+}
+
+.carShape span:nth-child(2) {
+  left: auto;
+  right: 4px;
+}
+
+.carShape i {
+  position: absolute;
+  width: 18px;
+  height: 28px;
+  left: 40px;
+  top: 23px;
+  border-radius: 11px;
+  background: #111c2f;
+}
+
+.roadLine {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    177deg,
+    transparent 0 10px,
+    #ffffff13 11px,
+    transparent 12px
+  );
+  mask-image: linear-gradient(90deg, #000, transparent 45%, transparent 58%, #000);
+}
+
+.timingGraphic {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stopwatchCircle {
+  width: 114px;
+  height: 114px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(circle at 50% 50%, #123a38, #0b1c2b);
+  border: 6px solid #66deb1;
+  box-shadow:
+    inset 0 0 0 3px #142833,
+    0 0 30px #40dcaa2c;
+}
+
+.stopwatchCircle span {
+  font-size: 21px;
+  letter-spacing: -0.07em;
+  font-weight: 950;
+  font-variant-numeric: tabular-nums;
+}
+
+.stopwatchCircle small {
+  font-size: 12px;
+  color: #77e5c4;
+  font-weight: 900;
+}
+
+.timingList {
+  display: grid;
+  gap: 11px;
+}
+
+.timingList i {
+  width: 46px;
+  height: 10px;
+  border-radius: 10px;
+  background: #9af0c7a1;
+}
+
+.timingList i:nth-child(2) {
+  width: 61px;
+  opacity: 0.54;
+}
+
+.timingList i:nth-child(3) {
+  width: 36px;
+  opacity: 0.3;
+}
+
+.cardContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cardContent h3 {
+  margin: 0;
+  font-weight: 950;
+  font-size: clamp(22px, 2.2vw, 32px);
+  letter-spacing: -0.05em;
+  line-height: 1.1;
+}
+
+.cardContent p {
+  margin: 12px 0 20px;
+  line-height: 1.6;
+  color: #b7c7da;
+  font-size: 12px;
+  min-height: 65px;
+}
+
+.cardLink {
+  margin-top: auto;
+  min-height: 48px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 11px;
+  border: 1px solid #ffffff2b;
+  background: #ffffff0c;
+  color: white;
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 950;
+  letter-spacing: 0.07em;
+  transition: background 0.2s ease;
+}
+
+.cardLink:hover {
+  background: var(--soft);
+  border-color: var(--accent);
+}
+
+.cardLink span:last-child {
+  font-size: 19px;
+  color: var(--accent);
+}
+
+@media (max-width: 1050px) {
+  .games {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cardContent h3 {
+    font-size: 30px;
+  }
+
+  .cardContent p {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    padding: 28px 14px 70px;
+  }
+
+  .hero {
+    padding: 28px 15px;
+    min-height: 160px;
+    margin-bottom: 35px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 9vw, 50px);
+  }
+
+  .heroEyebrow {
+    font-size: 8px;
+  }
+
+  .hero p {
+    font-size: 12px;
+  }
+
+  .games {
+    grid-template-columns: 1fr;
+    gap: 13px;
+  }
+
+  .visual {
+    height: 125px;
+  }
+
+  .card {
+    padding: 19px;
+  }
+
+  .sectionHead h2 {
+    font-size: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cardLink {
+    transition: none;
+  }
+
+  .card:hover {
+    transform: none;
+  }
+}
