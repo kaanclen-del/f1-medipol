@@ -1,6 +1,6 @@
-/* F1 Medipol Kart Rush Graphics 5.1: overdrive spectacle upgrade.
+/* F1 Medipol Kart Rush Graphics 6.0: complete 4K cinematic racing overhaul.
  * Dependency-free WebGL; no Supabase calls in the animation/render loop.
- * Huge stadium density, giant animated flags, ultra-dense world geometry and punchier sky/surface shading.
+ * New 4K PBR-style materials, clear-coat paint, richer Formula meshes, venue set dressing and cinematic GPU overlay.
  */
 export type KartPower = 'turbo' | 'shield' | 'emp' | 'repair' | 'pulse' | 'magnet';
 export type KartDifficulty = 'easy' | 'normal' | 'hard';
@@ -138,7 +138,7 @@ function aiTurnLine(distance:number,turn:number,severity:number,style:number,cou
 // Interleaved geometry: xyz + RGB + surface normal + material id.
 // Normal-based directional light and procedural fragment materials upgrade the flat V2 palette.
 const STRIDE=10;
-const MAT_BASIC=0, MAT_GRASS=1, MAT_ASPHALT=2, MAT_METAL=3, MAT_GLOW=4, MAT_GLASS=5, MAT_WATER=6, MAT_SKY=7, MAT_CARBON=8, MAT_TYRE=9, MAT_KERB=10, MAT_CONCRETE=11, MAT_FLAG=12, MAT_GRAVEL=13, MAT_FLOOD=14;
+const MAT_BASIC=0, MAT_GRASS=1, MAT_ASPHALT=2, MAT_METAL=3, MAT_GLOW=4, MAT_GLASS=5, MAT_WATER=6, MAT_SKY=7, MAT_CARBON=8, MAT_TYRE=9, MAT_KERB=10, MAT_CONCRETE=11, MAT_FLAG=12, MAT_GRAVEL=13, MAT_FLOOD=14, MAT_PAINT=15;
 function vertex(v:Vertex,p:Vec,c:C,n:Vec,mat=MAT_BASIC){v.push(p.x,p.y,p.z,...c,n.x,n.y,n.z,mat)}
 function tri(v:Vertex,a:Vec,b:Vec,c:Vec,col:C,mat=MAT_BASIC){
  const u={x:b.x-a.x,y:b.y-a.y,z:b.z-a.z},w={x:c.x-a.x,y:c.y-a.y,z:c.z-a.z};
@@ -280,7 +280,7 @@ function flowerBed(v:Vertex,x:number,y:number,z:number,w:number,d:number,petal:C
 function stadiumRibbon(v:Vertex,quality:KartGraphics){
  // Continuous banked grandstand ribbons rather than scattered small stands.
  // Guards use samples of the actual racing route to avoid covering adjacent portions of the circuit.
- const count=quality==='ultra'?420:quality==='high'?330:quality==='balanced'?240:160;
+ const count=quality==='ultra'?370:quality==='high'?310:quality==='balanced'?235:160;
  const rows=quality==='ultra'?16:quality==='high'?14:quality==='balanced'?12:9;
  const route=Array.from({length:240},(_,i)=>pt(i/240));
  const safe=(f:number,side:number)=>{
@@ -313,7 +313,7 @@ function stadiumRibbon(v:Vertex,quality:KartGraphics){
     // Distant spectator sprites as low-poly silhouettes with bright team shirts and heads.
     // Built as world-space quads: 1/4 the geometry of box-based crowds.
     if(quality!=='low' && i%(quality==='ultra'?1:quality==='high'?2:3)===0 && row<rows-1){
-     const crowdCount=quality==='ultra'?28:quality==='high'?20:quality==='balanced'?14:8;
+     const crowdCount=quality==='ultra'?23:quality==='high'?18:quality==='balanced'?12:8;
      for(let j=0;j<crowdCount;j++){
       const f=mid+(j-(crowdCount-1)/2)/count*.21;
       const lane=inner+2.6+(j%2)*1.7;
@@ -463,11 +463,59 @@ function megaTrackside(v:Vertex,quality:KartGraphics){
  }
 }
 
+// G6.0 Grand Prix set-dressing: marshal gantries, media platforms, safety blocks,
+// sector boards and coloured canopy ribs. Everything is batched into the static track mesh.
+function cinematicVenue(v:Vertex,quality:KartGraphics){
+ if(quality==='low')return;
+ const count=quality==='ultra'?64:quality==='high'?48:32;
+ for(let i=0;i<count;i++){
+  const progress=(i+.52)/count,side=i%2?1:-1;
+  const yaw=yawFor(progress),base=place(progress,side*40.8);
+  const accent:C=i%3===0?[.86,.17,.22]:i%3===1?[.17,.51,.86]:[.88,.77,.36];
+  const steel:C=[.31,.36,.42];
+  // Safety fence concrete footing and long red-white crash wall segment.
+  const apron=place(progress,side*34.2);
+  box(v,apron.x,apron.y-.45,apron.z,7.2,.70,1.35,[.39,.42,.45],yaw,MAT_CONCRETE);
+  box(v,apron.x,apron.y+.15,apron.z,7.0,.15,1.1,accent,yaw,MAT_METAL);
+  // Monopole digital sector markers, mounted above the barrier, not on asphalt.
+  box(v,base.x,base.y-.20,base.z,.40,5.1,.40,steel,yaw,MAT_METAL);
+  box(v,base.x,base.y+4.9,base.z,3.4,1.35,.54,[.075,.11,.16],yaw,MAT_METAL);
+  box(v,base.x,base.y+5.06,base.z,2.9,.22,.62,accent,yaw,MAT_GLOW);
+  for(let q=0;q<3;q++){
+   const p=place(progress+(q-1)*.00010,side*40.8);
+   box(v,p.x,p.y+4.44,p.z,.32,.30,.61,q===i%3?accent:[.58,.67,.76],yaw,MAT_GLOW);
+  }
+  // Medical / marshal evacuation lane equipment sits outside spectators.
+  if(i%4===0){
+   const c=place(progress,side*52);
+   box(v,c.x,c.y-.30,c.z,6.5,.45,4.2,[.25,.29,.33],yaw,MAT_CONCRETE);
+   box(v,c.x,c.y+.18,c.z,5.6,1.65,3.7,[.88,.91,.94],yaw,MAT_METAL);
+   box(v,c.x,c.y+1.85,c.z,4.1,1.45,2.8,[.73,.12,.18],yaw,MAT_METAL);
+   box(v,c.x,c.y+3.25,c.z,4.6,.12,2.9,[.98,.98,.91],yaw,MAT_GLOW);
+  }
+ }
+ const media=quality==='ultra'?18:quality==='high'?14:10;
+ for(let i=0;i<media;i++){
+  const progress=(i+.37)/media,side=i%2?1:-1;
+  if(side>0&&(progress>.93||progress<.07))continue;
+  const a=yawFor(progress),p=place(progress,side*94);
+  // Raised broadcast gantries behind the roofline: glass cabins, support frames, LED trims.
+  box(v,p.x,p.y-.9,p.z,2.3,27,2.3,[.24,.29,.35],a,MAT_METAL);
+  box(v,p.x,p.y+26.0,p.z,15.0,.75,7.6,[.25,.30,.38],a,MAT_METAL);
+  box(v,p.x,p.y+26.9,p.z,12.6,3.3,6.6,[.22,.43,.59],a,MAT_GLASS);
+  box(v,p.x,p.y+30.3,p.z,15.4,.55,8.1,[.76,.81,.84],a,MAT_METAL);
+  box(v,p.x,p.y+26.65,p.z,13.0,.22,6.7,[.95,.20,.27],a,MAT_GLOW);
+  for(const sign of [-1,1]){
+   box(v,p.x+sign*5.65,p.y+22.0,p.z,.26,5.1,.31,[.51,.59,.65],a,MAT_METAL);
+  }
+ }
+}
+
 function buildWorld(quality:KartGraphics='balanced'):Vertex{
  const v:Vertex=[];
  // Dark stadium sub-base: no distant grass meadow or triangular mountain peaks.
  quad(v,{x:-1800,y:-8,z:-1800},{x:1800,y:-8,z:-1800},{x:1800,y:-8,z:1800},{x:-1800,y:-8,z:1800},[.13,.15,.16],MAT_CONCRETE);
- const N=quality==='low'?460:quality==='balanced'?760:quality==='high'?1180:1800;
+ const N=quality==='low'?460:quality==='balanced'?760:quality==='high'?1180:1550;
  const strip=(a:number,b:number,left:number,right:number,rise:number,color:C,mat:number)=>{
   const aa=place(a,left),ab=place(a,right),bb=place(b,right),ba=place(b,left);
   aa.y+=rise;ab.y+=rise;bb.y+=rise;ba.y+=rise;
@@ -536,6 +584,7 @@ function buildWorld(quality:KartGraphics='balanced'):Vertex{
  stadiumRibbon(v,quality);
  venuePitBuilding(v,quality);
  megaTrackside(v,quality);
+ cinematicVenue(v,quality);
  // Camera nests and television production platforms, distributed at spectator decks.
  for(let i=0;i<36;i++){
   const progress=(i+.5)/36,side=i%2?1:-1;
@@ -724,6 +773,7 @@ void main(){
  bool concrete=(kind>10.5&&kind<11.5);
  bool gravel=(kind>12.5&&kind<13.5);
  bool flood=(kind>13.5&&kind<14.5);
+ bool paint=(kind>14.5&&kind<15.5);
  if(uAtlasReady>.5&&uDetail>.05&&(asphalt||grass||metal||carbon||tyre||kerb||concrete||gravel)){
   float texId=asphalt?0.0:grass?1.0:carbon?2.0:tyre?3.0:kerb?4.0:metal?5.0:gravel?6.0:7.0;
   float meters=asphalt?3.2:grass?3.7:carbon?.46:tyre?.68:kerb?1.4:metal?2.1:gravel?2.9:2.5;
@@ -736,7 +786,7 @@ void main(){
   if(a.y>.62){n=normalize(n+vec3(perturb.x,0.0,perturb.y)*(asphalt?.52:grass?.64:gravel?.74:kerb?.44:.34));}
   else{n=normalize(n+vec3(perturb.x,perturb.y,0.0)*.13);}
   roughness=normalRoughSample.a;
-  if(asphalt){albedo=mix(vColor,texColor*vec3(.50,.51,.53),.991);} 
+  if(asphalt){albedo=mix(vColor,texColor*vec3(.48,.49,.51),.990);} 
   else if(grass){albedo=mix(vColor,texColor*vec3(.92,.96,.87),.94);} 
   else if(kerb){albedo*=.64+dot(texColor,vec3(.333))*.50;} 
   else if(tyre){albedo=mix(vColor,texColor*vec3(.76,.77,.78),.70);} 
@@ -754,6 +804,9 @@ void main(){
   float rubber=noise(vWorld.xz*.18+vec2(6.2,3.4))*noise(vWorld.xz*1.25+vec2(1.3,8.6));
   float grain=noise(vWorld.xz*24.0+vec2(3.7,1.2))*.070+noise(vWorld.xz*71.0+vec2(9.4,5.1))*.028;
   float pebble=noise(vWorld.xz*132.0+vec2(2.1,7.4))*.016;
+  // Dry racing rubber line remains dark; rain gets restrained glancing specular instead.
+  float racingRubber=noise(vWorld.xz*.31+vec2(15.7,2.8));
+  albedo*=1.0-.065*smoothstep(.46,.78,racingRubber);
   albedo*=(.72+grain+pebble)*(1.0-rubber*(uRain>.5?.020:.120));
  }
  if(concrete){
@@ -768,6 +821,12 @@ void main(){
  if(grass){
   float patch=noise(vWorld.xz*4.2+vec2(3.3,9.9))*.10;
   albedo*=.94+patch;
+ }
+ if(paint){
+  // Car-only paint material. Normal reflections follow actual panels, not a white road overlay.
+  roughness=mix(.24,.37,uRain);
+  float flakes=noise(vWorld.xz*42.0+vWorld.xy*28.0);
+  albedo*=.96+.07*flakes;
  }
  if(metal){roughness=mix(roughness,.34,.65);}
  if(carbon){roughness=mix(roughness,.38,.55);}
@@ -798,7 +857,7 @@ void main(){
  float gloss=1.0-roughness;
  float shininess=mix(12.0,92.0,gloss);
  float specular=pow(max(dot(n,halfway),0.),shininess);
- float metalLevel=(metal||carbon)?.70:(glass?.45:.045);
+ float metalLevel=paint?.81:((metal||carbon)?.70:(glass?.45:.045));
  color+=vec3(.85,.84,.79)*specular*(metalLevel+uRain*(asphalt?.22:concrete?.025:kerb?.03:.01))*(.23+.62*gloss);
  if(uRain<.5&&asphalt){
   float sunStripe=max(0.0,dot(normalize(vec3(n.x,0.0,n.z)+vec3(.001)),normalize(vec3(.42,0.0,.58))));
@@ -807,6 +866,14 @@ void main(){
  }
  float rim=pow(1.0-max(0.,dot(n,viewDir)),3.0);
  color+=vec3(.15,.21,.26)*rim*(metal||carbon?.14:.035);
+ if(paint){
+  // Clearcoat + coloured environmental rim; luminance is intentionally clamped.
+  float coat=pow(max(dot(reflect(-sunlight,n),viewDir),0.0),55.0);
+  float edge=pow(1.0-clamp(dot(n,viewDir),0.0,1.0),4.0);
+  color+=vec3(.34,.39,.44)*coat*.30+albedo*edge*.19;
+  color+=vec3(.15,.23,.29)*pow(max(dot(n,skylight),0.0),15.0)*.10;
+ }
+
  if(glass){color+=vec3(.035,.07,.085);}
  if(glow){color+=albedo*.28;}
  if(flood&&uRain>.5){color+=vec3(.72,.79,.88)*.42;}
@@ -844,18 +911,7 @@ void main(){
   vec3 fogColor=vec3(.24,.31,.40);
   color=mix(color,fogColor,clamp(fog,0.,.84));
  }
- if(uRain>.5){
-  vec2 suv=gl_FragCoord.xy/vec2(1280.0,720.0);
-  float lens=0.0;
-  vec2 q1=fract(vec2(suv.x*8.0+noise(vec2(suv.y*5.0,1.3)),suv.y*5.2-uTime*.12));
-  lens+=smoothstep(.34,.0,length((q1-vec2(.52,.58))*vec2(.85,2.6))-.08)*.55;
-  vec2 q2=fract(vec2(suv.x*5.5+1.7,suv.y*3.8-uTime*.08));
-  lens+=smoothstep(.28,.0,length((q2-vec2(.35,.44))*vec2(.70,2.2))-.06)*.42;
-  float streak=step(.985,noise(vec2(floor(suv.x*42.0),floor(suv.y*16.0-uTime*8.0))));
-  lens=clamp(lens+streak*.22,0.,1.0);
-  color=mix(color,color*0.84+vec3(.14,.17,.19),lens*.20);
-  color+=vec3(.20,.24,.28)*lens*.10;
- }
+ // G6.1: rain falls as depth-tested 3D world particles, not screen-space droplets.
  color=(color*(2.51*color+.03))/(color*(2.43*color+.59)+.14);
  gl_FragColor=vec4(pow(clamp(color,0.,1.),vec3(.96)),1.0);
 }`;
@@ -882,6 +938,14 @@ void main(){
   col=mix(col,vec3(.92,.96,1.0),smoothstep(.62,.84,cirrus)*smoothstep(.58,.95,y)*.18);
   vec3 cloudShade=mix(vec3(.78,.89,.98),vec3(1.0,1.0,1.0),smoothstep(.40,.72,p1));
   col=mix(col,cloudShade,cloudMask*.94);
+  // G6.0 multi-altitude wisps with self-shadowing, kept in world azimuth.
+  float highCloud=fbm(vec2(wx*26.0+uTime*.00017,y*21.0+13.1));
+  float highEnvelope=smoothstep(.44,.65,y)*(1.-smoothstep(.94,1.0,y));
+  col=mix(col,vec3(.88,.94,1.0),smoothstep(.61,.79,highCloud)*highEnvelope*.22);
+  float cloudUnderside=smoothstep(.46,.55,y)*(1.-smoothstep(.59,.73,y))*cloudMask;
+  col=mix(col,col*vec3(.75,.80,.89),cloudUnderside*.18);
+  float atmosphere=pow(1.-y,5.0);
+  col=mix(col,vec3(.90,.94,.99),atmosphere*.10);
   // Sun stays in world space as the car turns. Crisp white disk plus golden corona.
   float sunX=abs(fract(wx-.22+.5)-.5);
   float sunD=length(vec2(sunX*1.72,(y-.76)*1.5));
@@ -889,6 +953,10 @@ void main(){
   float sunCore=1.-smoothstep(.023,.041,sunD);
   col+=vec3(1.0,.92,.70)*sunHalo*.95;
   col+=vec3(.22,.17,.08)*pow(max(0.0,1.0-sunD*1.45),2.6)*.11;
+  float glowRing=exp(-pow((sunD-.105)*30.0,2.0));
+  col+=vec3(.18,.13,.075)*glowRing*.16;
+  float sunColumn=exp(-sunX*26.0)*pow(1.0-y,3.2);
+  col+=vec3(.08,.09,.11)*sunColumn*.19;
   col=mix(col,vec3(1.0,.99,.90),sunCore);
  }else{
   // Rain weather: heavy overcast layers, cold gray storm light, low moving rain cloudbanks.
@@ -902,12 +970,85 @@ void main(){
   col=mix(col,mix(vec3(.26,.30,.36),vec3(.47,.52,.56),f2),heavy*band*.72);
   float mist=fbm(vec2(wx*6.-uTime*.014,y*12.+3.));
   col=mix(col,vec3(.51,.57,.61),smoothstep(.50,.78,mist)*(1.-smoothstep(.11,.47,y))*.25);
-  float rainNear=step(.973,h(floor(vec2(vUv.x*365.,(y+uTime*.62)*135.))));
-  float rainFar=step(.988,h(floor(vec2(vUv.x*640.+17.,(y+uTime*.88)*215.))));
-  col+=vec3(.37,.42,.49)*rainNear*.57;
-  col+=vec3(.43,.48,.55)*rainFar*.34;
+  float stormCell=fbm(vec2(wx*3.0+uTime*.0017,y*7.0+12.0));
+  col=mix(col,vec3(.095,.13,.18),smoothstep(.67,.82,stormCell)*.23);
+  // Rain particles have their own world-space pass; sky renders storm clouds only.
  }
  gl_FragColor=vec4(clamp(col,0.,1.),1.);
+}`;
+// G6.1 volumetric precipitation: fixed GPU mesh with procedural world-space fall.
+// Coordinates wrap individually around the moving camera (no camera-fixed 2D overlay,
+// no CPU particle update, one draw call). A depth test hides streaks behind walls/cars.
+const RAIN_VERT=`attribute vec4 aDrop;
+uniform mat4 uViewProj;
+uniform vec3 uCamera;
+uniform float uTime;
+uniform float uTravel;
+varying float vAlpha;
+varying float vBrightness;
+float rainHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+void main(){
+ float seed=rainHash(aDrop.xyz);
+ // Center a toroidal world grid around the camera; rain falls vertically in 3D.
+ // When the camera drives, each drop retains its own world x/z until leaving range.
+ float radius=66.0;
+ float wx=uCamera.x+mod(aDrop.x-uCamera.x+radius,2.0*radius)-radius;
+ float wz=uCamera.z+mod(aDrop.y-uCamera.z+radius,2.0*radius)-radius;
+ float fallSpeed=29.0+seed*16.0;
+ float height=56.0;
+ float ground=uCamera.y-4.1;
+ float falling=mod(aDrop.z*height-uTime*fallSpeed,height);
+ float yy=ground+falling;
+ // aDrop.w: 0 = streak bottom, 1 = upward trailing tip.
+ float tail=(1.65+uTravel*1.55+seed*.86)*aDrop.w;
+ vec3 p=vec3(wx-tail*.15,yy+tail,wz+tail*.09);
+ float d=length(vec2(wx-uCamera.x,wz-uCamera.z));
+ float sideFade=1.0-smoothstep(42.0,64.0,d);
+ float nearFade=smoothstep(1.2,5.5,d);
+ float topFade=1.0-smoothstep(44.0,55.0,falling);
+ float bottomFade=smoothstep(.25,2.8,falling);
+ vAlpha=(.32+.27*seed)*sideFade*nearFade*topFade*bottomFade;
+ vBrightness=mix(.72,1.07,seed);
+ gl_Position=uViewProj*vec4(p,1.0);
+}`;
+const RAIN_FRAG=`precision mediump float;
+varying float vAlpha;
+varying float vBrightness;
+void main(){
+ gl_FragColor=vec4(vec3(.66,.79,.92)*vBrightness,clamp(vAlpha,0.0,.65));
+}`;
+// G6.0 independent fullscreen post layer. It is alpha-composited AFTER geometry so
+// it never alters depth, steering, physics or cockpit walls. WebGL1 compatible.
+const FX_FRAG=`precision mediump float;
+varying vec2 vUv;
+uniform float uTime;uniform float uSpeed;uniform float uBoost;uniform float uRain;
+float h(vec2 p){return fract(sin(dot(p,vec2(123.45,317.71)))*42514.34);}
+void main(){
+ vec2 p=vUv*2.0-1.0;
+ float vignette=smoothstep(.28,1.48,length(p*vec2(.88,1.0)));
+ vec3 tint=uRain>.5?vec3(.045,.078,.11):vec3(.025,.034,.058);
+ float alpha=vignette*(.10+.045*uRain);
+ float speed=clamp((uSpeed-.32)/.68,0.0,1.0);
+ vec3 light=vec3(0.0);
+ float streaks=0.0;
+ for(int i=0;i<7;i++){
+  float fi=float(i);
+  float lane=fi*.148+.051;
+  float direction=mod(fi,2.0)<1.0?1.0:-1.0;
+  float x=direction*(.66+lane*.29);
+  float advance=fract(fi*.619-uTime*(.12+speed*.30));
+  float y=advance*2.55-1.32;
+  float dist=length((p-vec2(x,y))*vec2(1.0,.16));
+  float mask=(1.0-smoothstep(.0,.12,dist))*smoothstep(.12,.59,speed);
+  streaks+=mask*.40;
+ }
+ float energy=clamp(streaks,0.0,.40)*(speed*.48+uBoost*.42);
+ light+=mix(vec3(.16,.36,.65),vec3(.82,.24,.18),uBoost)*energy;
+ float grain=(h(floor(vUv*vec2(1280.0,720.0)+uTime*13.0))-.5)*.008;
+ light+=vec3(grain);
+ float amount=clamp(alpha+energy*.24,0.0,.20);
+ vec3 overlay=clamp(tint+light,0.0,1.0);
+ gl_FragColor=vec4(overlay,amount);
 }`;
 function shader(gl:WebGLRenderingContext,type:number,src:string){const s=gl.createShader(type);if(!s)throw Error('Shader oluşturulamadı');gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s)||'Shader derlenemedi');return s;}
 function projection(fov:number,aspect:number,near:number,far:number){const m=new Float32Array(16),f=1/Math.tan(fov/2);m[0]=f/aspect;m[5]=f;m[10]=(far+near)/(near-far);m[11]=-1;m[14]=2*far*near/(near-far);return m;}
@@ -945,6 +1086,15 @@ function f1Wheel(v:Vertex,at:(x:number,y:number,z:number)=>Vec,x:number,y:number
    quad(v,ring(sx,a,r),ring(sx,b,r),ring(sx,b,r*.53),ring(sx,a,r*.53),sidewall,MAT_TYRE);
    if(quality!=='low')quad(v,ring(sx+sign*.006,a,r*.78),ring(sx+sign*.006,b,r*.78),ring(sx+sign*.006,b,r*.75),ring(sx+sign*.006,a,r*.75),[.80,.67,.18],MAT_BASIC);
    tri(v,ring(sx,a,r*.42),ring(sx,b,r*.42),at(x+sx+sign*.016,y,z),hub,MAT_METAL);
+  }
+ }
+ // G6.0 double tyre sidewall rings / exposed steel rotor: more definition at high speed.
+ if(quality==='high'||quality==='ultra')for(const sign of [-1,1]){
+  const sx=sign*(width/2+.019);
+  for(let k=0;k<segments;k++){
+   const a=k*TAU/segments,b=(k+1)*TAU/segments;
+   quad(v,ring(sx,a,.68*r),ring(sx,b,.68*r),ring(sx,b,.66*r),ring(sx,a,.66*r),[.82,.70,.29],MAT_METAL);
+   if(k%3===0)quad(v,ring(sx,a,.88*r),ring(sx,b,.88*r),ring(sx,b,.84*r),ring(sx,a,.84*r),[.23,.25,.28],MAT_TYRE);
   }
  }
  // Hub-centred, rotating five-spoke alloy wheel. Distinct asymmetry makes spin visible.
@@ -988,7 +1138,7 @@ function car(v:Vertex,p:number,lane:number,color:string,shield=false,boost=false
  const hull=(zFront:number,zBack:number,frontW:number,backW:number,y0:number,y1:number,col:C)=>{
   const L=at(-frontW/2,y0,zFront),R=at(frontW/2,y0,zFront),BL=at(-backW/2,y0,zBack),BR=at(backW/2,y0,zBack);
   const lt=at(-frontW/2,y1,zFront),rt=at(frontW/2,y1,zFront),bl=at(-backW/2,y1,zBack),br=at(backW/2,y1,zBack);
-  panel(lt,rt,br,bl,light(col,1.10));panel(L,lt,bl,BL,light(col,.75));panel(rt,R,BR,br,light(col,.79));panel(L,R,rt,lt,light(col,.88));
+  panel(lt,rt,br,bl,light(col,1.10),MAT_PAINT);panel(L,lt,bl,BL,light(col,.75),MAT_PAINT);panel(rt,R,BR,br,light(col,.79),MAT_PAINT);panel(L,R,rt,lt,light(col,.88),MAT_PAINT);
  };
  // Rounded sculpted cover panels have curved normals rather than cuboid silhouette.
  // This mesh is local to the car and uses the same body colour as the livery.
@@ -998,7 +1148,7 @@ function car(v:Vertex,p:number,lane:number,color:string,shield=false,boost=false
    Math.cos(u)*st.w,st.y+Math.sin(u)*st.bulge,st.z);
   for(let k=0;k<stations.length-1;k++)for(let j=0;j<sections;j++){
    const a=Math.PI*j/sections,b=Math.PI*(j+1)/sections;
-   quad(v,point(stations[k],a),point(stations[k+1],a),point(stations[k+1],b),point(stations[k],b),tone,MAT_METAL);
+   quad(v,point(stations[k],a),point(stations[k+1],a),point(stations[k+1],b),point(stations[k],b),tone,MAT_PAINT);
   }
  };
  // Floor, rear diffuser and two different tapers on the survival cell.
@@ -1024,10 +1174,10 @@ function car(v:Vertex,p:number,lane:number,color:string,shield=false,boost=false
  for(const sign of [-1,1]){
   // Slim sidepods with radiators, tapered toward the gearbox.
   const a=at(sign*.50,.35,-.78),b=at(sign*.90,.38,-.22),d=at(sign*.84,.59,1.46),e=at(sign*.42,.65,1.22);
-  panel(a,b,d,e,light(c,.71));
+  panel(a,b,d,e,light(c,.71),MAT_PAINT);
   // Soft three-station 'coke-bottle' sidepod instead of a rectangular slab.
-  quad(v,at(sign*.66,.35,-.94),at(sign*.98,.35,-.30),at(sign*.90,.44,.70),at(sign*.52,.48,.88),light(c,.78),MAT_METAL);
-  quad(v,at(sign*.52,.48,.88),at(sign*.90,.44,.70),at(sign*.72,.39,1.78),at(sign*.40,.43,1.86),light(c,.66),MAT_METAL);
+  quad(v,at(sign*.66,.35,-.94),at(sign*.98,.35,-.30),at(sign*.90,.44,.70),at(sign*.52,.48,.88),light(c,.78),MAT_PAINT);
+  quad(v,at(sign*.52,.48,.88),at(sign*.90,.44,.70),at(sign*.72,.39,1.78),at(sign*.40,.43,1.86),light(c,.66),MAT_PAINT);
   block(sign*.70,.68,.48,.06,.20,.98,[.10,.13,.16],MAT_GLASS);
   block(sign*.66,1.03,.54,.13,.06,.62,light(c,1.15),MAT_GLOW);
  }
@@ -1119,6 +1269,21 @@ function car(v:Vertex,p:number,lane:number,color:string,shield=false,boost=false
    for(const z of [-1.98,1.72]){
     const center=at(sign*1.55,.61,z);
     box(v,center.x,center.y-.025,center.z,.135,.135,.135,[.87,.71,.30],yaw,MAT_METAL);
+   }
+  }
+  // G6.0 sculpted sidepod vanes, front-wing cascade and brake-duct vanes.
+  for(const side of [-1,1]){
+   for(let f=0;f<4;f++){
+    const z=-3.23+f*.115;
+    block(side*(1.08+f*.12),z,.245+f*.037,.58-f*.065,.025,.075,f%2?light(c,.76):trim.secondary,f%2?MAT_CARBON:MAT_PAINT);
+   }
+   for(let g=0;g<4;g++){
+    const z=.12+g*.28;
+    panel(at(side*.78,.67,z),at(side*.95,.65,z+.075),at(side*.86,.53,z+.19),at(side*.76,.56,z+.10),g%2?carbon:trim.dark,MAT_CARBON);
+   }
+   for(const axle of [-1.98,1.72]){
+    block(side*1.50,axle,.66,.75,.07,.07,[.23,.25,.28],MAT_METAL);
+    block(side*1.51,axle,.75,.63,.045,.045,[.73,.72,.69],MAT_METAL);
    }
   }
   block(0,-2.08,.58,.16,.045,.64,[.98,.97,.95],MAT_GLOW);
@@ -1471,6 +1636,9 @@ export class KartRushEngine{
  private surfaceAlbedo:WebGLTexture|null=null;private surfaceNormal:WebGLTexture|null=null;private materialReady=false;
  private uniformAlbedo:WebGLUniformLocation|null;private uniformNormal:WebGLUniformLocation|null;private uniformAtlasReady:WebGLUniformLocation|null;private uniformCamera:WebGLUniformLocation|null;
  private uniformFlood:WebGLUniformLocation|null;private uniformBrakes:WebGLUniformLocation|null;
+ private fxProgram:WebGLProgram|null=null;private fxPosition=-1;private fxSpeed:WebGLUniformLocation|null=null;private fxTime:WebGLUniformLocation|null=null;private fxBoost:WebGLUniformLocation|null=null;private fxRain:WebGLUniformLocation|null=null;
+ private rainProgram:WebGLProgram|null=null;private rainBuffer:WebGLBuffer|null=null;private rainCount=0;private rainPosition=-1;
+ private rainMat:WebGLUniformLocation|null=null;private rainCamera:WebGLUniformLocation|null=null;private rainTime:WebGLUniformLocation|null=null;private rainTravel:WebGLUniformLocation|null=null;
  private skyProgram:WebGLProgram;private skyBuffer:WebGLBuffer;private skyPos:number;private skyTime:WebGLUniformLocation|null;private skyYaw:WebGLUniformLocation|null;private skyWeather:WebGLUniformLocation|null;
  private billboardProgram:WebGLProgram|null=null;private billboardBuffer:WebGLBuffer|null=null;
  private billboardTexture:WebGLTexture|null=null;private billboardCount=0;
@@ -1501,6 +1669,56 @@ export class KartRushEngine{
   this.gl.deleteShader(sv);this.gl.deleteShader(sf);this.skyPos=this.gl.getAttribLocation(sp,'aPosition');this.skyTime=this.gl.getUniformLocation(sp,'uTime');this.skyYaw=this.gl.getUniformLocation(sp,'uYaw');this.skyWeather=this.gl.getUniformLocation(sp,'uRain');
   const skyBuffer=this.gl.createBuffer();if(!skyBuffer)throw Error('Atmosfer belleği oluşturulamadı');this.skyBuffer=skyBuffer;
   this.gl.bindBuffer(this.gl.ARRAY_BUFFER,skyBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),this.gl.STATIC_DRAW);
+  // Overlay shader is optional: unsupported GPU drivers fall back to the base race.
+  try{
+   const fv=shader(this.gl,this.gl.VERTEX_SHADER,SKY_VERT),ff=shader(this.gl,this.gl.FRAGMENT_SHADER,FX_FRAG);
+   const fp=this.gl.createProgram();if(!fp)throw Error('FX allocation');
+   this.gl.attachShader(fp,fv);this.gl.attachShader(fp,ff);this.gl.linkProgram(fp);
+   this.gl.deleteShader(fv);this.gl.deleteShader(ff);
+   if(!this.gl.getProgramParameter(fp,this.gl.LINK_STATUS))throw Error('FX link');
+   this.fxProgram=fp;this.fxPosition=this.gl.getAttribLocation(fp,'aPosition');
+   this.fxTime=this.gl.getUniformLocation(fp,'uTime');this.fxSpeed=this.gl.getUniformLocation(fp,'uSpeed');
+   this.fxBoost=this.gl.getUniformLocation(fp,'uBoost');this.fxRain=this.gl.getUniformLocation(fp,'uRain');
+  }catch(e){console.warn('Kart Rush G6 FX fallback:',e);}
+  // The rain mesh is created once only when rainy weather is selected.
+  // Each streak is a WebGL line (two vertices); the vertex shader handles falling
+  // and camera-volume wrapping without CPU allocations during the render loop.
+  if(this.weather==='rain'){
+   let rv:WebGLShader|null=null,rf:WebGLShader|null=null,rp:WebGLProgram|null=null,rb:WebGLBuffer|null=null;
+   try{
+    rv=shader(this.gl,this.gl.VERTEX_SHADER,RAIN_VERT);
+    rf=shader(this.gl,this.gl.FRAGMENT_SHADER,RAIN_FRAG);
+    rp=this.gl.createProgram();if(!rp)throw Error('rain program allocation');
+    this.gl.attachShader(rp,rv);this.gl.attachShader(rp,rf);this.gl.linkProgram(rp);
+    if(!this.gl.getProgramParameter(rp,this.gl.LINK_STATUS))throw Error(this.gl.getProgramInfoLog(rp)||'rain program link');
+    const position=this.gl.getAttribLocation(rp,'aDrop');
+    if(position<0)throw Error('rain attribute missing');
+    rb=this.gl.createBuffer();if(!rb)throw Error('rain buffer allocation');
+    this.rainCount=this.graphics==='ultra'?2900:this.graphics==='high'?2200:this.graphics==='balanced'?1500:850;
+    const drops=new Float32Array(this.rainCount*8);
+    // Fibonacci-style stratified distribution: no empty holes when looking skyward.
+    for(let i=0;i<this.rainCount;i++){
+     const ix=(i*0.6180339887498949)%1;
+     const iz=(i*0.7548776662466927+.39)%1;
+     const iy=(i*0.5698402909980532+.17)%1;
+     const j=i*8;
+     const x=(ix-.5)*132.0,z=(iz-.5)*132.0;
+     drops[j]=x;drops[j+1]=z;drops[j+2]=iy;drops[j+3]=0;
+     drops[j+4]=x;drops[j+5]=z;drops[j+6]=iy;drops[j+7]=1;
+    }
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER,rb);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER,drops,this.gl.STATIC_DRAW);
+    this.rainProgram=rp;this.rainBuffer=rb;this.rainPosition=position;
+    this.rainMat=this.gl.getUniformLocation(rp,'uViewProj');
+    this.rainCamera=this.gl.getUniformLocation(rp,'uCamera');
+    this.rainTime=this.gl.getUniformLocation(rp,'uTime');
+    this.rainTravel=this.gl.getUniformLocation(rp,'uTravel');
+   }catch(e){
+    if(rb)this.gl.deleteBuffer(rb);
+    if(rp)this.gl.deleteProgram(rp);
+    console.warn('Kart Rush G6.1 3D rain fallback:',e);
+   }finally{if(rv)this.gl.deleteShader(rv);if(rf)this.gl.deleteShader(rf);}
+  }
   const sb=this.gl.createBuffer(),db=this.gl.createBuffer(),cb=this.gl.createBuffer();if(!sb||!db||!cb)throw Error('WebGL belleği oluşturulamadı');this.staticBuffer=sb;this.dynamicBuffer=db;this.crowdBuffer=cb;
   const verts=buildWorld(this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
   // G2 textures load asynchronously; shaded procedural fallbacks remain while pending.
@@ -1560,8 +1778,8 @@ export class KartRushEngine{
    img.onerror=()=>{console.warn('Kart Rush Graphics 2.0 surface texture unavailable:',url);};
    img.src=url;
   };
-  setup(albedo,gl.TEXTURE1,false,'/kart-rush/materials/surface-albedo-v3-mega.png');
-  setup(normal,gl.TEXTURE2,true,'/kart-rush/materials/surface-normal-rough-v3-mega.png');
+  setup(albedo,gl.TEXTURE1,false,'/kart-rush/materials/surface-albedo-v4-cinematic.png');
+  setup(normal,gl.TEXTURE2,true,'/kart-rush/materials/surface-normal-rough-v4-cinematic.png');
  }
  private prepareBillboards(){
   const gl=this.gl,vs=shader(gl,gl.VERTEX_SHADER,SIGN_VERT),fs=shader(gl,gl.FRAGMENT_SHADER,SIGN_FRAG);
@@ -1631,6 +1849,9 @@ export class KartRushEngine{
   if(this.billboardTexture)this.gl.deleteTexture(this.billboardTexture);
   if(this.billboardBuffer)this.gl.deleteBuffer(this.billboardBuffer);
   if(this.billboardProgram)this.gl.deleteProgram(this.billboardProgram);
+  if(this.fxProgram)this.gl.deleteProgram(this.fxProgram);
+  if(this.rainBuffer)this.gl.deleteBuffer(this.rainBuffer);
+  if(this.rainProgram)this.gl.deleteProgram(this.rainProgram);
  }
  private tryContact(other:KartState,t:number,otherShield=false){
   if(Math.abs(wrap(this.currentProgress-other.progress+.5)-.5)*TRACK_LENGTH>5.5||Math.abs(this.lane-other.lane)>4.5)return;
@@ -2244,6 +2465,36 @@ export class KartRushEngine{
    }
    gl.bufferSubData(gl.ARRAY_BUFFER,0,this.dynamicScratch.subarray(0,dyn.length));
    drawBuffer(this.dynamicBuffer,dyn.length/STRIDE);
+  }
+  // Depth-tested precipitation: the rain passes between buildings and cars,
+  // not over them. No rain draw call in clear weather.
+  if(this.rainProgram&&this.rainBuffer&&this.eye){
+   gl.useProgram(this.rainProgram);
+   gl.bindBuffer(gl.ARRAY_BUFFER,this.rainBuffer);
+   gl.enableVertexAttribArray(this.rainPosition);
+   gl.vertexAttribPointer(this.rainPosition,4,gl.FLOAT,false,16,0);
+   gl.uniformMatrix4fv(this.rainMat,false,mat);
+   gl.uniform3f(this.rainCamera,this.eye.x,this.eye.y,this.eye.z);
+   gl.uniform1f(this.rainTime,time);
+   gl.uniform1f(this.rainTravel,clamp(this.speed/95,0,1));
+   gl.enable(gl.BLEND);
+   gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+   gl.depthMask(false);
+   gl.drawArrays(gl.LINES,0,this.rainCount*2);
+   gl.depthMask(true);
+   gl.disable(gl.BLEND);
+   gl.disableVertexAttribArray(this.rainPosition);
+  }
+  // A separate compositing pass: no geometry edits, no increased opponent draw budget.
+  if(this.fxProgram&&this.graphics!=='low'){
+   gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
+   gl.useProgram(this.fxProgram);gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);
+   gl.enableVertexAttribArray(this.fxPosition);
+   gl.vertexAttribPointer(this.fxPosition,2,gl.FLOAT,false,8,0);
+   gl.uniform1f(this.fxTime,time);gl.uniform1f(this.fxSpeed,clamp(this.speed/95,0,1));
+   gl.uniform1f(this.fxBoost,boost?1:0);gl.uniform1f(this.fxRain,this.weather==='rain'?1:0);
+   gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+   gl.disableVertexAttribArray(this.fxPosition);gl.disable(gl.BLEND);
   }
  }
 }
