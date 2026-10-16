@@ -19,3 +19,31 @@
 @media(prefers-reduced-motion:reduce){.page,.page *{scroll-behavior:auto!important}}
 
 .avgSpeed{margin:0 0 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;font-weight:900;letter-spacing:.06em;color:#8ba2b8;padding:12px;border-radius:10px;background:#1b413d3f;border:1px solid #62d9b63d}.avgSpeed strong{font-size:15px;letter-spacing:0;color:#8bf3cf;white-space:nowrap}
+
+
+/* MULTI-DRIVER LIVE RACE CONTROL — all driver clocks are independent. */
+.raceHint{margin:-3px 0 14px;color:#a9bfd2;font-size:11px;line-height:1.6}
+.raceHint b{color:#a1f7d5}
+.driverList{max-height:440px}
+.driverRow{align-items:center;gap:5px;padding-right:5px}
+.driverPick{flex:1 1 0;min-width:0}
+.driverIdentity{min-width:0}
+.driverIdentity small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.liveRowClock{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:12px;font-weight:950;color:#8cf1c9;padding-left:4px}
+.rowLapButton{flex:0 0 auto;min-height:39px;border:1px solid #4ae0b070;border-radius:8px;background:linear-gradient(135deg,#146a5c,#0b423d);font-size:10px;font-weight:950;color:#eafff8;cursor:pointer;padding:8px 11px;white-space:nowrap}
+.rowLapButton:hover:not(:disabled){background:#128b70;border-color:#8af8d4}
+.rowLapButton:disabled{opacity:.4;cursor:not-allowed}
+.deleteTiny{flex:0 0 auto}
+.raceStatus{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:10px 12px;background:#091726;border-radius:11px;border:1px solid #ffffff1c}
+.raceStatus strong{font-variant-numeric:tabular-nums;font-size:12px;color:#c7daeb}
+.raceOn{font-size:10px;font-weight:950;letter-spacing:.06em;color:#69e4bc}
+.raceOff{font-size:10px;font-weight:950;letter-spacing:.06em;color:#b0b8ca}
+.clockActions{align-items:stretch}
+.clockActions .secondaryBtn{flex:1.8}
+@media(max-width:700px){.driverRow{flex-wrap:wrap;padding:5px}.driverPick{flex:1 1 calc(100% - 55px)}.rowLapButton{flex:1 1 auto;margin:0 2px 2px 7px}.deleteTiny{min-height:38px}}
+@media(max-width:440px){.clockActions{grid-template-columns:1fr}.clockActions .tertiaryBtn{grid-column:auto}.liveRowClock{font-size:13px}}
+/* V7.2 CLEAN CONTROL: driver name only, automatic vehicle number */
+.addForm{grid-template-columns:minmax(0,1fr) auto}
+.addForm button{grid-column:auto}
+@media(max-width:700px){.addForm{grid-template-columns:minmax(0,1fr) auto}.addForm button{grid-column:auto}}
+@media(max-width:440px){.addForm{grid-template-columns:1fr}.addForm button{grid-column:auto}}
