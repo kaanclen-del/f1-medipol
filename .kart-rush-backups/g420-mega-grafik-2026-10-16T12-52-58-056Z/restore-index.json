@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "oldSha": "5af7416b0bfe7fff2dc7093b5e9b45d98a192f14da9912b02fbad11959b773b0",
+      "newSha": "e987fc3869fda720d786cff3ab29b37e3580d53334471563ef74e1cc0d9ca75b",
+      "created": false
+    },
+    {
+      "path": "public/kart-rush/materials/surface-albedo-v3-mega.png",
+      "oldSha": null,
+      "newSha": "c7d536d94e8bd66017f3f9212fc2a483743a8b622e9f3d2e4aa1c285c95d9541",
+      "created": true
+    },
+    {
+      "path": "public/kart-rush/materials/surface-normal-rough-v3-mega.png",
+      "oldSha": null,
+      "newSha": "ed118242309696d7fbb9469b4bbc925579b853ae4011736f1d5c2e614ccf7269",
+      "created": true
+    }
+  ]
+}

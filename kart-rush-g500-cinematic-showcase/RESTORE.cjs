@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const root=process.cwd();
+const backupRoot=path.join(root,'.kart-rush-backups');
+const fail=(m)=>{console.error('[ERROR] G5.0 RESTORE DURDU: '+m);process.exit(1);};
+if(!fs.existsSync(backupRoot))fail('Yedek klasoru yok.');
+const dirs=fs.readdirSync(backupRoot).filter(name=>name.startsWith('g500-cinematic-showcase-')).sort();
+if(!dirs.length)fail('G5.0 icin geri yuklenecek yedek bulunamadi.');
+const latest=path.join(backupRoot,dirs[dirs.length-1]);
+const indexPath=path.join(latest,'restore-index.json');
+if(!fs.existsSync(indexPath))fail('restore-index.json eksik: '+latest);
+const meta=JSON.parse(fs.readFileSync(indexPath,'utf8'));
+const from=path.join(latest,meta.target);
+const to=path.join(root,meta.target);
+if(!fs.existsSync(from))fail('Yedeklenen dosya bulunamadi: '+from);
+fs.mkdirSync(path.dirname(to),{recursive:true});
+fs.copyFileSync(from,to);
+console.log('  restored '+meta.target);
+console.log('[OK] G5.0 geri alindi. Kaynak: '+latest);

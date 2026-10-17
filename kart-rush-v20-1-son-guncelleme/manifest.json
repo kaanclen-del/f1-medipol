@@ -1,0 +1,16 @@
+{
+  "name": "Kart Rush V20.1 safe migration from V19.1",
+  "requiredCurrentSha256": {
+    "engine.ts": "65475520bad9f2fb4ec1cf0de3427e2f948d9f5779d5b53885aea3c8e65df8ad",
+    "KartRushTrack.tsx": "4aa909f393c82651628c75a9d6f112b6d727b19bb930bab448f62c5698b569ee",
+    "sound.ts": "4edf2fec16c2f5d2c4e91e72c4fc747e2ead0cb894163ea7ce2e5b310979526b",
+    "kartRush.module.css": "9a58cbba52ec55c235184c084c40be9cc1189352fd99e986a1007f38bc23db62"
+  },
+  "files": [
+    "engine.ts",
+    "KartRushTrack.tsx",
+    "sound.ts",
+    "kartRush.module.css"
+  ],
+  "asset": "public/kart-rush-f1medipol-logo.png"
+}

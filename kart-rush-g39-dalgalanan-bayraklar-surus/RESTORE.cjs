@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
+const root=process.cwd();
+const backupRoot=path.join(root,'.kart-rush-backups');
+const fail=message=>{console.error('❌ GERİ ALMA DURDU: '+message);process.exit(1);};
+if(!fs.existsSync(backupRoot))fail('Yedek klasörü bulunamadı.');
+const backups=fs.readdirSync(backupRoot,{withFileTypes:true}).filter(e=>e.isDirectory()&&e.name.startsWith('g39-bayrak-direksiyon-')).map(e=>e.name).sort();
+if(!backups.length)fail('G3.9 yedeği bulunamadı.');
+const backup=path.join(backupRoot,backups[backups.length-1]);
+const manifest=JSON.parse(fs.readFileSync(path.join(backup,'manifest.json'),'utf8'));
+const saved=path.join(backup,manifest.target);
+const dest=path.join(root,manifest.target);
+if(!fs.existsSync(saved)||sha(fs.readFileSync(saved))!==manifest.original_sha256)fail('Yedek dosyası değişmiş veya hasarlı.');
+if(!fs.existsSync(dest)||sha(fs.readFileSync(dest))!==manifest.new_sha256)fail('G3.9 kurulumundan sonra engine.ts değişmiş. Üzerine yazılmadı.');
+fs.copyFileSync(saved,dest);
+console.log('✅ G3.9 geri alındı. Önceki motor dosyası geri yüklendi.');
+console.log('Yedek: '+backup);

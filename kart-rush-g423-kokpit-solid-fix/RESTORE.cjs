@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const root=process.cwd();
+const fail=(msg)=>{console.error('\n[ERROR] G4.2.3 RESTORE: '+msg);process.exit(1);};
+const sha=buf=>crypto.createHash('sha256').update(buf).digest('hex');
+const backups=path.join(root,'.kart-rush-backups');
+if(!fs.existsSync(backups))fail('Yedek klasoru yok.');
+const dirs=fs.readdirSync(backups).filter(d=>d.startsWith('g423-kokpit-solid-fix-')).sort();
+if(!dirs.length)fail('G4.2.3 yedegi bulunamadi.');
+const latest=path.join(backups,dirs[dirs.length-1]);
+const idx=JSON.parse(fs.readFileSync(path.join(latest,'restore-index.json'),'utf8'));
+const from=path.join(latest,idx.target),target=path.join(root,idx.target);
+if(!fs.existsSync(from)||sha(fs.readFileSync(from))!==idx.originalSha)fail('Yedek hasarli.');
+if(!fs.existsSync(target)||sha(fs.readFileSync(target))!==idx.installedSha)fail('Motor G4.2.3 degil; sonraki degisiklikleri korumak icin geri alma durduruldu.');
+fs.copyFileSync(from,target);
+if(sha(fs.readFileSync(target))!==idx.originalSha)fail('Geri yukleme sonrasinda checksum hatasi.');
+console.log('[OK] G4.2.3 geri alindi; motor G4.2.2 surumune dondu.');

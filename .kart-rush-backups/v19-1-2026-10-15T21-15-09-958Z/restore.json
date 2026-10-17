@@ -1,0 +1,21 @@
+{
+  "targetDir": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\components\\kart-rush",
+  "files": {
+    "engine.ts": {
+      "before": "0488538c7ad7f1cc26dfcb1131f0e7fd32bd6e01ae2da6ac9202870502af04c5",
+      "after": "65475520bad9f2fb4ec1cf0de3427e2f948d9f5779d5b53885aea3c8e65df8ad"
+    },
+    "KartRushTrack.tsx": {
+      "before": "59c01c915cc0b46f01d3d1e1995955b81a529a352088dbed5ad10b4ffb06e7d1",
+      "after": "4aa909f393c82651628c75a9d6f112b6d727b19bb930bab448f62c5698b569ee"
+    },
+    "sound.ts": {
+      "before": "637587170930034d0aa8c4bf16dca79efa62a01c02bb0d6d66e2c900f2967934",
+      "after": "4edf2fec16c2f5d2c4e91e72c4fc747e2ead0cb894163ea7ce2e5b310979526b"
+    },
+    "kartRush.module.css": {
+      "before": "f0bb55b8ca7f9c86eb246c750e72bd651b781f78b5739ddfd5d2bc92dfc0620e",
+      "after": "9a58cbba52ec55c235184c084c40be9cc1189352fd99e986a1007f38bc23db62"
+    }
+  }
+}

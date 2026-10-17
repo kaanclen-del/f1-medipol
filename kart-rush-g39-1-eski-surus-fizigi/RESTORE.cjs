@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const root=process.cwd();
+const fail=m=>{console.error('❌ G3.9.1 GERİ ALMA DURDU: '+m);process.exit(1)};
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const backups=path.join(root,'.kart-rush-backups');
+if(!fs.existsSync(backups))fail('Yedek klasörü bulunamadı.');
+const dirs=fs.readdirSync(backups,{withFileTypes:true}).filter(d=>d.isDirectory()&&d.name.startsWith('g391-steering-')).map(d=>d.name).sort();
+if(!dirs.length)fail('Yedek bulunamadı.');
+const backup=path.join(backups,dirs[dirs.length-1]);
+const manifest=JSON.parse(fs.readFileSync(path.join(backup,'manifest.json'),'utf8'));
+const orig=path.join(backup,manifest.target);
+const dest=path.join(root,manifest.target);
+if(!fs.existsSync(orig)||sha(fs.readFileSync(orig))!==manifest.from_sha256)fail('Yedek dosyası hasarlı.');
+if(!fs.existsSync(dest)||sha(fs.readFileSync(dest))!==manifest.to_sha256)fail('engine.ts sonradan değişmiş. Üzerine yazılmadı.');
+fs.copyFileSync(orig,dest);
+console.log('✅ G3.9.1 geri alındı; G3.9 sürüşü geri getirildi.');
+console.log('Yedek: '+backup);

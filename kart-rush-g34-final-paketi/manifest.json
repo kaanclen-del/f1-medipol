@@ -1,0 +1,29 @@
+{
+  "name": "F1 Medipol Kart Rush 3.4 - Grand Finale",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha256": "d50b6b40bbe5c3835fb6bb46b298d760a3377939f3a6b902fbdfe058f4128ac8",
+      "allowedOriginalSha256": [
+        "aaceb030eeca0662151182422770d34e7dcdd0cbc82b264b09614e9dc3ec4d95"
+      ]
+    },
+    {
+      "path": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "sha256": "6af28ef0c2e1e83263b057021f615100694b0dcdc0f06eadf0a69b395d73b50b",
+      "allowedOriginalSha256": [
+        "78e1577d669573d5f7dc276878161b0807b38eae8a8ba36af6331e81ee995bc7"
+      ]
+    },
+    {
+      "path": "components/kart-rush/venueAudio.ts",
+      "asset": "venue-audio.payload",
+      "sha256": "4b7f9d44632d97ab34d59d520c390655d3801854a5ab905c8193e511f88f03af",
+      "allowedOriginalSha256": [
+        "566400dfd365a0763bd494cdcf6515d7d6c8e17013b6376c6eb85f2faa8269f0"
+      ]
+    }
+  ]
+}

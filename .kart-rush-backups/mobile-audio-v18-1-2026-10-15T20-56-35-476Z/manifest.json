@@ -1,0 +1,20 @@
+{
+  "projectRoot": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol",
+  "entries": [
+    {
+      "target": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\components\\kart-rush\\KartRushTrack.tsx",
+      "backup": "KartRushTrack.tsx",
+      "existed": true
+    },
+    {
+      "target": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\components\\kart-rush\\kartRush.module.css",
+      "backup": "kartRush.module.css",
+      "existed": true
+    },
+    {
+      "target": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\components\\kart-rush\\raceAmbience.ts",
+      "backup": "raceAmbience.ts",
+      "existed": false
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "F1 Medipol Kart Rush 3.7.3 - Final Cockpit Polish",
+  "requires": "G37.2 kokpit kamera fix",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha256": "2dadb4c81243a1f6090a65cf59f056d8c02433d681268e97a1db2d1cd7880d0c",
+      "allowedOriginalSha256": [
+        "5fca308461db76adacddb41ea609a1843a5c148a829da404bf3afca5c3c34a4b"
+      ]
+    },
+    {
+      "path": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "sha256": "d5f126284e8c7f83faeca7ebe182b140284f812765167b6d1af8180945d3201b",
+      "allowedOriginalSha256": [
+        "11dcff47e47083aeb93c9fde651fa3068d9174d9c0f2bc3f88f604e29aadcb29"
+      ]
+    }
+  ]
+}

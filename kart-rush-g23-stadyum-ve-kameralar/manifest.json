@@ -1,0 +1,35 @@
+{
+  "name": "Kart Rush Graphics 2.3 Stadium World",
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha": "7503fe9104531fc8c622c9280344c59a11cdc2ad5602144519c8cc70f9dd9c2d",
+      "allowedOriginalSha": "e0072b0e1082c80bbd45835a559f7bf0257a648538af6a13de9f8870ba4242d6"
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "sha": "52a61f8e179aba8f70380b1a8010b537b7c05d5413a38bab5d58d519a9b54910",
+      "allowedOriginalSha": "32c0cd17ba3079fccfcb661f70ccb1546e8f019f2b16288a2922737a27a8e778"
+    },
+    {
+      "dest": "components/kart-rush/venueAudio.ts",
+      "asset": "venue-audio.payload",
+      "sha": "4b88c92309f1ac202e431e0a3b0df3a9bf751161fb8cb6ae83db2e05876fb0e6",
+      "allowedOriginalSha": null
+    },
+    {
+      "dest": "public/kart-rush/materials/surface-albedo-v2.png",
+      "asset": "albedo.png",
+      "sha": "b108899f57611f95591c32512b6725d5cd1a1f8b4499bea8f2e09d417cea4ea3",
+      "allowedOriginalSha": null
+    },
+    {
+      "dest": "public/kart-rush/materials/surface-normal-rough-v2.png",
+      "asset": "normal.png",
+      "sha": "e41c1b4e53c5cd77695041281b570237a31e5de9ea9ecdaa13462e1bf36cbf8e",
+      "allowedOriginalSha": null
+    }
+  ]
+}

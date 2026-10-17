@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts"
+    },
+    {
+      "path": "public/kart-rush/materials/surface-albedo-v3-mega.png"
+    },
+    {
+      "path": "public/kart-rush/materials/surface-normal-rough-v3-mega.png"
+    },
+    {
+      "path": "components/kart-rush/KartRushTrack.tsx"
+    },
+    {
+      "path": "components/kart-rush/KartRushClient.tsx"
+    }
+  ]
+}

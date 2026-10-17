@@ -1,0 +1,109 @@
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background: #060912;
+}
+.texture {
+  position: absolute;
+  inset: -5%;
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  transform: scale(1.03);
+  animation: slowDrift 26s ease-in-out infinite alternate;
+}
+.glow {
+  position: absolute;
+  width: min(76vw, 1080px);
+  height: min(76vw, 1080px);
+  right: -21%;
+  top: -24%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--wall-accent) 0%, transparent 67%);
+  opacity: .18;
+  filter: blur(85px);
+  mix-blend-mode: screen;
+  animation: glowFloat 20s ease-in-out infinite alternate;
+}
+.beam {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 34%, color-mix(in srgb, var(--wall-accent) 23%, transparent) 49%, transparent 63%);
+  opacity: .6;
+  transform: translateX(-68%);
+  animation: beamSweep 19s linear infinite;
+}
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: .32;
+  background-image: repeating-linear-gradient(0deg, transparent 0 43px, rgba(255,255,255,.023) 44px, transparent 45px);
+}
+.root[data-motion="pulse"] .glow { animation: glowPulse 8s ease-in-out infinite; opacity: .25; }
+.root[data-motion="pulse"] .beam { animation-duration: 14s; }
+.root[data-motion="speed"] .texture { animation-duration: 17s; }
+.root[data-motion="speed"] .beam { animation-duration: 9s; opacity: .9; }
+.root[data-motion="speed"] .grain {
+  background-image: repeating-linear-gradient(153deg, transparent 0 60px, color-mix(in srgb, var(--wall-accent) 12%, transparent) 61px, transparent 62px);
+  animation: speedShift 12s linear infinite;
+}
+.root[data-motion="aurora"] .glow { opacity: .32; animation: auroraFloat 15s ease-in-out infinite alternate; }
+.root[data-motion="aurora"] .beam { opacity: .25; animation-duration: 24s; }
+.root[data-motion="rain"] .grain {
+  opacity: .47;
+  background-image: repeating-linear-gradient(107deg, transparent 0 18px, rgba(208,235,255,.16) 18.5px, transparent 20px);
+  background-size: 250px 400px;
+  animation: rainFall 3.3s linear infinite;
+}
+.root[data-motion="rain"] .beam { opacity: .18; }
+@keyframes slowDrift {
+  from { transform: scale(1.04) translate3d(-1.5%, .2%, 0); }
+  to { transform: scale(1.10) translate3d(1.5%, -1%, 0); }
+}
+@keyframes glowFloat {
+  from { transform: translate3d(0,0,0); }
+  to { transform: translate3d(-24%,21%,0) scale(1.15); }
+}
+@keyframes glowPulse {
+  0%,100% { transform: scale(.83); opacity: .10; }
+  50% { transform: scale(1.12); opacity: .30; }
+}
+@keyframes beamSweep {
+  0% { transform: translateX(-85%); }
+  100% { transform: translateX(90%); }
+}
+@keyframes speedShift {
+  from { transform: translate3d(-3%,0,0); }
+  to { transform: translate3d(3%,0,0); }
+}
+@keyframes auroraFloat {
+  from { transform: translate3d(-10%,0,0) scale(.87); }
+  to { transform: translate3d(-32%,18%,0) scale(1.27); }
+}
+@keyframes rainFall {
+  from { background-position: 0 -400px; }
+  to { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .texture,.glow,.beam,.grain { animation: none !important; }
+}
+
+
+/* PROFILE WALLPAPER V2: zorunlu zoom/kirpma yok, mevcut cozunurluk korunur. */
+.texture {
+  inset:0;
+  background-size:100% 100%;
+  background-position:center top;
+  background-repeat:no-repeat;
+  transform:none !important;
+  animation:none !important;
+}
+.root[data-motion="speed"] .texture { animation:none !important; }
+.imageLayer { position:absolute; left:0; right:0; top:0; display:flex; justify-content:center; align-items:flex-start; pointer-events:none; overflow:hidden; }
+.imageLayer img { display:block; width:auto; height:auto; max-width:100%; max-height:none; object-fit:contain; object-position:center top; transform:none !important; filter:none; image-rendering:auto; -webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 69%,transparent 100%); mask-image:linear-gradient(to bottom,#000 0%,#000 69%,transparent 100%); }
+.imageShade { position:absolute; inset:0; background:linear-gradient(to bottom,rgba(3,6,10,.10),rgba(3,6,10,.16) 37%,rgba(3,6,10,.30)); pointer-events:none; }
+@media (prefers-reduced-motion: reduce) { .imageLayer img { transform:none !important; } }

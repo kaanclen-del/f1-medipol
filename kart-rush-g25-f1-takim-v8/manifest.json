@@ -1,0 +1,30 @@
+{
+  "version": "graphics2.5",
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha": "a501c7953abc7212dd5b802c0919f24b3ce546653af06bec8c2983e10e58ad20",
+      "allowedSha": [
+        "7503fe9104531fc8c622c9280344c59a11cdc2ad5602144519c8cc70f9dd9c2d",
+        "f7c5f3bb5b95747dc7727d6d51fddfc1fc88038d7208ecbb475b2b4243a44d06"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/KartRushClient.tsx",
+      "asset": "client.payload",
+      "sha": "19785fd72b068ac115a58f3e582f87614ddef4d1d16873ff0729c0e814668e85",
+      "allowedSha": [
+        "e02fd20dfa7132da1e679e74fc5a28c8d2b4e31b964eba00840ec89d910cf1d5"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "asset": "sound.payload",
+      "sha": "cec6926815e49ab89bac3f0a50923d507580d4c2b75dd1834fd1939287324914",
+      "allowedSha": [
+        "552ed8169ac705ba69794c57f4a484008c66f28484c2a443414efe74889ace5c"
+      ]
+    }
+  ]
+}

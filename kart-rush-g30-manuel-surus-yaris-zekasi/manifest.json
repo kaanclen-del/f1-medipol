@@ -1,0 +1,30 @@
+{
+  "name": "F1 Medipol Kart Rush G3.0: Manual Steering + Bot Racecraft + Circuit + Responsive Audio",
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha": "cd039c30b664f1042108b89cdb51ebd2aae8713eb6d39d9e5e8e8e9c2b272a1b",
+      "allowedOriginalSha": [
+        "e4448c78c1ea331a83ddf09d854b6c300b83c7497c2f444b272d197ec9ce1111"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "KartRushTrack.payload",
+      "sha": "63513229c40d323260a911377b37a95fa4250d75a0882bee3b17fc6831d6ee91",
+      "allowedOriginalSha": [
+        "f2c66b7aac52473d6ff8c7c4edcfed0185482e1515e2dbeabba0aea92b69a5ad"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "asset": "sound.payload",
+      "sha": "1af1db2f82018c752c3c2b4fe00c12a8ca365ed5c94c72c33e572b0dced6b1d9",
+      "allowedOriginalSha": [
+        "44892b84e985d94fd1f1330c1bc50c052f4ac691f6827e1d63c00562ca6d8039",
+        "12077ddfc6353b913c0c834e6c5f0f5a4e685a1c9064756b3998759f52864d17"
+      ]
+    }
+  ]
+}

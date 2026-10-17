@@ -1,0 +1,31 @@
+{
+  "version": "arcade-gokart-v6",
+  "appDir": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\app",
+  "created": "2026-10-15T19:58:42.996Z",
+  "entries": [
+    {
+      "rel": "page.tsx",
+      "hadOriginal": true
+    },
+    {
+      "rel": "arcade.module.css",
+      "hadOriginal": true
+    },
+    {
+      "rel": "gokart-zamanlama/page.tsx",
+      "hadOriginal": false
+    },
+    {
+      "rel": "gokart-zamanlama/TimingClient.tsx",
+      "hadOriginal": false
+    },
+    {
+      "rel": "gokart-zamanlama/timing-utils.ts",
+      "hadOriginal": false
+    },
+    {
+      "rel": "gokart-zamanlama/timing.module.css",
+      "hadOriginal": false
+    }
+  ]
+}

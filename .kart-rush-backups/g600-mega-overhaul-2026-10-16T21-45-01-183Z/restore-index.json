@@ -1,0 +1,24 @@
+{
+  "version": "6.0.0",
+  "createdAt": "2026-10-16T21:45:01.184Z",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "existed": true,
+      "originalSha": "ad1ae4ce14b41c84fa5747c16766389419bdbbb2c564138ef54102a2cb16befd",
+      "installedSha": "3d0bf07c99ed44e096f1cb0eabd09942dc7618162f4d01392e2d2cdaf501368c"
+    },
+    {
+      "path": "public/kart-rush/materials/surface-albedo-v4-cinematic.png",
+      "existed": false,
+      "originalSha": null,
+      "installedSha": "268afe57d734a0d516a2de260842b4a21ab8595dbc433d20213bc013aec90322"
+    },
+    {
+      "path": "public/kart-rush/materials/surface-normal-rough-v4-cinematic.png",
+      "existed": false,
+      "originalSha": null,
+      "installedSha": "d34ce6579b1426a2594d942113df6d03f74d9ed532dcd9f9f82c2c6de45536b1"
+    }
+  ]
+}

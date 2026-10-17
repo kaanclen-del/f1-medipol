@@ -1,0 +1,17 @@
+F1 MEDIPOL - YONETIMDEN PROFIL ARKA PLANI EKLEME
+
+1) ZIP'i indir. ZIP indirme klasorunde olsun.
+2) VS Code terminalinde f1-medipol proje klasorune gec.
+3) PowerShell:
+   $zip = Get-ChildItem "$HOME\Downloads", "$HOME\OneDrive\Downloads" -Filter "f1-medipol-admin-profil-arkaplanlari.zip" -ErrorAction SilentlyContinue | Select-Object -First 1; if ($zip) { Expand-Archive -LiteralPath $zip.FullName -DestinationPath .\__wallpaper_admin -Force; node .\__wallpaper_admin\INSTALL.cjs } else { Write-Host "ZIP bulunamadi. Tarayicida Ctrl+J ile indirme klasorunu kontrol et." }
+4) Supabase projesi > SQL Editor > New query:
+   __wallpaper_admin/files/sql/PROFILE_WALLPAPERS_SETUP.sql
+   dosyasinin tam icerigini yapistir ve RUN'a bas. BU ADIM GEREKLI.
+5) npm.cmd run dev -- --webpack
+6) /admin/profile-wallpapers bolumune gir ve yeni arka plan ekle.
+7) /profile/wallpapers bolumunden uye gorunumunu kontrol et.
+
+Guvenlik: Yalnizca profiles.is_admin=true olan hesaplar yonetebilir.
+Dosyalar public bir Supabase Storage bucket'a yuklenir; gizli/kisisel dosya yuklemeyin.
+Yedekler proje/f1_wallpaper_admin_backups dizininde saklanir.
+Silinen veya yayindan kaldirilan secenekleri daha once secmis uyelerin profilleri varsayilan arka plana geri doner.

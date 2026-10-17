@@ -1,0 +1,23 @@
+{
+  "version": "6.0.0",
+  "previous": "5.1.0",
+  "enginePath": "components/kart-rush/engine.ts",
+  "engineSourceSha256": "de590c35e1aa2cb8990e319cf0557c200cd910c8f47cda95c69412212cc03e76",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "payload": "payload/engine.payload",
+      "sha256": "3d0bf07c99ed44e096f1cb0eabd09942dc7618162f4d01392e2d2cdaf501368c"
+    },
+    {
+      "path": "public/kart-rush/materials/surface-albedo-v4-cinematic.png",
+      "payload": "payload/assets/surface-albedo-v4-cinematic.png",
+      "sha256": "268afe57d734a0d516a2de260842b4a21ab8595dbc433d20213bc013aec90322"
+    },
+    {
+      "path": "public/kart-rush/materials/surface-normal-rough-v4-cinematic.png",
+      "payload": "payload/assets/surface-normal-rough-v4-cinematic.png",
+      "sha256": "d34ce6579b1426a2594d942113df6d03f74d9ed532dcd9f9f82c2c6de45536b1"
+    }
+  ]
+}

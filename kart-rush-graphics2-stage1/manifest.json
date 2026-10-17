@@ -1,0 +1,33 @@
+{
+  "name": "Kart Rush Graphics 2.0 – Stage 1",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "asset": "motor.payload",
+      "originalSha": "80e973fb99eef5b9a530d7074e71b2679e6351173d5439ac62b6234b17a71e1a",
+      "sha": "1d80042e55a72b6b5884719ebb1d427baed88a1edebdd83e0c52ae640c4221fa",
+      "bytes": 82005
+    },
+    {
+      "path": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "originalSha": "4e18484687cb592eef0168f4a32901ab681f994b81cd987fa917e0ad164b11d5",
+      "sha": "32c0cd17ba3079fccfcb661f70ccb1546e8f019f2b16288a2922737a27a8e778",
+      "bytes": 21960
+    },
+    {
+      "path": "public/kart-rush/materials/surface-albedo-v2.png",
+      "asset": "albedo.png",
+      "originalSha": null,
+      "sha": "b108899f57611f95591c32512b6725d5cd1a1f8b4499bea8f2e09d417cea4ea3",
+      "bytes": 3167160
+    },
+    {
+      "path": "public/kart-rush/materials/surface-normal-rough-v2.png",
+      "asset": "normal.png",
+      "originalSha": null,
+      "sha": "e41c1b4e53c5cd77695041281b570237a31e5de9ea9ecdaa13462e1bf36cbf8e",
+      "bytes": 4336492
+    }
+  ]
+}

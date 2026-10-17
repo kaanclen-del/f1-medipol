@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "dest": "components\\kart-rush\\KartRushClient.tsx",
+      "installedSha": "3fd5a132666f2a701f97bc0d7369e3eae76c06b7fca9241437665bf5ee404aab"
+    },
+    {
+      "dest": "components\\kart-rush\\KartRushTrack.tsx",
+      "installedSha": "f5608808a12dfd346e8464c4fbaf4399515ec8c2cb7af0b841f3cd7b5b3a5849"
+    },
+    {
+      "dest": "components\\kart-rush\\sound.ts",
+      "installedSha": "4172e4207e186d98367b8df4ce7f7b62abdbf553e7bc5f4d78308276f41fb0fc"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+F1 MEDIPOL / PROFIL DUZENI V2
+
+Bu paket sadece 3 dosyayi degistirir:
+ - app/profile/page.tsx
+ - components/ProfileWallpaperBackdrop.tsx
+ - components/ProfileWallpaperBackdrop.module.css
+
+1) ZIP'i indirin, acmadan Downloads klasorune birakin.
+2) Proje terminalinde:
+   Expand-Archive -LiteralPath "$HOME\Downloads\f1-medipol-profil-sadelestirme-v2.zip" -DestinationPath .\__profile_layout_v2 -Force
+   node .\__profile_layout_v2\INSTALL.cjs
+3) http://localhost:3000/profile adresini yenileyin (gerekirse terminaldeki portu kullanin).
+
+Mevcut Supabase, profil istatistikleri, basarimlar, Paddock paylasimlari ve admin wallpaper islemleri korunur.
+Kaynak goruntulerin ozgun cozunurlugu buyutulmez; kaliteli sonuc icin admin panelinden yuksek cozunurluklu goruntu yukleyin.
+Bir sey ters giderse profil ve komponentlerin eski halleri otomatik olarak f1_profile_layout_yedek klasorundedir.

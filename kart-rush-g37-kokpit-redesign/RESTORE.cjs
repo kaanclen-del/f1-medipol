@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const dir=process.cwd();
+const fail=(s)=>{console.error('❌ '+s);process.exit(1);};
+const digest=(b)=>crypto.createHash('sha256').update(b).digest('hex');
+const base=path.join(dir,'.kart-rush-backups');
+if(!fs.existsSync(base))fail('Yedek klasörü bulunamadı.');
+const options=fs.readdirSync(base).filter(s=>s.startsWith('g37-cockpit-')).sort();
+if(!options.length)fail('Graphics 3.7 için yedek bulunamadı.');
+const folder=path.join(base,options[options.length-1]);
+const manifest=JSON.parse(fs.readFileSync(path.join(folder,'manifest.json'),'utf8'));
+const target=path.join(dir,manifest.target),back=path.join(folder,manifest.target);
+if(!fs.existsSync(target)||!fs.existsSync(back))fail('Motor veya yedek dosyası eksik.');
+const currentSha=digest(fs.readFileSync(target));
+if(currentSha!==manifest.toSha)fail('Kurulum sonrasında motor değiştirilmiş. Verileri korumak için otomatik geri alma durduruldu.');
+if(digest(fs.readFileSync(back))!==manifest.fromSha)fail('Yedek doğrulaması başarısız.');
+fs.copyFileSync(back,target);
+console.log('↩️ Graphics 3.6 motoru geri getirildi: '+target);

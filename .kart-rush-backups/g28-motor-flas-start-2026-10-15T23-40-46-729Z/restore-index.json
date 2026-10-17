@@ -1,0 +1,20 @@
+{
+  "files": [
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "after": "44892b84e985d94fd1f1330c1bc50c052f4ac691f6827e1d63c00562ca6d8039"
+    },
+    {
+      "dest": "components/kart-rush/venueAudio.ts",
+      "after": "566400dfd365a0763bd494cdcf6515d7d6c8e17013b6376c6eb85f2faa8269f0"
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "after": "f2c66b7aac52473d6ff8c7c4edcfed0185482e1515e2dbeabba0aea92b69a5ad"
+    },
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "after": "e4448c78c1ea331a83ddf09d854b6c300b83c7497c2f444b272d197ec9ce1111"
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "payload": "payload/engine.payload",
+      "from_sha256": [
+        "c5eeed0f113c2e840b1f33bcd8cadc49ab1b54b3ebf32127e7aea36e025d357e"
+      ],
+      "to_sha256": "38cfde0e010e34e423a27ddf9bff24eceda81dbaeb2b6fdacf0b488f072bd098"
+    }
+  ]
+}

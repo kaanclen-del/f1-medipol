@@ -1,0 +1,37 @@
+{
+  "version": "6.0.0",
+  "files": {
+    "components/kart-rush/engine.ts": {
+      "previous": [
+        "25a7f6262397a2d09413c6e588d3ee8bac1e52e44bbe2e483d9d695714330c7b",
+        "c3dab9963f34a1ebc712826ca3a4a0b4d519d1e26eb41b4e656efe3c49cf41ff"
+      ],
+      "current": "a4b300005ac81b021e7dcdaafed6114595bd3aa89cee3b809c9c8a142132d495"
+    },
+    "components/kart-rush/KartRushTrack.tsx": {
+      "previous": [
+        "87c20e9a0017d1ade8fff6149823a0aba1ead28289b881e90b6e8025d71706b4",
+        "6b8b9c07bed9b586cf6b120d67c3037adc8f1a496881b274283f4a05f4ae4c40"
+      ],
+      "current": "78f0875dd003617980c426e8475d2c427a76820ded11f1bf161a3b8a95ab61f8"
+    },
+    "components/kart-rush/KartRushClient.tsx": {
+      "previous": [
+        "6e5c4e15373cfc1d07ca1cc33a6c5de71434cb14900c0d5616af9a0be24f9b41",
+        "46b9909c8a3942e373217d62413673f75f3efa4ac27688e56e3c0e04aa972dac"
+      ],
+      "current": "6a42e4ebe330b6df4b69e28f2947665fd5392c8f5e481ff12370bc66d66b83dd"
+    },
+    "components/kart-rush/kartRush.module.css": {
+      "previous": [
+        "58f5db511483dce64c9ee6a880c9acf86740b4c09899d902d4549603631e1c59",
+        "d3c491d74a34203af0bc77d2c54306c31be277e064e02a6107465d702ed6bc78"
+      ],
+      "current": "c0b4ea424d101cd11421c6c0aa8f2ad91c9efbce5164c2afddc379845f262829"
+    },
+    "components/kart-rush/sound.ts": {
+      "previous": [],
+      "current": "95823d0aa7fde363eeab68752cbd357a4c4c13c76b3a2a1fc455ab9d45dc3b4d"
+    }
+  }
+}

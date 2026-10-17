@@ -1,0 +1,18 @@
+F1 MEDIPOL - 15 ANIMASYONLU PROFIL ARKA PLANI
+
+1. ZIP dosyasini indir. Chrome Ctrl+J ile Indirilenler'de goster.
+2. PowerShell'de F1 Medipol proje klasorunde ol.
+3. Komut:
+   Expand-Archive -LiteralPath "$HOME\Downloads\f1-medipol-profil-15-arkaplan.zip" -DestinationPath .\__profile15 -Force; node .\__profile15\INSTALL.cjs
+4. Dev sunucusu aciksa yenile; kapaliysa:
+   npm.cmd run dev -- --webpack
+5. /profile/wallpapers adresini ac, arka plani sec ve kaydet.
+
+- Eski arka plan ID'lerini ve profil verilerini korur.
+- Veritabani SQL degisikligi yapmaz; profiles.profile_wallpaper alanina secilen ID kaydedilir.
+- Secenekler mevcut 11 + yeni 4 renk ve CSS animasyonlariyla toplam 15.
+- Yalnizca ilgili lib, profil sayfasindaki arka plan katmani ve 4 yeni dosya degisir.
+- Kurulum tum kontrolleri basarili gecmeden projede degisiklik yapmaz.
+- Eski dosyalar __f1_wallpaper_yedek icine alinacak.
+
+NOT: Projedeki Supabase profile_wallpaper alani 15 tema ID'sini kabul edecek sekilde text tipinde olmalidir. Kisit varsa kaydetme asamasinda hata gorursun; veritabani kontrol edilir.

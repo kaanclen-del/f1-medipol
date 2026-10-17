@@ -1,0 +1,24 @@
+{
+  "id": "g626-mobile-controls-header",
+  "target": "F1 Medipol G6.2.5 race files + Header from user 17 Oct 2026",
+  "files": {
+    "components/Header.tsx": {
+      "original": "93c69f4c84e0f2bfd93bf23224c177ee30e338665e09b421451932f70b0be88b",
+      "updated": "2b3ff490953c3a5ff139d53938e7f73be1f8cd9ad63e72547f3d39c98a1a0d16",
+      "payload": "payload/Header.tsx.payload.txt",
+      "payloadRawSha": "2b3ff490953c3a5ff139d53938e7f73be1f8cd9ad63e72547f3d39c98a1a0d16"
+    },
+    "components/kart-rush/KartRushTrack.tsx": {
+      "original": "4b544c08debd54ca05b9e31c6668c1d9fa7e998298fac81c100079ba4e3f96db",
+      "updated": "d5132771cb28010f4991d441a03bb496835cd5ffeb6f27d148e39da5fe029767",
+      "payload": "payload/KartRushTrack.tsx.payload.txt",
+      "payloadRawSha": "d5132771cb28010f4991d441a03bb496835cd5ffeb6f27d148e39da5fe029767"
+    },
+    "components/kart-rush/kartRush.module.css": {
+      "original": "e62daf7a0e2916ff024cef9791418c25506e3758d002e35491058f67121bd36d",
+      "updated": "950c710f76324a90a37b473473bd897d84c908243a37472da7dc96e9142c7613",
+      "payload": "payload/kartRush.module.css.payload.txt",
+      "payloadRawSha": "950c710f76324a90a37b473473bd897d84c908243a37472da7dc96e9142c7613"
+    }
+  }
+}

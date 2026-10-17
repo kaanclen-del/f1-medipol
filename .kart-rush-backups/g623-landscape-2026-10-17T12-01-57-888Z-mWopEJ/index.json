@@ -1,0 +1,15 @@
+{
+  "version": "G6.2.3",
+  "files": [
+    {
+      "target": "components\\kart-rush\\KartRushTrack.tsx",
+      "originalSha": "58aa71b94a5dbfee0a3867be0a33eeb5ff3f002cf3b076c29c9294219cfbdfad",
+      "newSha": "59a5bf6c2153ea6fd3b43acb3c0d7209d889e04fd2f17f55932fc94e3435926c"
+    },
+    {
+      "target": "components\\kart-rush\\kartRush.module.css",
+      "originalSha": "ad0f5114682968091652944686d1a796ae1dad0cbdef9c0e348a32a83258c521",
+      "newSha": "bce00070f8b0e9f30aa3a864cb3723a722e15b9e4c07da8614275b1558f5b24b"
+    }
+  ]
+}

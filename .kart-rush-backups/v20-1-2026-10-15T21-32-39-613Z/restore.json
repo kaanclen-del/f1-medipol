@@ -1,0 +1,11 @@
+{
+  "dir": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\components\\kart-rush",
+  "asset": "C:\\Users\\kaanc\\OneDrive\\Belgeler\\f1-medipol\\public\\kart-rush-f1medipol-logo.png",
+  "hadAsset": false,
+  "files": [
+    "engine.ts",
+    "KartRushTrack.tsx",
+    "sound.ts",
+    "kartRush.module.css"
+  ]
+}

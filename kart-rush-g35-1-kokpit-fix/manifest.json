@@ -1,0 +1,15 @@
+{
+  "name": "F1 Medipol Kart Rush 3.5.1 - Kokpit Fix",
+  "requires": "Graphics 3.5",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha256": "5b92540e705c626ac9024045e2966775dec1116364d26b9534b0b09d4caffe21",
+      "allowedOriginalSha256": [
+        "1d2a09b7a29288f1d8433b485418506e7e3bd1b777e270f0182e7da808a4e4dd",
+        "d50b6b40bbe5c3835fb6bb46b298d760a3377939f3a6b902fbdfe058f4128ac8"
+      ]
+    }
+  ]
+}

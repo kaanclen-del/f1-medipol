@@ -1,0 +1,6 @@
+
+/* V7.2 CLEAN CONTROL: driver name only, automatic vehicle number */
+.addForm{grid-template-columns:minmax(0,1fr) auto}
+.addForm button{grid-column:auto}
+@media(max-width:700px){.addForm{grid-template-columns:minmax(0,1fr) auto}.addForm button{grid-column:auto}}
+@media(max-width:440px){.addForm{grid-template-columns:1fr}.addForm button{grid-column:auto}}

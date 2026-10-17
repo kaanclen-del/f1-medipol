@@ -1,0 +1,37 @@
+F1 MEDIPOL - PWA + WEB PUSH TEST SISTEMI (ASAMA 1)
+
+Bu paket 10 yeni kaynak dosyasi ekler; mevcut sayfalari ezmez.
+KURULUM SIRASI (ADIM ADIM, birlikte yapilacak):
+
+1) ZIP'i proje kokune yedek alarak ac.
+2) npm.cmd install web-push
+   npm.cmd install -D @types/web-push
+3) npx.cmd web-push generate-vapid-keys
+   Cikti iki anahtardir. OZEL (private) anahtari chat'e veya Git'e koyma.
+4) .env.local dosyasina EKLE (mevcut satirlari silme):
+   NEXT_PUBLIC_VAPID_PUBLIC_KEY=<generated public>
+   VAPID_PRIVATE_KEY=<generated private>
+   VAPID_SUBJECT=mailto:<gercek e-posta adresin>
+   NOT: PUBLIC key tarayiciya verilir, PRIVATE key yalnizca sunucuda kalir.
+5) Supabase SQL Editor'de supabase/push-subscriptions.sql dosyasini bir kez calistir.
+6) npm.cmd run build (veya npm.cmd run dev) ile kontrol et.
+7) Lokal masaustu: http://localhost:3000/bildirimler
+   iPhone test icin once Preview HTTPS'ye deploy et; ana ekrana ekleyip oradan ac.
+8) Vercel Preview environment'a UC anahtari da ayni degerlerle ekle;
+   yeni Preview deployment olustur. Production'a dokunma.
+
+GUVENLIK:
+- Push abonelikleri kullaniciya bagli, sunucuda admin client ile tutulur.
+- Tablo RLS acik, dogrudan istemci erisim politikasi yok.
+- Test sadece giris yapmis kullanicinin en fazla 5 cihazina gider.
+- Test cihaz basina 45 saniyeyle sinirli.
+- Service worker offline cache, intercept veya baska site verisi yapmaz.
+- Apple iOS 16.4+ icin ana ekrana eklenen PWA'da bildirim izni ister.
+
+SINIRLAR:
+- Bu ASAMA 1 gercek test Web Push'u sunucu uzerinden gonderir;
+  otomatik yaris/tahmin hatirlatma CRON'u henuz eklenmedi.
+- Proje kokundeki app/manifest.ts veya public/push-sw.js ayni isimde varsa
+  paketi uygulamadan once mevcut dosyalari kontrol et.
+- Android install banner'i 192x192 ve 512x512 ikonlar gerektirebilir;
+  bu paket mevcut /icon.png ve /apple-icon.png'yi kullanir.

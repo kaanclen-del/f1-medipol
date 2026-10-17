@@ -1,0 +1,40 @@
+F1 MEDIPOL / DM 2.0 + HOS GELDIN EKRANI
+===========================================
+
+1) Bu ZIP dosyasini indirip Downloads/Indirilenler klasorune kaydet.
+2) VS Code'da f1-medipol proje klasorunde terminal ac.
+3) PowerShell:
+
+$zip = Get-ChildItem "$HOME\Downloads","$HOME\OneDrive\Downloads" -Filter "f1-medipol-dm-profil-onboarding-v2.zip" -ErrorAction SilentlyContinue | Select-Object -First 1; if ($zip) { Expand-Archive -LiteralPath $zip.FullName -DestinationPath ".\__f1_dm_v2" -Force; node ".\__f1_dm_v2\INSTALL.cjs" } else { Write-Host "ZIP bulunamadi. Ctrl+J ile indirme konumunu kontrol et." }
+
+4) Yeni SQL (ZORUNLU). VS Code PowerShell terminalinde:
+Get-Content ".\__f1_dm_v2\supabase\DM_V2_MEDIA_ONBOARDING.sql" -Raw | Set-Clipboard
+
+5) Supabase > SQL Editor > New Query > Ctrl+V > Run.
+   Onemli: "Get-Content" komutunu SQL Editor'e yazma.
+
+6) Vercel'e gondermeden once npm.cmd run build ile TS/build kontrol et.
+7) Localhost icin: npm.cmd run dev -- --webpack
+8) Login girisinden sonra / adresine gider. Yeni uye ilk giriste 3 kisa karsilama karti gorur.
+9) DM'de mobil zoom engellendi (16px alanlar), tam ekran, arkadas profiline tiklama,
+   foto/video/ses kaydi gonderme, site acikken anlik bildirim (ve sayac).
+
+BILDIRIMLER:
+- Site acikken: Realtime kanal ve 12sn yedek kontrol.
+- Site tamamen kapaliyken: mevcut PWA/WebPush altyapisi mevcutsa DM push route eklenir.
+  Cihaz bildirimi icin VAPID sunucu anahtarlari ve kullanicinin /bildirimler ekraninda
+  cihaz izni vermesi gerekir. iOS'ta anasayfaya eklenmis PWA gereklidir.
+- /api/dm/push sadece yeni gonderilmis, kimligi dogrulanmis mesaji bildirebilir.
+- Push hatasi mesaji iptal etmez.
+
+MEDYA:
+- Ozel (public degil) Supabase Storage bucket: dm-media
+- jpg, png, webp en fazla 10 MB; mp4, webm, mov en fazla 25 MB;
+  tarayici destekli ses en fazla 8 MB.
+- Gonderen/alici haric medya nesnelerine erisim engellenir. Medya icin kisa sureli URL.
+- V1 mesajlari silinmez. Arsiv, tahminler ve mevcut admin ayarlari degismez.
+- Yeni karsilama ekrani eski uyelere uygulanmaz; yeni uyeler yalnizca bir kere gorur.
+
+NOT:
+- Kurulum mevcut dosyalarin yedegini __f1_dm_v2_backups klasorune alir.
+- Canli Vercel dagitimi bu paketle otomatik yapilmaz.

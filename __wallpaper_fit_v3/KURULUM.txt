@@ -1,0 +1,13 @@
+F1 MEDIPOL - PROFIL ARKA PLANI DENGELI OLCEK V3
+
+Bu paket yalnizca components/ProfileWallpaperBackdrop.module.css dosyasina
+kucuk bir CSS ekler. Profil yerlesimine, admin paneline, Supabase'e ve profil
+tercihlerine dokunmaz.
+
+On kosul: Profil sadelestirme V2 yuklu olmali.
+
+Proje kokunde ZIP'i bir klasore cikar ve calistir:
+node .\\__wallpaper_fit_v3\\INSTALL.cjs
+
+Daha sonra /profile sayfasini Ctrl+F5 ile yenile.
+Yedek f1_wallpaper_yedek altina olusturulur.

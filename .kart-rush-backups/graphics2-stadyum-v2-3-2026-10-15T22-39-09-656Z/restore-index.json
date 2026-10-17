@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "existed": true,
+      "installedSha": "7503fe9104531fc8c622c9280344c59a11cdc2ad5602144519c8cc70f9dd9c2d"
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "existed": true,
+      "installedSha": "52a61f8e179aba8f70380b1a8010b537b7c05d5413a38bab5d58d519a9b54910"
+    },
+    {
+      "dest": "components/kart-rush/venueAudio.ts",
+      "existed": false,
+      "installedSha": "4b88c92309f1ac202e431e0a3b0df3a9bf751161fb8cb6ae83db2e05876fb0e6"
+    }
+  ]
+}

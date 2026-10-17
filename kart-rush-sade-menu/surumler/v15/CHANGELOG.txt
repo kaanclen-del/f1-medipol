@@ -1,0 +1,3 @@
+KART RUSH - SADE ANA MENU
+Sadece KartRushClient.tsx ve kartRush.module.css guncellendi.
+Pist, fizik, AI, HUD, Supabase dosyalarina dokunulmadi.

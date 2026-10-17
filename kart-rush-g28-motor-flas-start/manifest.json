@@ -1,0 +1,29 @@
+{
+  "name": "Kart Rush G2.8 Engine Howl, Venue Flashes and Start Lights",
+  "files": [
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "asset": "sound.payload",
+      "sha": "44892b84e985d94fd1f1330c1bc50c052f4ac691f6827e1d63c00562ca6d8039",
+      "allowedOriginalSha": "fbe8b91346ca028dc99747206ba7a54234e1f237469390823e06ca95d2951369"
+    },
+    {
+      "dest": "components/kart-rush/venueAudio.ts",
+      "asset": "venue-audio.payload",
+      "sha": "566400dfd365a0763bd494cdcf6515d7d6c8e17013b6376c6eb85f2faa8269f0",
+      "allowedOriginalSha": "4b88c92309f1ac202e431e0a3b0df3a9bf751161fb8cb6ae83db2e05876fb0e6"
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "sha": "f2c66b7aac52473d6ff8c7c4edcfed0185482e1515e2dbeabba0aea92b69a5ad",
+      "allowedOriginalSha": "f5608808a12dfd346e8464c4fbaf4399515ec8c2cb7af0b841f3cd7b5b3a5849"
+    },
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha": "e4448c78c1ea331a83ddf09d854b6c300b83c7497c2f444b272d197ec9ce1111",
+      "allowedOriginalSha": "a501c7953abc7212dd5b802c0919f24b3ce546653af06bec8c2983e10e58ad20"
+    }
+  ]
+}

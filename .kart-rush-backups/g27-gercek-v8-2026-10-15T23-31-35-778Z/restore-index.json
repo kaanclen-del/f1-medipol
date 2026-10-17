@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "existed": true,
+      "before": "4172e4207e186d98367b8df4ce7f7b62abdbf553e7bc5f4d78308276f41fb0fc",
+      "after": "fbe8b91346ca028dc99747206ba7a54234e1f237469390823e06ca95d2951369"
+    },
+    {
+      "dest": "components/kart-rush/KartRushClient.tsx",
+      "existed": true,
+      "before": "3fd5a132666f2a701f97bc0d7369e3eae76c06b7fca9241437665bf5ee404aab",
+      "after": "e1e25694df7803da1bf57588e0643b0f354be6b5a0ba0d3380b2e411039f1b3e"
+    },
+    {
+      "dest": "public/kart-rush/audio/ATTRIBUTION.txt",
+      "existed": false,
+      "before": null,
+      "after": "227700571e03ccadd8f08b9ed2f3120c1da953ecc9dce63b055adf7675c125e4"
+    },
+    {
+      "dest": "public/kart-rush/audio/f1-v8-fw32-2010.ogg",
+      "existed": false,
+      "before": null,
+      "after": "fe7718b3fc42bce71284b76be865942ca9a511b0e8b68154f1851101d9429193"
+    }
+  ]
+}

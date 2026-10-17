@@ -65,6 +65,100 @@ function emptyForm() {
   };
 }
 
+const MAX_BADGE_UPLOAD_BYTES = 500 * 1024;
+
+function formatFileSize(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+    : `${Math.round(bytes / 1024)} KB`;
+}
+
+/** Optimize badge artwork in the browser. WebP keeps transparency. */
+async function optimizeBadgeImage(file: File): Promise<File> {
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
+    throw new Error('Lütfen PNG, JPG veya WebP görseli seç.');
+  }
+
+  // Already small enough: retain the original without losing any quality.
+  if (file.size <= MAX_BADGE_UPLOAD_BYTES) return file;
+
+  const objectUrl = URL.createObjectURL(file);
+  const image = new Image();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error('Görsel açılamadı veya dosya bozuk.'));
+      image.src = objectUrl;
+    });
+
+    const width = image.naturalWidth;
+    const height = image.naturalHeight;
+    if (!width || !height) throw new Error('Görsel boyutları okunamadı.');
+
+    let smallest: Blob | null = null;
+    const longestEdge = Math.max(width, height);
+    for (const maxEdge of [1024, 896, 768, 640, 512, 384]) {
+      const scale = Math.min(1, maxEdge / longestEdge);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(width * scale));
+      canvas.height = Math.max(1, Math.round(height * scale));
+      const context = canvas.getContext('2d', { alpha: true });
+      if (!context) throw new Error('Tarayıcı görsel işleme özelliğini başlatamadı.');
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.imageSmoothingEnabled = true;
+      context.imageSmoothingQuality = 'high';
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      for (const quality of [0.9, 0.82, 0.74, 0.64, 0.52]) {
+        const blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob(resolve, 'image/webp', quality)
+        );
+        if (!blob || blob.type !== 'image/webp') {
+          throw new Error('Tarayıcı WebP dönüşümünü desteklemiyor.');
+        }
+        if (!smallest || blob.size < smallest.size) smallest = blob;
+        if (blob.size <= MAX_BADGE_UPLOAD_BYTES) {
+          return new File([blob], `${file.name.replace(/\.[^.]+$/, '') || 'rozet'}.webp`, {
+            type: 'image/webp',
+            lastModified: Date.now(),
+          });
+        }
+      }
+    }
+
+    if (!smallest || smallest.size >= 4 * 1024 * 1024) {
+      throw new Error('Görsel yeterince küçültülemedi. Daha küçük bir görsel dene.');
+    }
+    return new File([smallest], `${file.name.replace(/\.[^.]+$/, '') || 'rozet'}.webp`, {
+      type: 'image/webp',
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+/** APIs can respond with plain text or HTML when an upstream request limit is hit. */
+async function readBadgeUploadResponse(response: Response): Promise<{ url?: string; error?: string }> {
+  const raw = await response.text();
+  let result: { url?: string; error?: string } = {};
+  try {
+    result = JSON.parse(raw) as { url?: string; error?: string };
+  } catch {
+    // Avoid showing HTML gateway pages or opaque "Unexpected token" messages.
+  }
+  if (response.status === 413 || /request entity too large|payload too large/i.test(raw)) {
+    throw new Error('Görsel sunucunun yükleme sınırını aşıyor. Daha küçük bir görsel dene.');
+  }
+  if (!response.ok) {
+    throw new Error(result.error || `Görsel yüklenemedi (HTTP ${response.status}).`);
+  }
+  if (!result.url || typeof result.url !== 'string') {
+    throw new Error('Yükleme tamamlandı ancak sunucudan görsel adresi alınamadı.');
+  }
+  return result;
+}
+
 export default function AdminAchievementManager() {
   const [achievements, setAchievements] =
     useState<Achievement[]>([]);
@@ -159,36 +253,32 @@ export default function AdminAchievementManager() {
     if (!file) return;
 
     setUploading(true);
-
+    setMessage('Görsel yüklemeye hazırlanıyor...');
     try {
+      const optimizedFile = await optimizeBadgeImage(file);
       const body = new FormData();
-      body.append("file", file);
-
-      const response = await fetch(
-        "/api/admin/achievements/upload",
-        {
-          method: "POST",
-          body,
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error);
-      }
-
-      setField("imageUrl", data.url);
-      setMessage("✓ Görsel yüklendi.");
-    } catch (error) {
+      body.append('file', optimizedFile, optimizedFile.name);
       setMessage(
-        error instanceof Error
-          ? error.message
-          : "Görsel yüklenemedi."
+        file.size > optimizedFile.size
+          ? `Görsel optimize edildi: ${formatFileSize(file.size)} → ${formatFileSize(optimizedFile.size)}. Yükleniyor...`
+          : 'Görsel yükleniyor...'
       );
+
+      const response = await fetch('/api/admin/achievements/upload', {
+        method: 'POST',
+        body,
+      });
+      const data = await readBadgeUploadResponse(response);
+      setField('imageUrl', data.url!);
+      setMessage(
+        `✓ Görsel yüklendi (${formatFileSize(optimizedFile.size)}).` +
+        (file.size > optimizedFile.size ? ' Otomatik optimize edildi.' : '')
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Görsel yüklenemedi.');
     } finally {
       setUploading(false);
-      event.target.value = "";
+      event.target.value = '';
     }
   }
 

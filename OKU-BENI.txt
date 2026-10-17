@@ -1,0 +1,7 @@
+SON DUZELTME - 12 EKIM 2026
+
+Bu paket yalnizca app/page.tsx dosyasini icerir.
+Canli Yaris Merkezi ve Hafta Sonu Tahmini kartlari ayni hizada biter.
+Kaydirilan Grand Prix takvimi ve yazi boyutlari korunur.
+
+Vercel Production otomatik guncellenmez; git commit/push sonrasi guncellenir.

@@ -1,0 +1,7 @@
+{
+  "name": "F1 Medipol Kart Rush G40.1 - Floodlights, Dry Atmosphere & Brake Reflections",
+  "target": "components/kart-rush/engine.ts",
+  "payload": "payload/engine.payload",
+  "fromSha": "9d712a85c9c88302b3985bd76b975615c583be59f6650ebe92e9e3a8b91a1016",
+  "toSha": "9b10686b5e02fc9f147e2ef6425b96ef6c64188237526075f67f7bc3702c68b5"
+}

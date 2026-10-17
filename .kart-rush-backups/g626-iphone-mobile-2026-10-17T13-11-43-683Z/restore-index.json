@@ -1,0 +1,20 @@
+{
+  "id": "g626-mobile-controls-header",
+  "files": [
+    {
+      "path": "components/Header.tsx",
+      "originalSha": "932613d04147e802dcdbc52b84060c58d2a3359b1087c06431d0cfb030e23294",
+      "updatedSha": "2b3ff490953c3a5ff139d53938e7f73be1f8cd9ad63e72547f3d39c98a1a0d16"
+    },
+    {
+      "path": "components/kart-rush/KartRushTrack.tsx",
+      "originalSha": "0e736fcefff7bf127c3d5de3369078a85546bd3599363126141e892b41936e72",
+      "updatedSha": "d5132771cb28010f4991d441a03bb496835cd5ffeb6f27d148e39da5fe029767"
+    },
+    {
+      "path": "components/kart-rush/kartRush.module.css",
+      "originalSha": "27138d2de65595c2a671736ed137396a0af06a3d5cd5d6d64a596b6bdf2a8efc",
+      "updatedSha": "950c710f76324a90a37b473473bd897d84c908243a37472da7dc96e9142c7613"
+    }
+  ]
+}

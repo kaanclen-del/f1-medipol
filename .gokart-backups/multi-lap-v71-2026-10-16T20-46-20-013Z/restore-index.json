@@ -1,0 +1,8 @@
+{
+  "tsx": "app/arcade/gokart-zamanlama/TimingClient.tsx",
+  "css": "app/arcade/gokart-zamanlama/timing.module.css",
+  "originalTsxSha": "576cd93a6f38b729f8bb13bc1bc3dc8ac1eda0567c41b2c1beaceb85afe2cf6e",
+  "originalCssSha": "f4c9cdc085aa6d4b993aab4b8cceae535af1a3f067509583f858e8bb9829e14e",
+  "installedTsxSha": "2aee59f41b84a8cb70da9bdd7f8eaa50c1e32d3c55336601253a503978cc19d7",
+  "installedCssSha": "ad17b5593b68f72a08f9d4872cf3208829300e9fd79c2635188bd4601a963e60"
+}

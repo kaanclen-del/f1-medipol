@@ -1,0 +1,10 @@
+{
+  "version": "7.1.0",
+  "tsx": "app/arcade/gokart-zamanlama/TimingClient.tsx",
+  "css": "app/arcade/gokart-zamanlama/timing.module.css",
+  "expectedNormalizedSha": "22aa5956d1a92786750339bd8f9e08080913d41d84a78f2e9619422910de5ba4",
+  "expectedWindowsSha": "576cd93a6f38b729f8bb13bc1bc3dc8ac1eda0567c41b2c1beaceb85afe2cf6e",
+  "newNormalizedSha": "b36262dba88075eb76370f8dfabff1bb8a20bcc1724db8d4459eff12aba30229",
+  "cssAddonSha": "e44fd7ef8436c823128f763f64f25f42c0e9a89cd71ddcca1f3f6d9640ad0fef",
+  "marker": "/* MULTI-DRIVER LIVE RACE CONTROL"
+}

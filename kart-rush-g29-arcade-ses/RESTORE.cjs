@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('node:fs');
+const path=require('node:path');
+const crypto=require('node:crypto');
+const root=process.cwd(),base=path.join(root,'.kart-rush-backups');
+const die=s=>{console.error('\n❌ GERİ ALMA DURDU: '+s);process.exit(1);};
+if(!fs.existsSync(path.join(root,'package.json')))die('Terminali proje ana klasöründe aç.');
+if(!fs.existsSync(base))die('Yedek bulunamadı.');
+const candidates=fs.readdirSync(base).filter(n=>n.startsWith('g29-arcade-ses-')).sort();
+if(!candidates.length)die('G2.9 ses yedeği bulunamadı.');
+const latest=path.join(base,candidates[candidates.length-1]);
+const backup=path.join(latest,'sound.ts'),metaPath=path.join(latest,'meta.json');
+if(!fs.existsSync(backup)||!fs.existsSync(metaPath))die('Son yedek hasarlı.');
+const info=JSON.parse(fs.readFileSync(metaPath,'utf8'));
+const target=path.join(root,info.dest),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+if(!fs.existsSync(target))die('Geri alınacak dosya eksik.');
+if(sha(fs.readFileSync(target))!==info.newSha)die('Sound.ts kurulumdan sonra değişmiş. Veri kaybını önlemek için geri alma durduruldu.');
+fs.copyFileSync(backup,target);
+console.log('✅ Graphics 2.8 motor sesi geri yüklendi: '+info.dest);

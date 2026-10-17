@@ -1,0 +1,18 @@
+{
+  "version": "G6.2.4",
+  "baseVersion": "G6.2.3",
+  "files": {
+    "client": {
+      "target": "components/kart-rush/KartRushTrack.tsx",
+      "payload": "KartRushTrack.payload.txt",
+      "originalSha": "59a5bf6c2153ea6fd3b43acb3c0d7209d889e04fd2f17f55932fc94e3435926c",
+      "newSha": "6405aa299109d055209968ccc613cd6ef3314b6bf31e188ad426aea99584558b"
+    },
+    "css": {
+      "target": "components/kart-rush/kartRush.module.css",
+      "payload": "kartRush-css.payload.txt",
+      "originalSha": "bce00070f8b0e9f30aa3a864cb3723a722e15b9e4c07da8614275b1558f5b24b",
+      "newSha": "e62daf7a0e2916ff024cef9791418c25506e3758d002e35491058f67121bd36d"
+    }
+  }
+}

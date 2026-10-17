@@ -1,0 +1,12 @@
+{
+  "version": "6.2.0",
+  "source": "6.1.0",
+  "engineSourceSha": "deb4c590f22e10abfb6838f880b80d240f07ffa5f098aa43bd5c7eee47817b43",
+  "engineTargetSha": "0cae60014bab56b6fa29ce7e4b3c7fbf2c7333ce8ea5e2b6f494ca6fab477e21",
+  "targets": {
+    "engine": "components/kart-rush/engine.ts",
+    "client": "components/kart-rush/KartRushTrack.tsx",
+    "css": "components/kart-rush/kartRush.module.css"
+  },
+  "tag": "G6.2-IPHONE-MOBILE-RESCUE"
+}

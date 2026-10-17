@@ -1,0 +1,29 @@
+{
+  "name": "Kart Rush 3.3 Race Director",
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "newSha": "aaceb030eeca0662151182422770d34e7dcdd0cbc82b264b09614e9dc3ec4d95",
+      "allowedOldSha": [
+        "306406ecadc5e56a5d894cb319d10089a1239b97bd194cbcdff0aae26cf84436"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "newSha": "78e1577d669573d5f7dc276878161b0807b38eae8a8ba36af6331e81ee995bc7",
+      "allowedOldSha": [
+        "589da3ab9245c56b83d1516cda42d85bc396c4d821a43f6f914b3525e389c2bd"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "asset": "sound.payload",
+      "newSha": "73f50ea2193604f1fea8c9455405c4f94947cd802c9a246e41de496173afbc0d",
+      "allowedOldSha": [
+        "7762242f23bff9e9f7fcb187ad9d0c8b706278d037939052c4daeda04cf595e1"
+      ]
+    }
+  ]
+}

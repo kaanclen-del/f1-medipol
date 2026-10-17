@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "backup": "engine.ts"
+    }
+  ]
+}

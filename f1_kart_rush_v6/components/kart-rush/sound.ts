@@ -1,0 +1,54 @@
+/* Procedural WebAudio — generated at runtime, no external samples or copyrighted music.
+ * Audio stays silent until a keyboard/pointer gesture explicitly activates it.
+ */
+export type SoundEffect = 'pickup'|'boost'|'shield'|'emp'|'collision';
+export class KartRushSound {
+ private ctx:AudioContext|null=null;
+ private engine:OscillatorNode|null=null;
+ private harmonic:OscillatorNode|null=null;
+ private mainGain:GainNode|null=null;
+ private filter:BiquadFilterNode|null=null;
+ private volume:number;
+ private lastEffect=0;
+ constructor(volume=0.45){this.volume=Math.max(0,Math.min(1,volume));}
+ setVolume(volume:number){this.volume=Math.max(0,Math.min(1,volume));if(this.mainGain&&this.ctx)this.mainGain.gain.setTargetAtTime(this.volume*.055,this.ctx.currentTime,.06);}
+ activate(){
+  if(typeof window==='undefined')return;
+  if(this.ctx){if(this.ctx.state==='suspended')void this.ctx.resume();return;}
+  const Ctor=window.AudioContext;
+  if(!Ctor)return;
+  try{
+   const ctx=new Ctor();this.ctx=ctx;
+   const filter=ctx.createBiquadFilter();filter.type='lowpass';filter.frequency.value=850;filter.Q.value=.56;
+   const gain=ctx.createGain();gain.gain.value=0;filter.connect(gain);gain.connect(ctx.destination);
+   const low=ctx.createOscillator(),high=ctx.createOscillator(),lowGain=ctx.createGain(),highGain=ctx.createGain();
+   low.type='sawtooth';high.type='triangle';low.frequency.value=55;high.frequency.value=115;
+   lowGain.gain.value=.31;highGain.gain.value=.32;
+   low.connect(lowGain);high.connect(highGain);lowGain.connect(filter);highGain.connect(filter);
+   low.start();high.start();this.engine=low;this.harmonic=high;this.mainGain=gain;this.filter=filter;
+  }catch{this.ctx=null;}
+ }
+ update(speed:number,throttle:boolean,paused:boolean){
+  if(!this.ctx||!this.mainGain||!this.engine||!this.harmonic||!this.filter)return;
+  const t=this.ctx.currentTime,run=paused?0:Math.max(.05,Math.min(1,speed/310));
+  this.engine.frequency.setTargetAtTime(53+run*128+(throttle?18:0),t,.10);
+  this.harmonic.frequency.setTargetAtTime(102+run*300+(throttle?27:0),t,.1);
+  this.filter.frequency.setTargetAtTime(450+run*1600,t,.10);
+  this.mainGain.gain.setTargetAtTime(this.volume*(paused?0:(.027+run*.10)),t,.12);
+ }
+ effect(effect:SoundEffect){
+  if(!this.ctx||this.volume<=0)return;
+  const ctx=this.ctx,t=ctx.currentTime;
+  if(t-this.lastEffect<.065)return;this.lastEffect=t;
+  const oscillator=ctx.createOscillator(),gain=ctx.createGain();
+  oscillator.type=effect==='collision'?'square':effect==='emp'?'sawtooth':'triangle';
+  const start=effect==='pickup'?510:effect==='boost'?240:effect==='shield'?470:effect==='emp'?170:95;
+  const end=effect==='pickup'?1040:effect==='boost'?710:effect==='shield'?670:effect==='emp'?65:45;
+  const duration=effect==='collision'?.21:effect==='emp'?.45:.30;
+  oscillator.frequency.setValueAtTime(start,t);oscillator.frequency.exponentialRampToValueAtTime(end,t+duration);
+  gain.gain.setValueAtTime(.0001,t);gain.gain.exponentialRampToValueAtTime(Math.max(.001,this.volume*.085),t+.016);
+  gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
+  oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(t);oscillator.stop(t+duration+.02);
+ }
+ dispose(){try{this.engine?.stop();this.harmonic?.stop();void this.ctx?.close();}catch{}this.ctx=null;}
+}

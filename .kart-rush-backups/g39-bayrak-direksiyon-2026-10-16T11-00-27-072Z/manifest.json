@@ -1,0 +1,8 @@
+{
+  "version": "G3.9",
+  "name": "Dalgalanan Bayraklar / Dogru Lastik / Akici Direksiyon",
+  "target": "components/kart-rush/engine.ts",
+  "payload": "payload/engine.payload",
+  "original_sha256": "00a779a24eb7d94c7297199fece057b747f29a9734b485f5f94dda19bc690e8a",
+  "new_sha256": "2f65ae9e2a394adbc3bf59379f6da2b11d387e8313deef4bd2bdf8086addbee3"
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "components/kart-rush/engine.ts",
+    "components/kart-rush/KartRushClient.tsx",
+    "components/kart-rush/sound.ts"
+  ]
+}

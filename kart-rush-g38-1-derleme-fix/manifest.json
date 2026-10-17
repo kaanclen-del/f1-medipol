@@ -1,0 +1,7 @@
+{
+  "version": "G3.8.1",
+  "target": "components/kart-rush/engine.ts",
+  "payload": "payload/engine.payload",
+  "before_sha256": "e309c254da87668d41f3f4be29711403766d9156c453872f136313b97f14c7e3",
+  "after_sha256": "00a779a24eb7d94c7297199fece057b747f29a9734b485f5f94dda19bc690e8a"
+}

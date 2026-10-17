@@ -1,0 +1,14 @@
+{
+  "name": "F1 Medipol Kart Rush G38 - Sky, Steering, Cockpit, Crowd",
+  "files": [
+    {
+      "path": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha256": "e309c254da87668d41f3f4be29711403766d9156c453872f136313b97f14c7e3",
+      "allowedOriginalSha256": [
+        "5fca308461db76adacddb41ea609a1843a5c148a829da404bf3afca5c3c34a4b",
+        "2dadb4c81243a1f6090a65cf59f056d8c02433d681268e97a1db2d1cd7880d0c"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "version": "graphics2.6-championship",
+  "files": [
+    {
+      "dest": "components/kart-rush/KartRushClient.tsx",
+      "asset": "client.payload",
+      "sha": "3fd5a132666f2a701f97bc0d7369e3eae76c06b7fca9241437665bf5ee404aab",
+      "allowedSha": [
+        "19785fd72b068ac115a58f3e582f87614ddef4d1d16873ff0729c0e814668e85"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "sha": "f5608808a12dfd346e8464c4fbaf4399515ec8c2cb7af0b841f3cd7b5b3a5849",
+      "allowedSha": [
+        "52a61f8e179aba8f70380b1a8010b537b7c05d5413a38bab5d58d519a9b54910"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "asset": "sound.payload",
+      "sha": "4172e4207e186d98367b8df4ce7f7b62abdbf553e7bc5f4d78308276f41fb0fc",
+      "allowedSha": [
+        "cec6926815e49ab89bac3f0a50923d507580d4c2b75dd1834fd1939287324914"
+      ]
+    }
+  ]
+}

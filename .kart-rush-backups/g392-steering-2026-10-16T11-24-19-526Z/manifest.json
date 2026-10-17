@@ -1,0 +1,12 @@
+{
+  "version": "G3.9.2",
+  "description": "Responsive steering, higher straight-line speed and retained G3.9 visuals",
+  "target": "components/kart-rush/engine.ts",
+  "payload": "payload/engine.payload",
+  "allowed_from_sha256": [
+    "25aabe4c204d569f52aa9da104ae21d284528f147396c9e94c63790a4a3f8f0d",
+    "2f65ae9e2a394adbc3bf59379f6da2b11d387e8313deef4bd2bdf8086addbee3"
+  ],
+  "to_sha256": "a1f799e0d51ee2f8cec960c3c612972085176eca69991c1a11c83358ce83aec9",
+  "installed_from_sha256": "25aabe4c204d569f52aa9da104ae21d284528f147396c9e94c63790a4a3f8f0d"
+}

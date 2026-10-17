@@ -1,0 +1,37 @@
+{
+  "name": "Kart Rush G3.1 - AI Risk, Starting Grid, Targeted Powers, Rain, Fixed Sky, Horn",
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha": "30acd1c4b2a759272484fa6abadb0d541256e30da8abd5bea69088ba26605955",
+      "allowedOriginalSha": [
+        "cd039c30b664f1042108b89cdb51ebd2aae8713eb6d39d9e5e8e8e9c2b272a1b"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/KartRushTrack.tsx",
+      "asset": "race-ui.payload",
+      "sha": "589da3ab9245c56b83d1516cda42d85bc396c4d821a43f6f914b3525e389c2bd",
+      "allowedOriginalSha": [
+        "63513229c40d323260a911377b37a95fa4250d75a0882bee3b17fc6831d6ee91"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/KartRushClient.tsx",
+      "asset": "client.payload",
+      "sha": "6a27d45c0fbfbfa5af7c1eb4b189d8da58a9a65669aa2485e0bb5effba51cc78",
+      "allowedOriginalSha": [
+        "3fd5a132666f2a701f97bc0d7369e3eae76c06b7fca9241437665bf5ee404aab"
+      ]
+    },
+    {
+      "dest": "components/kart-rush/sound.ts",
+      "asset": "sound.payload",
+      "sha": "7762242f23bff9e9f7fcb187ad9d0c8b706278d037939052c4daeda04cf595e1",
+      "allowedOriginalSha": [
+        "1af1db2f82018c752c3c2b4fe00c12a8ca365ed5c94c72c33e572b0dced6b1d9"
+      ]
+    }
+  ]
+}

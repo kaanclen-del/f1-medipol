@@ -1,0 +1,11 @@
+{
+  "name": "Kart Rush Graphics 2.4 Car + Sky Upgrade",
+  "files": [
+    {
+      "dest": "components/kart-rush/engine.ts",
+      "asset": "engine.payload",
+      "sha": "f7c5f3bb5b95747dc7727d6d51fddfc1fc88038d7208ecbb475b2b4243a44d06",
+      "allowedOriginalSha": "7503fe9104531fc8c622c9280344c59a11cdc2ad5602144519c8cc70f9dd9c2d"
+    }
+  ]
+}

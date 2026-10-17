@@ -1,0 +1,19 @@
+F1 MEDIPOL — ARKADAS EKLEME + OZEL MESAJLASMA V1
+
+1) Paketi ZIP olarak indir. VS Code'da f1-medipol klasorunun terminalini ac.
+2) ZIP'i __f1_dm klasorune cikar ve INSTALL.cjs betigini calistir.
+3) __f1_dm/supabase/DM_FRIENDS_SETUP.sql dosyasini SQL Editor'e yapistirip Run.
+4) localhost'u yenile, header'daki Mesajlar simgesini ac.
+5) Iki AYRI hesapla test et. Biri istek gondersin, digeri kabul etsin; sonra DM.
+
+Masaustu: Sag alttan acilan panel. Mobil: Tam ekran kayarak acilir,
+sagdan sola kaydirarak acma / soldan saga kaydirarak kapama desteklenir.
+
+Bilgi: site_notifications tablosu varsa yeni DM ve arkadaslik istekleri
+mevcut site bildirimlerine de eklenir. SQL RLS ile mesajlar iki kisiye ozeldir.
+Silinen arkadaslikla birlikte bu iki kisiye ait DM gecmisi de silinir.
+Realtime gerekirse 15 saniyelik otomatik yenilemeyle desteklenir.
+
+Geri almak icin: Header.tsx.dm-backup-* yedegini Header.tsx'e
+aktarabilirsin. DmDock dosyalari ayrica kalabilir, Header importunu
+kaldirdiginda sitede yuklenmezler.

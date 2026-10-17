@@ -1,0 +1,7 @@
+{
+  "name": "F1 Medipol Kart Rush G4.0.2 - Grand Prix Stadium Lights / Sunny Dry Track",
+  "target": "components/kart-rush/engine.ts",
+  "payload": "payload/engine.payload",
+  "fromSha": "9b10686b5e02fc9f147e2ef6425b96ef6c64188237526075f67f7bc3702c68b5",
+  "toSha": "0086a9dbb82038363dd1251161aa3a919667e53d8f009031dff3eeb74cbed51f"
+}
