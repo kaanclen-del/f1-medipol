@@ -1088,3 +1088,82 @@
 .finishNotice span{color:#ffe0a2;font-size:13px;font-weight:950;font-variant-numeric:tabular-nums;white-space:nowrap}
 .finishNotice button{padding:10px 13px;border:0;border-radius:9px;background:#e9344b;color:#fff;cursor:pointer;font-size:12px;font-weight:950;white-space:nowrap}
 @media(max-width:760px){.raceScreen .finishNotice{bottom:calc(12px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 12px);gap:8px;padding:8px 9px}.raceScreen .finishNotice span{font-size:10px}.raceScreen .finishNotice button{font-size:10px;padding:8px 9px}}
+
+
+/* G6.2 — iPhone/Android: single pause menu, large thumb controls, compact HUD. */
+.mobilePauseBtn{display:none;}
+.mobileMenuOverlay{display:none;}
+@media (pointer:coarse) and (max-width:1100px){
+ .raceScreen .sponsorBoard,.raceScreen .racingVignette{display:none!important;}
+ .raceScreen .raceActions{position:absolute!important;top:calc(8px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;left:auto!important;z-index:44!important;width:auto!important;max-width:none!important;display:flex!important;gap:0!important;}
+ .raceScreen .raceActions>button:not(.mobilePauseBtn){display:none!important;}
+ .raceScreen .raceActions .mobilePauseBtn{display:flex!important;align-items:center!important;justify-content:center!important;min-width:100px!important;width:auto!important;min-height:44px!important;height:44px!important;padding:0 13px!important;font-size:11px!important;letter-spacing:.05em!important;border-radius:11px!important;background:linear-gradient(135deg,#bd173c,#551122)!important;color:white!important;border:1px solid #ffffff4a!important;box-shadow:0 8px 22px #0009!important;}
+ .raceScreen .topHud{position:absolute!important;top:calc(8px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;right:auto!important;width:calc(100% - 128px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;max-width:420px!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;display:grid!important;gap:4px!important;z-index:20!important;}
+ .raceScreen .topHud .hudBlock{min-height:44px!important;padding:5px 6px!important;overflow:hidden!important;border-radius:10px!important;backdrop-filter:none!important;}
+ .raceScreen .topHud .hudBlock span{font-size:8px!important;letter-spacing:0!important;}
+ .raceScreen .topHud .hudBlock strong{font-size:clamp(15px,4vw,23px)!important;white-space:nowrap!important;}
+ .raceScreen .topHud .hudBlock small{font-size:9px!important;}
+ .raceScreen .topHud .bestBlock{display:none!important;}
+ .raceScreen .leaderboardToggle,.raceScreen .mobileCameraToggle{display:none!important;}
+ .raceScreen>.standings.boardOpen{display:block!important;top:calc(60px + env(safe-area-inset-top,0px))!important;bottom:calc(132px + env(safe-area-inset-bottom,0px))!important;left:8px!important;width:min(320px,calc(100% - 16px))!important;max-height:none!important;z-index:35!important;overflow-y:auto!important;}
+ .raceScreen .speedHud{top:calc(75px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;width:99px!important;min-height:70px!important;padding:7px!important;z-index:15!important;backdrop-filter:none!important;}
+ .raceScreen .speedHud b{font-size:35px!important;}
+ .raceScreen .damageHud{top:calc(75px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;max-width:99px!important;width:99px!important;padding:7px!important;z-index:15!important;}
+ .raceScreen .cornerAlert,.raceScreen .offroad{top:calc(165px + env(safe-area-inset-top,0px))!important;bottom:auto!important;width:max-content!important;max-width:75vw!important;font-size:9px!important;z-index:11!important;}
+ .raceScreen .offroad{top:calc(190px + env(safe-area-inset-top,0px))!important;}
+ .raceScreen .activeShield,.raceScreen .activeTurbo,.raceScreen .pitIndicator,.raceScreen .magnetIndicator{top:calc(151px + env(safe-area-inset-top,0px))!important;right:8px!important;max-width:40vw!important;z-index:12!important;}
+ .raceScreen .raceBottom{left:calc(9px + env(safe-area-inset-left,0px))!important;right:calc(9px + env(safe-area-inset-right,0px))!important;bottom:calc(14px + env(safe-area-inset-bottom,0px))!important;gap:4px!important;}
+ .raceScreen .steerControls,.raceScreen .abilityControls{gap:5px!important;align-items:flex-end!important;}
+ .raceScreen .steerControls button{width:clamp(55px,15vw,74px)!important;height:clamp(76px,22vw,96px)!important;font-size:27px!important;border-radius:16px!important;}
+ .raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake{width:clamp(50px,13.5vw,67px)!important;height:clamp(76px,22vw,96px)!important;font-size:13px!important;border-radius:16px!important;}
+ .raceScreen .abilityControls .powerBtn{width:clamp(58px,17vw,80px)!important;height:clamp(76px,22vw,96px)!important;border-radius:16px!important;}
+ .raceScreen .abilityControls .hornBtn{display:none!important;}
+ .raceScreen .powerDescription{bottom:calc(125px + env(safe-area-inset-bottom,0px))!important;right:9px!important;left:auto!important;transform:none!important;max-width:180px!important;min-height:0!important;font-size:9px!important;white-space:normal!important;line-height:1.25!important;z-index:15!important;}
+ /* Legacy animated power panels are reduced rather than hiding the ability itself. */
+ .raceScreen :is([class*="powerReveal"],[class*="powerPopup"],[class*="powerModal"],[class*="powerToast"],[class*="powerCard"],[class*="pickupReveal"],[class*="pickupCard"],[class*="abilityReveal"],[class*="abilityPopup"]){max-width:220px!important;max-height:min(33dvh,220px)!important;overflow:hidden!important;z-index:14!important;}
+ .raceScreen .mobileMenuOverlay{display:flex!important;position:absolute!important;inset:0!important;z-index:70!important;align-items:center!important;justify-content:center!important;padding:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))!important;background:rgba(3,7,14,.79)!important;backdrop-filter:blur(7px)!important;pointer-events:auto!important;overflow-y:auto!important;}
+ .raceScreen .mobileMenuCard{display:flex!important;flex-direction:column!important;gap:11px!important;width:min(420px,100%)!important;max-height:100%!important;overflow:auto!important;padding:19px!important;border-radius:19px!important;background:linear-gradient(160deg,#172438,#09121f)!important;border:1px solid rgba(255,255,255,.23)!important;box-shadow:0 22px 80px #000c!important;color:#fff!important;}
+ .raceScreen .mobileMenuHeader>span{color:#ff7790;font-size:9px;font-weight:900;letter-spacing:.18em;}
+ .raceScreen .mobileMenuHeader h2{margin:5px 0!important;font-size:clamp(19px,5vw,26px)!important;line-height:1.13!important;}
+ .raceScreen .mobileMenuHeader p{font-size:11px!important;line-height:1.45!important;color:#b6cce2!important;margin:0!important;}
+ .raceScreen .mobileMenuSection{display:grid;gap:7px!important;}
+ .raceScreen .mobileMenuSection>strong{font-size:11px!important;letter-spacing:.12em!important;color:#dce7f4!important;}
+ .raceScreen .mobileMenuSection>small{color:#9fb0c4!important;line-height:1.4!important;font-size:10px!important;}
+ .raceScreen .mobileGraphicsGrid,.raceScreen .mobileMenuChoices{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;}
+ .raceScreen .mobileGraphicsGrid button,.raceScreen .mobileMenuChoices button,.raceScreen .mobileAudioButton{min-height:40px!important;min-width:0!important;padding:9px 8px!important;color:white!important;border-radius:10px!important;border:1px solid #ffffff2b!important;background:#202d3c!important;font-weight:900!important;font-size:10px!important;}
+ .raceScreen .mobileGraphicsGrid button.mobileSelected{border-color:#fb4265!important;background:#a41a3a!important;}
+ .raceScreen .mobileAudioButton{background:#224b40!important;border-color:#51e4b8!important;}
+ .raceScreen .mobileVolume{font-size:11px!important;display:grid!important;gap:6px!important;}
+ .raceScreen .mobileVolume input{width:100%!important;accent-color:#ff425f!important;}
+ .raceScreen .mobileResumeBtn{width:100%!important;min-height:49px!important;background:#f02e54!important;color:white!important;border-radius:11px!important;border:none!important;font-size:13px!important;font-weight:950!important;}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:650px){
+ .raceScreen .topHud{max-width:440px!important;width:calc(100% - 132px - env(safe-area-inset-left,0px))!important;}
+ .raceScreen .raceActions{width:auto!important;display:flex!important;}
+ .raceScreen .raceBottom{bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;}
+ .raceScreen .steerControls button,.raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake,.raceScreen .abilityControls .powerBtn{height:68px!important;}
+ .raceScreen .speedHud{top:calc(64px + env(safe-area-inset-top,0px))!important;}
+ .raceScreen .damageHud{top:calc(64px + env(safe-area-inset-top,0px))!important;}
+ .raceScreen .mobileMenuCard{max-width:480px!important;}
+}
+
+/* G6.2.2 — actual iPhone source compatibility and active input correction. */
+@media (pointer:coarse) and (max-width:1100px){
+ .raceScreen .steerControls,.raceScreen .abilityControls{position:relative!important;z-index:35!important;pointer-events:auto!important;}
+ .raceScreen .steerControls button,.raceScreen .abilityControls button{touch-action:none!important;user-select:none!important;-webkit-user-select:none!important;pointer-events:auto!important;position:relative!important;z-index:36!important;}
+ .raceScreen .steerControls button{min-width:56px!important;min-height:72px!important;}
+ .raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake{min-width:52px!important;min-height:72px!important;}
+ .raceScreen .abilityControls .powerBtn{min-width:60px!important;min-height:72px!important;}
+ .raceScreen .mobilePowerReveal{top:calc(67px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;left:auto!important;transform:none!important;width:175px!important;max-width:42vw!important;min-width:0!important;max-height:103px!important;overflow:hidden!important;padding:6px 9px!important;border-radius:12px!important;box-shadow:0 8px 15px #0009!important;font-size:10px!important;}
+ .raceScreen .mobilePowerReveal div:nth-of-type(2){font-size:20px!important;margin:0!important;animation:none!important;}
+ .raceScreen .mobilePowerReveal strong{font-size:11px!important;}
+ .raceScreen .mobilePowerReveal div:last-of-type{margin-top:2px!important;}
+ .raceScreen .powerDescription{top:calc(174px + env(safe-area-inset-top,0px))!important;bottom:auto!important;right:calc(8px + env(safe-area-inset-right,0px))!important;left:auto!important;transform:none!important;min-width:0!important;width:min(190px,40vw)!important;max-width:40vw!important;padding:6px 9px!important;font-size:9px!important;}
+ .raceScreen .raceActions .mobilePauseBtn{min-height:46px!important;min-width:104px!important;width:auto!important;touch-action:manipulation!important;}
+ .raceScreen .mobileMenuOverlay{z-index:72!important;}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:650px){
+ .raceScreen .steerControls button{height:76px!important;min-height:76px!important;}
+ .raceScreen .abilityControls .gas,.raceScreen .abilityControls .brake,.raceScreen .abilityControls .powerBtn{height:76px!important;min-height:76px!important;}
+ .raceScreen .powerDescription{top:calc(137px + env(safe-area-inset-top,0px))!important;}
+}

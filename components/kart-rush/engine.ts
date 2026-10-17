@@ -22,6 +22,11 @@ export type KartOptions = {
 type Vec={x:number;y:number;z:number};type Vertex=number[];
 type C=[number,number,number];
 const TAU=Math.PI*2;
+// G6.2: iPhone / Android GPU thermal protection, without changing desktop ULTRA.
+const MOBILE_GPU = typeof window !== 'undefined' && (
+ /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ||
+ window.matchMedia('(pointer:coarse) and (max-width: 1100px)').matches
+);
 const clamp=(x:number,a:number,b:number)=>Math.max(a,Math.min(b,x));
 const wrap=(x:number)=>((x%1)+1)%1;
 const mix=(a:number,b:number,k:number)=>a+(b-a)*k;
@@ -284,11 +289,14 @@ function stadiumRibbon(v:Vertex,quality:KartGraphics){
  const rows=quality==='ultra'?16:quality==='high'?14:quality==='balanced'?12:9;
  const route=Array.from({length:240},(_,i)=>pt(i/240));
  const safe=(f:number,side:number)=>{
-  const center=place(f,side*76);
+  // Crowd decks must not cross another part of the track in hairpins or switchbacks.
+  // Probe the INNER, MIDDLE and OUTER tiers, not just one point near the stand.
+  const probes=[place(f,side*48),place(f,side*79),place(f,side*112)];
   for(let j=0;j<route.length;j++){
    const delta=Math.abs(wrap(f-j/route.length+.5)-.5);
-   if(delta<.029)continue;
-   if(Math.hypot(center.x-route[j].x,center.z-route[j].z)<28)return false;
+   if(delta<.037)continue;
+   const r=route[j];
+   for(const probe of probes)if(Math.hypot(probe.x-r.x,probe.z-r.z)<36)return false;
   }
   return true;
  };
@@ -984,6 +992,7 @@ uniform mat4 uViewProj;
 uniform vec3 uCamera;
 uniform float uTime;
 uniform float uTravel;
+uniform float uMobile;
 varying float vAlpha;
 varying float vBrightness;
 float rainHash(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
@@ -1000,14 +1009,14 @@ void main(){
  float falling=mod(aDrop.z*height-uTime*fallSpeed,height);
  float yy=ground+falling;
  // aDrop.w: 0 = streak bottom, 1 = upward trailing tip.
- float tail=(1.65+uTravel*1.55+seed*.86)*aDrop.w;
+ float tail=(1.65+uTravel*1.55+seed*.86)*aDrop.w*mix(1.0,.42,uMobile);
  vec3 p=vec3(wx-tail*.15,yy+tail,wz+tail*.09);
  float d=length(vec2(wx-uCamera.x,wz-uCamera.z));
  float sideFade=1.0-smoothstep(42.0,64.0,d);
  float nearFade=smoothstep(1.2,5.5,d);
  float topFade=1.0-smoothstep(44.0,55.0,falling);
  float bottomFade=smoothstep(.25,2.8,falling);
- vAlpha=(.32+.27*seed)*sideFade*nearFade*topFade*bottomFade;
+ vAlpha=(.32+.27*seed)*sideFade*nearFade*topFade*bottomFade*mix(1.0,.42,uMobile);
  vBrightness=mix(.72,1.07,seed);
  gl_Position=uViewProj*vec4(p,1.0);
 }`;
@@ -1638,12 +1647,12 @@ export class KartRushEngine{
  private uniformFlood:WebGLUniformLocation|null;private uniformBrakes:WebGLUniformLocation|null;
  private fxProgram:WebGLProgram|null=null;private fxPosition=-1;private fxSpeed:WebGLUniformLocation|null=null;private fxTime:WebGLUniformLocation|null=null;private fxBoost:WebGLUniformLocation|null=null;private fxRain:WebGLUniformLocation|null=null;
  private rainProgram:WebGLProgram|null=null;private rainBuffer:WebGLBuffer|null=null;private rainCount=0;private rainPosition=-1;
- private rainMat:WebGLUniformLocation|null=null;private rainCamera:WebGLUniformLocation|null=null;private rainTime:WebGLUniformLocation|null=null;private rainTravel:WebGLUniformLocation|null=null;
+ private rainMat:WebGLUniformLocation|null=null;private rainCamera:WebGLUniformLocation|null=null;private rainTime:WebGLUniformLocation|null=null;private rainTravel:WebGLUniformLocation|null=null;private rainMobile:WebGLUniformLocation|null=null;
  private skyProgram:WebGLProgram;private skyBuffer:WebGLBuffer;private skyPos:number;private skyTime:WebGLUniformLocation|null;private skyYaw:WebGLUniformLocation|null;private skyWeather:WebGLUniformLocation|null;
  private billboardProgram:WebGLProgram|null=null;private billboardBuffer:WebGLBuffer|null=null;
  private billboardTexture:WebGLTexture|null=null;private billboardCount=0;
  private billboardPos=-1;private billboardUV=-1;private billboardMat:WebGLUniformLocation|null=null;
- private graphics:KartGraphics;private readonly weather:KartWeather;private readonly totalLaps:number;private readonly paceFactor:number;private frameCounter=0;private fps=60;private fpsTime=0;private renderScale=1;
+ private graphics:KartGraphics;private readonly weather:KartWeather;private readonly totalLaps:number;private readonly paceFactor:number;private frameCounter=0;private fps=60;private fpsTime=0;private renderScale=MOBILE_GPU ? .94 : 1;private mobileFrameTime=0;
  private raf=0;private last=0;private lastHud=0;private lastBroadcast=0;private currentProgress=-.0103;
  private lane=0;private lateralVelocity=0;private headingYaw=0;private wallStuckFor=0;private speed=0;private power:KartPower|null=null;private shieldUntil=0;private turboUntil=0;private slowUntil=0;
  private lapStart=0;private bestLap=0;private finished=false;private finishElapsed=0;private finishRank=0;private elapsed=0;private lastLapNumber=-1;
@@ -1658,7 +1667,7 @@ export class KartRushEngine{
   const gridSlot=clamp(Math.floor(options.gridSlot??GRID_PLAYER_SLOT),0,21);
   this.currentProgress=GRID_FIRST-GRID_STEP*gridSlot;this.lane=gridSlot%2===0?-GRID_LANE:GRID_LANE;
   this.headingYaw=yawFor(this.currentProgress);
-  const gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'})||canvas.getContext('experimental-webgl');
+  const gl=canvas.getContext('webgl',{antialias:!MOBILE_GPU,alpha:false,powerPreference:MOBILE_GPU?'low-power':'high-performance'})||canvas.getContext('experimental-webgl');
   if(!gl)throw Error('Bu tarayıcı WebGL desteklemiyor.');this.gl=gl as WebGLRenderingContext;
   const vs=shader(this.gl,this.gl.VERTEX_SHADER,VERT),fs=shader(this.gl,this.gl.FRAGMENT_SHADER,FRAG);
   const program=this.gl.createProgram();if(!program)throw Error('WebGL programı oluşturulamadı');this.gl.attachShader(program,vs);this.gl.attachShader(program,fs);this.gl.linkProgram(program);if(!this.gl.getProgramParameter(program,this.gl.LINK_STATUS))throw Error('WebGL bağlantı hatası');this.program=program;
@@ -1694,7 +1703,7 @@ export class KartRushEngine{
     const position=this.gl.getAttribLocation(rp,'aDrop');
     if(position<0)throw Error('rain attribute missing');
     rb=this.gl.createBuffer();if(!rb)throw Error('rain buffer allocation');
-    this.rainCount=this.graphics==='ultra'?2900:this.graphics==='high'?2200:this.graphics==='balanced'?1500:850;
+    this.rainCount=MOBILE_GPU?(this.graphics==='low'?280:540):(this.graphics==='ultra'?2900:this.graphics==='high'?2200:this.graphics==='balanced'?1500:850);
     const drops=new Float32Array(this.rainCount*8);
     // Fibonacci-style stratified distribution: no empty holes when looking skyward.
     for(let i=0;i<this.rainCount;i++){
@@ -1712,7 +1721,7 @@ export class KartRushEngine{
     this.rainMat=this.gl.getUniformLocation(rp,'uViewProj');
     this.rainCamera=this.gl.getUniformLocation(rp,'uCamera');
     this.rainTime=this.gl.getUniformLocation(rp,'uTime');
-    this.rainTravel=this.gl.getUniformLocation(rp,'uTravel');
+    this.rainTravel=this.gl.getUniformLocation(rp,'uTravel');this.rainMobile=this.gl.getUniformLocation(rp,'uMobile');
    }catch(e){
     if(rb)this.gl.deleteBuffer(rb);
     if(rp)this.gl.deleteProgram(rp);
@@ -1720,7 +1729,7 @@ export class KartRushEngine{
    }finally{if(rv)this.gl.deleteShader(rv);if(rf)this.gl.deleteShader(rf);}
   }
   const sb=this.gl.createBuffer(),db=this.gl.createBuffer(),cb=this.gl.createBuffer();if(!sb||!db||!cb)throw Error('WebGL belleği oluşturulamadı');this.staticBuffer=sb;this.dynamicBuffer=db;this.crowdBuffer=cb;
-  const verts=buildWorld(this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
+  const verts=buildWorld(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
   // G2 textures load asynchronously; shaded procedural fallbacks remain while pending.
   if(typeof Image!=='undefined')this.loadMaterialAtlases();
   // Optional 3D track signage: if browser disallows 2D textures, the race still works.
@@ -1736,7 +1745,7 @@ export class KartRushEngine{
   this.resize=()=>{
    const r=canvas.getBoundingClientRect();
    // V12: resolution adapts only when sustained FPS is low; geometry settings remain intact.
-   const maxDpr=this.graphics==='ultra'?2.6:this.graphics==='high'?2.0:this.graphics==='balanced'?1.3:1;
+   const maxDpr=MOBILE_GPU?(this.graphics==='low'?1.0:1.30):(this.graphics==='ultra'?2.6:this.graphics==='high'?2.0:this.graphics==='balanced'?1.3:1);
    const dpr=Math.min(window.devicePixelRatio||1,maxDpr)*this.renderScale;
    const w=Math.max(1,Math.floor(r.width*dpr)),h=Math.max(1,Math.floor(r.height*dpr));
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;this.gl.viewport(0,0,w,h);}
@@ -1744,9 +1753,9 @@ export class KartRushEngine{
   window.addEventListener('resize',this.resize,{passive:true});this.resize();this.raf=requestAnimationFrame(this.frame);
  }
  setGraphics(g:KartGraphics){if(this.graphics===g)return;this.graphics=g;this.crowdTemplates.clear();
-  const verts=buildWorld(this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);
+  const verts=buildWorld(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);
   this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
-  if(this.billboardBuffer){const signs=billboardGeometry(this.graphics);this.billboardCount=signs.length/5;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.billboardBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,signs,this.gl.STATIC_DRAW);}
+  if(this.billboardBuffer){const signs=billboardGeometry(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);this.billboardCount=signs.length/5;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.billboardBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,signs,this.gl.STATIC_DRAW);}
   this.resize();}
  private loadMaterialAtlases(){
   const gl=this.gl;
@@ -1772,14 +1781,14 @@ export class KartRushEngine{
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR_MIPMAP_LINEAR);
     const ext=gl.getExtension('EXT_texture_filter_anisotropic') as {TEXTURE_MAX_ANISOTROPY_EXT:number;MAX_TEXTURE_MAX_ANISOTROPY_EXT:number}|null;
-    if(ext){const max=gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number;gl.texParameterf(gl.TEXTURE_2D,ext.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(16,max));}
+    if(ext){const max=gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT) as number;gl.texParameterf(gl.TEXTURE_2D,ext.TEXTURE_MAX_ANISOTROPY_EXT,Math.min(MOBILE_GPU?2:16,max));}
     loaded++;if(loaded===2)this.materialReady=true;
    };
    img.onerror=()=>{console.warn('Kart Rush Graphics 2.0 surface texture unavailable:',url);};
    img.src=url;
   };
-  setup(albedo,gl.TEXTURE1,false,'/kart-rush/materials/surface-albedo-v4-cinematic.png');
-  setup(normal,gl.TEXTURE2,true,'/kart-rush/materials/surface-normal-rough-v4-cinematic.png');
+  setup(albedo,gl.TEXTURE1,false,MOBILE_GPU?'/kart-rush/materials/surface-albedo-v2.png':'/kart-rush/materials/surface-albedo-v4-cinematic.png');
+  setup(normal,gl.TEXTURE2,true,MOBILE_GPU?'/kart-rush/materials/surface-normal-rough-v2.png':'/kart-rush/materials/surface-normal-rough-v4-cinematic.png');
  }
  private prepareBillboards(){
   const gl=this.gl,vs=shader(gl,gl.VERTEX_SHADER,SIGN_VERT),fs=shader(gl,gl.FRAGMENT_SHADER,SIGN_FRAG);
@@ -1794,7 +1803,7 @@ export class KartRushEngine{
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-  const signs=billboardGeometry(this.graphics);
+  const signs=billboardGeometry(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,signs,gl.STATIC_DRAW);
   this.billboardCount=signs.length/5;this.billboardBuffer=buffer;this.billboardTexture=tex;this.billboardProgram=pr;
   this.billboardPos=gl.getAttribLocation(pr,'aPosition');this.billboardUV=gl.getAttribLocation(pr,'aUV');
@@ -2081,10 +2090,16 @@ export class KartRushEngine{
  }
  private frame=(ts:number)=>{
   if(this.stopped)return;
+  // Render at 30 FPS on phone: reduces GPU shading and battery drain.
+  if(MOBILE_GPU&&this.mobileFrameTime>0&&ts-this.mobileFrameTime<31){this.raf=requestAnimationFrame(this.frame);return;}
+  if(MOBILE_GPU)this.mobileFrameTime=ts;
   this.frameCounter++;if(ts-this.fpsTime>1400){
    this.fps=Math.round(this.frameCounter*1000/Math.max(ts-this.fpsTime,1));this.frameCounter=0;this.fpsTime=ts;
    const previous=this.renderScale;
-   if(this.graphics==='high'||this.graphics==='ultra')this.renderScale=1;
+   if(MOBILE_GPU){
+    if(this.fps<25)this.renderScale=Math.max(.70,this.renderScale-.065);
+    else if(this.fps>28)this.renderScale=Math.min(.94,this.renderScale+.018);
+   }else if(this.graphics==='high'||this.graphics==='ultra')this.renderScale=1;
    else if(this.fps<38)this.renderScale=Math.max(.68,this.renderScale-.10);
    else if(this.fps>57)this.renderScale=Math.min(1,this.renderScale+.035);
    if(Math.abs(this.renderScale-previous)>.004)this.resize();
@@ -2311,7 +2326,7 @@ export class KartRushEngine{
   }
   const fov=rear?1.12:this.cameraMode===5?1.00:this.cameraMode===6?.99:this.cameraMode===4?1.06:this.cameraMode===2?1.01:clamp(1.00+travel*.31+(boost?.11:0),.99,1.44);
   const proj=projection(fov,this.canvas.width/this.canvas.height,inCockpit?.05:.3,1250),mat=mul(proj,lookAt(this.eye,this.target!));gl.useProgram(this.program);gl.uniformMatrix4fv(this.uniformMat,false,mat);
-  gl.uniform1f(this.uniformTime,time);gl.uniform1f(this.uniformRain,this.weather==='rain'?1:0);gl.uniform1f(this.uniformDetail,this.graphics==='low'?.42:this.graphics==='balanced'?.82:this.graphics==='high'?1:1.14);
+  gl.uniform1f(this.uniformTime,time);gl.uniform1f(this.uniformRain,this.weather==='rain'?1:0);gl.uniform1f(this.uniformDetail,MOBILE_GPU?.60:(this.graphics==='low'?.42:this.graphics==='balanced'?.82:this.graphics==='high'?1:1.14));
   gl.uniform1f(this.uniformAtlasReady,this.materialReady?1:0);
   gl.uniform3f(this.uniformCamera,this.eye!.x,this.eye!.y,this.eye!.z);
   // Only the closest four towers affect surface lighting; extra visible poles stay geometric.
@@ -2379,7 +2394,7 @@ export class KartRushEngine{
   const cameraDistance=rear?400:500;
   // G2.8: Proximity-triggered camera bursts. Audio uses the same 24 fixed locations
   // and the same entry threshold; no random distant flashing out of sync with the player.
-  if(this.graphics!=='low')for(let n=0;n<72;n++){
+  if(this.graphics!=='low'&&!MOBILE_GPU)for(let n=0;n<72;n++){
    const f=(n+.4)/72,side=n%2?1:-1;
    const distance=Math.abs(wrap(f-wrap(this.currentProgress)+.5)-.5)*TRACK_LENGTH;
    if(distance>TRACK_LENGTH*.013)this.cameraFlashArmed[n]=true;
@@ -2413,16 +2428,16 @@ export class KartRushEngine{
   if(this.options.bots){for(let i=0;i<this.bots.length;i++)addVisible(this.bots[i],time<this.botShieldUntil[i],time<this.botTurboUntil[i]);}
   else for(const other of this.remote.values())addVisible(other,false,false);
   nearCars.sort((a,b)=>a.d-b.d);
-  const fullBudget=this.graphics==='ultra'?20:this.graphics==='high'?14:this.graphics==='balanced'?8:3;
+  const fullBudget=MOBILE_GPU?5:(this.graphics==='ultra'?20:this.graphics==='high'?14:this.graphics==='balanced'?8:3);
   // Only the closest cars or cars emitting abilities require procedural meshes each frame.
   // Other visible cars retain their EXACT full/Lite LOD using persistent mesh templates.
-  const animatedBudget=this.graphics==='ultra'?5:this.graphics==='high'?4:this.graphics==='balanced'?3:2;
+  const animatedBudget=MOBILE_GPU?2:(this.graphics==='ultra'?5:this.graphics==='high'?4:this.graphics==='balanced'?3:2);
   const queued:{mesh:Float32Array;progress:number;lane:number}[]=[];
   let queuedFloats=0;
   for(let i=0;i<nearCars.length;i++){
    const {car:opponent,d,shield,boost:boosted}=nearCars[i];
    const full=i<fullBudget&&d<190;
-   const lodQuality:KartGraphics=full?(this.graphics==='ultra'&&i<12?'high':this.graphics==='high'&&i<8?'high':this.graphics==='low'?'low':'balanced'):this.graphics;
+   const lodQuality:KartGraphics=MOBILE_GPU?(full?'balanced':'low'):(full?(this.graphics==='ultra'&&i<12?'high':this.graphics==='high'&&i<8?'high':this.graphics==='low'?'low':'balanced'):this.graphics);
    const braking=this.options.bots?time<this.botBrakeUntil[Number(opponent.id.slice(3))]:(opponent.speed<17);
    if((i<animatedBudget&&full)||shield||boosted){
     if(full)car(dyn,opponent.progress,opponent.lane,opponent.color,shield,boosted,0,lodQuality,time,time*opponent.speed/.57,braking);
@@ -2476,7 +2491,7 @@ export class KartRushEngine{
    gl.uniformMatrix4fv(this.rainMat,false,mat);
    gl.uniform3f(this.rainCamera,this.eye.x,this.eye.y,this.eye.z);
    gl.uniform1f(this.rainTime,time);
-   gl.uniform1f(this.rainTravel,clamp(this.speed/95,0,1));
+   gl.uniform1f(this.rainTravel,clamp(this.speed/95,0,1));gl.uniform1f(this.rainMobile,MOBILE_GPU?1:0);
    gl.enable(gl.BLEND);
    gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
    gl.depthMask(false);
@@ -2486,7 +2501,7 @@ export class KartRushEngine{
    gl.disableVertexAttribArray(this.rainPosition);
   }
   // A separate compositing pass: no geometry edits, no increased opponent draw budget.
-  if(this.fxProgram&&this.graphics!=='low'){
+  if(this.fxProgram&&!MOBILE_GPU&&this.graphics!=='low'){
    gl.disable(gl.DEPTH_TEST);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);
    gl.useProgram(this.fxProgram);gl.bindBuffer(gl.ARRAY_BUFFER,this.skyBuffer);
    gl.enableVertexAttribArray(this.fxPosition);
