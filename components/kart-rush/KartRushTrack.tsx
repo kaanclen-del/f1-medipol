@@ -92,6 +92,25 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const ambience=useRef<KartRushAmbientSound|null>(null);
  const venueAudio=useRef<KartRushVenueAudio|null>(null);
  const [audioEnabled,setAudioEnabled]=useState(false);
+ // Safari iPhone landscape: lock page scroll only while the race occupies the viewport.
+ useEffect(()=>{
+  const query=window.matchMedia('(pointer:coarse) and (orientation:landscape) and (max-height:650px)');
+  const root=document.documentElement, body=document.body;
+  const previousRoot=root.style.overflow, previousBody=body.style.overflow;
+  const sync=()=>{
+   root.style.overflow=query.matches?'hidden':previousRoot;
+   body.style.overflow=query.matches?'hidden':previousBody;
+  };
+  sync();
+  query.addEventListener?.('change',sync);
+  window.addEventListener('resize',sync);
+  return()=>{
+   query.removeEventListener?.('change',sync);
+   window.removeEventListener('resize',sync);
+   root.style.overflow=previousRoot;
+   body.style.overflow=previousBody;
+  };
+ },[]);
  const [startSoundsEnabled,setStartSoundsEnabled]=useState(true);
  const startSoundsRef=useRef(true);
  const toggleStartSounds=useCallback(()=>{setStartSoundsEnabled(v=>{startSoundsRef.current=!v;return !v;});},[]);
@@ -310,7 +329,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const rollRisk=()=>{if(preRaceChoice||!engine.current||hud.started||hud.countdown<=5)return;
   const result=engine.current.rollStartEvent();if(result){setPreRaceChoice(result);sound.current?.effect(result==='boost'?'boost':'collision');}};
  const everyoneFinished=members.length>=2&&members.every(x=>x.finish_ms!==null);
- return <section className={`${s.raceScreen} ${ended!==null?s.paradeMode:''}`} ref={raceRoot}
+ return <section className={`${s.raceScreen} ${!hud.started&&ended===null?s.preRaceStage:''} ${ended!==null?s.paradeMode:''}`} ref={raceRoot}
   onPointerDownCapture={()=>{sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();}}>
   <canvas ref={canvas} className={s.canvas} aria-label="Kart Rush 3D yarış pisti" />
   {weather==='rain'&&<div aria-hidden="true" style={{position:'absolute',top:74,left:'50%',transform:'translateX(-50%)',fontSize:11,letterSpacing:'1.3px',fontWeight:800,padding:'6px 12px',borderRadius:7,background:'rgba(9,22,32,.62)',color:'#d7e8f8',pointerEvents:'none',zIndex:4}}>🌧 ISLAK PİST · DAHA UZUN FREN MESAFESİ</div>}
@@ -420,7 +439,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   {hud.shield&&<span className={s.activeShield}>⬡ KALKAN AKTİF</span>}
   {hud.turbo&&<span className={s.activeTurbo}>⚡ TURBO AKTİF</span>}
   {!hud.started&&ended===null&&hud.countdown>5&&<div className={s.countdown} style={{background:'linear-gradient(90deg,rgba(2,7,17,.32),rgba(5,13,25,.07))',justifyContent:'space-between',alignItems:'center',padding:'clamp(10px,2vw,20px)',pointerEvents:'none'}}>
-   <div style={{pointerEvents:'none',position:'absolute',top:'clamp(8px,2vh,18px)',left:'50%',transform:'translateX(-50%)',padding:'7px 20px',background:'rgba(4,9,18,.92)',border:'1px solid #ffffff50',borderRadius:12,fontWeight:950,fontSize:'clamp(18px,3vw,28px)',whiteSpace:'nowrap',zIndex:9}}>🎬 PİST TANITIMI · {Math.max(1,Math.min(15,hud.countdown-5))} SANİYE</div>
+   <div className={s.raceIntroTicker} style={{pointerEvents:'none',position:'absolute',top:'clamp(8px,2vh,18px)',left:'50%',transform:'translateX(-50%)',padding:'7px 20px',background:'rgba(4,9,18,.92)',border:'1px solid #ffffff50',borderRadius:12,fontWeight:950,fontSize:'clamp(18px,3vw,28px)',whiteSpace:'nowrap',zIndex:9}}>🎬 PİST TANITIMI · {Math.max(1,Math.min(15,hud.countdown-5))} SANİYE</div>
    <div className={s.startSequence} style={{pointerEvents:'auto',maxWidth:600,marginTop:58,background:'rgba(6,12,23,.82)',border:'1px solid rgba(255,255,255,.24)',padding:'clamp(12px,2vw,20px)',borderRadius:16,overflowY:'auto',maxHeight:'70%'}}>
     <small>F1 MEDIPOL · RACE DIRECTOR</small>
     <strong style={{fontSize:'clamp(19px,3vw,28px)'}}>GRAND PRIX · GRID WALK</strong>
