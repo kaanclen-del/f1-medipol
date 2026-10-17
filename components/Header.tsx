@@ -1606,6 +1606,121 @@ export default function Header() {
             .medipol-header-profile-name{max-width:40px!important}
             .medipol-header-right{gap:2px!important}
           }
+
+          /* G6.9 — symmetric touch header, consistent on portrait and landscape.
+             Theme is a top-bar control; mobile drawer holds only navigation and tour. */
+          .medipol-header-login-icon { display:none; }
+          @media (max-width:700px), (pointer:coarse) and (max-width:1100px) {
+            .medipol-header-inner {
+              width:calc(100% - 16px)!important;
+              min-width:0!important;
+              gap:5px!important;
+              justify-content:space-between!important;
+            }
+            .medipol-header-logo {
+              width:clamp(72px,25vw,110px)!important;
+              min-width:0!important;
+              max-width:110px!important;
+              flex:0 1 clamp(72px,25vw,110px)!important;
+            }
+            .medipol-header-logo-art {
+              width:100%!important;
+              max-width:100%!important;
+              min-width:0!important;
+              height:auto!important;
+              max-height:32px!important;
+              object-fit:contain!important;
+            }
+            .medipol-header-right {
+              width:auto!important;
+              min-width:0!important;
+              flex:0 0 auto!important;
+              gap:4px!important;
+              margin-left:auto!important;
+              display:flex!important;
+              align-items:center!important;
+            }
+            .medipol-header-right > .medipol-header-profile,
+            .medipol-header-right > .medipol-mobile-menu-button {
+              box-sizing:border-box!important;
+              display:flex!important;
+              width:40px!important;
+              min-width:40px!important;
+              max-width:40px!important;
+              height:40px!important;
+              min-height:40px!important;
+              max-height:40px!important;
+              flex:0 0 40px!important;
+              align-items:center!important;
+              justify-content:center!important;
+              padding:3px!important;
+              border-radius:11px!important;
+              line-height:1!important;
+            }
+            .medipol-header-profile-name,.medipol-profile-arrow {display:none!important;}
+            .medipol-header-avatar {
+              box-sizing:border-box!important;
+              width:31px!important;
+              height:31px!important;
+              min-width:31px!important;
+              min-height:31px!important;
+              max-height:31px!important;
+              border-radius:9px!important;
+            }
+            .medipol-landscape-quick {
+              display:flex!important;
+              gap:4px!important;
+              align-items:center!important;
+              flex:0 0 auto!important;
+            }
+            .medipol-quick-control {
+              box-sizing:border-box;
+              width:40px;
+              height:40px;
+              min-width:40px;
+              max-width:40px;
+              flex:0 0 40px;
+              display:flex;
+              align-items:center;
+              justify-content:center;
+              position:relative;
+            }
+            /* Only the trigger, never the DM / notification popup content. */
+            .medipol-quick-control > button,
+            .medipol-quick-control > a,
+            .medipol-quick-control > div > button:first-child,
+            .medipol-quick-control > div > a:first-child {
+              box-sizing:border-box!important;
+              width:40px!important;
+              height:40px!important;
+              min-width:40px!important;
+              min-height:40px!important;
+              max-width:40px!important;
+              max-height:40px!important;
+              padding:0!important;
+              border-radius:11px!important;
+              display:flex!important;
+              justify-content:center!important;
+              align-items:center!important;
+            }
+            .medipol-quick-control > div:first-child { min-width:0!important; }
+            .medipol-header-login-icon {display:block!important;}
+            .medipol-header-login-label {display:none!important;}
+            .medipol-mobile-tools {max-width:320px!important;min-height:0!important;}
+          }
+          @media (max-width:355px) {
+            .medipol-header-inner {gap:2px!important;}
+            .medipol-header-right,.medipol-landscape-quick {gap:2px!important;}
+            .medipol-header-logo {width:70px!important;flex-basis:70px!important;}
+            .medipol-header-right > .medipol-header-profile,
+            .medipol-header-right > .medipol-mobile-menu-button,
+            .medipol-quick-control {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;flex-basis:36px!important;}
+            .medipol-quick-control > button,
+            .medipol-quick-control > a,
+            .medipol-quick-control > div > button:first-child,
+            .medipol-quick-control > div > a:first-child {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;}
+          }
+
           @media (prefers-reduced-motion:reduce){.medipol-header{transition:none!important;}}
         `}
       </style>
@@ -1733,12 +1848,29 @@ export default function Header() {
               onClick={() =>
                 setMenuOpen(false)
               }
+              aria-label="Giriş yap"
             >
-              Giriş
+              <span className="medipol-header-login-label">Giriş</span>
+              <svg className="medipol-header-login-icon" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 21a8 8 0 0 1 16 0" />
+              </svg>
             </Link>
           )}
 
-          {compactHeader && <div className="medipol-landscape-quick" aria-label="Mesajlar ve bildirimler"><DmDock isLight={isLight}/><NotificationBell isLight={isLight}/></div>}
+          {compactHeader && (
+            <div className="medipol-landscape-quick" aria-label="Hızlı işlemler">
+              <div className="medipol-quick-control medipol-quick-dm" aria-label="Mesajlar">
+                <DmDock isLight={isLight} />
+              </div>
+              <div className="medipol-quick-control medipol-quick-notifications" aria-label="Bildirimler">
+                <NotificationBell isLight={isLight} />
+              </div>
+              <div className="medipol-quick-control medipol-quick-theme" aria-label="Tema seçimi">
+                <HeaderThemeMenu />
+              </div>
+            </div>
+          )}
           {/* MOBILE MENU BUTTON */}
 
           <button
@@ -1793,8 +1925,7 @@ export default function Header() {
           " "
         )}
       >
-        {compactHeader && <div className="medipol-mobile-tools" aria-label="Bildirim, mesaj ve görünüm ayarları">
-          <HeaderThemeMenu />
+        {compactHeader && <div className="medipol-mobile-tools" aria-label="Site kullanım rehberi">
           <WelcomeTour />
         </div>}
         <nav className="medipol-mobile-nav">
