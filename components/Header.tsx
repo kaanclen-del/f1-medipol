@@ -21,6 +21,10 @@ type HeaderTheme =
   | "red"
   | "light";
 
+// Preserve the last confirmed profile between App Router page remounts.
+// Never store profile information in persistent browser storage.
+let cachedHeaderProfile: { displayName: string; avatarUrl: string | null } | null = null;
+
 /* =========================================================
    THEME
    ========================================================= */
@@ -140,7 +144,7 @@ export default function Header() {
   ] =
     useState<
       string | null
-    >(null);
+    >(cachedHeaderProfile?.displayName ?? null);
 
   const [
     avatarUrl,
@@ -148,13 +152,13 @@ export default function Header() {
   ] =
     useState<
       string | null
-    >(null);
+    >(cachedHeaderProfile?.avatarUrl ?? null);
 
   const [
     loading,
     setLoading,
   ] =
-    useState(true);
+    useState(() => cachedHeaderProfile === null);
 
   const [
     menuOpen,
@@ -208,6 +212,7 @@ export default function Header() {
               .getUser();
 
           if (!user) {
+            cachedHeaderProfile = null;
             setDisplayName(
               null
             );
@@ -249,15 +254,11 @@ export default function Header() {
               )
               .maybeSingle();
 
-          setDisplayName(
-            profile?.display_name ||
-              fallbackName
-          );
-
-          setAvatarUrl(
-            profile?.avatar_url ||
-              null
-          );
+          const nextName = profile?.display_name || fallbackName;
+          const nextAvatar = profile?.avatar_url || null;
+          cachedHeaderProfile = { displayName: nextName, avatarUrl: nextAvatar };
+          setDisplayName(nextName);
+          setAvatarUrl(nextAvatar);
         } catch (
           error
         ) {
@@ -817,7 +818,7 @@ export default function Header() {
               11px;
 
             font-weight:
-              850;
+              650;
 
             line-height:
               1;
@@ -983,7 +984,7 @@ export default function Header() {
               11px;
 
             font-weight:
-              900;
+              700;
           }
 
           /* ===============================================
@@ -1141,10 +1142,10 @@ export default function Header() {
               ${mobileMenuBackground};
 
             backdrop-filter:
-              blur(22px);
+              none;
 
             -webkit-backdrop-filter:
-              blur(22px);
+              none;
 
             box-shadow:
               0 24px 45px
@@ -1212,10 +1213,10 @@ export default function Header() {
               ${textColor} !important;
 
             font-size:
-              13px;
+              12px;
 
             font-weight:
-              850;
+              650;
 
             text-decoration:
               none;
@@ -1560,12 +1561,6 @@ export default function Header() {
             }
             .medipol-mobile-drawer:not(.open){display:none!important;}
             .medipol-mobile-drawer.open{display:block!important;}
-            .medipol-mobile-tools {
-              display:flex;align-items:center;justify-content:center;gap:14px;
-              max-width:520px;margin:3px auto 12px;padding:12px 10px;
-              border:1px solid ${profileBorder};border-radius:12px;
-              background:${profileBackground};min-height:60px;
-            }
             .medipol-mobile-nav {grid-template-columns:repeat(2,minmax(0,1fr))!important;}
             .medipol-mobile-header-spacer {height:64px!important;min-height:64px!important;}
           }
@@ -1706,7 +1701,6 @@ export default function Header() {
             .medipol-quick-control > div:first-child { min-width:0!important; }
             .medipol-header-login-icon {display:block!important;}
             .medipol-header-login-label {display:none!important;}
-            .medipol-mobile-tools {max-width:320px!important;min-height:0!important;}
           }
           @media (max-width:355px) {
             .medipol-header-inner {gap:2px!important;}
@@ -1721,6 +1715,74 @@ export default function Header() {
             .medipol-quick-control > div > a:first-child {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;}
           }
 
+          /* G6.9.5: stable profile slot throughout loading / navigation. */
+          .medipol-header-profile-loading {visibility:visible!important;opacity:.60;pointer-events:none!important;}
+          @media (min-width:1101px) {
+            .medipol-header-right > .medipol-header-profile {
+              width:155px!important;min-width:155px!important;max-width:155px!important;
+              flex:0 0 155px!important;box-sizing:border-box!important;
+            }
+            .medipol-header-profile-name {
+              flex:1 1 0!important;min-width:0!important;max-width:none!important;
+              overflow:hidden!important;text-overflow:ellipsis!important;white-space:nowrap!important;
+            }
+            .medipol-header-avatar {
+              flex:0 0 37px!important;min-width:37px!important;max-width:37px!important;height:37px!important;
+            }
+          }
+          /* G6.9.4 — desktop readability only; mobile dimensions unchanged. */
+          @media (min-width:1101px) {
+            .medipol-header {height:86px!important;min-height:86px!important;max-height:86px!important;}
+            .medipol-header-inner {gap:18px!important;}
+            .medipol-header-logo {width:205px!important;min-width:205px!important;max-width:205px!important;flex:0 0 205px!important;height:68px!important;}
+            .medipol-header-logo-art {width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;max-height:48px!important;}
+            .medipol-header-nav {gap:2px!important;}
+            .medipol-header-nav-link {font-size:12px!important;font-weight:650!important;padding:11px 8px!important;}
+            .medipol-header-right {gap:9px!important;}
+            .medipol-header-profile {min-height:48px!important;padding:5px 12px 5px 6px!important;}
+            .medipol-header-avatar {width:37px!important;height:37px!important;min-width:37px!important;}
+            .medipol-header-profile-name {font-size:12px!important;}
+            .medipol-quick-control {min-width:44px!important;min-height:44px!important;}
+          }
+          /* G6.9.3 — stable dimensions through route changes and authentication. */
+          .medipol-header-profile-loading {pointer-events:none!important;visibility:hidden!important;}
+          @media (min-width:1101px) {
+            .medipol-header {height:86px!important;min-height:86px!important;max-height:86px!important;}
+          }
+          @media (max-width:700px), (pointer:coarse) and (max-width:1100px) {
+            .medipol-header {height:70px!important;min-height:70px!important;max-height:70px!important;}
+            .medipol-mobile-header-spacer {height:70px!important;min-height:70px!important;}
+            .medipol-header-inner {height:70px!important;min-height:70px!important;}
+            .medipol-header-right {min-width:220px!important;min-height:42px!important;justify-content:flex-end!important;}
+            .medipol-header-right > .medipol-header-profile,
+            .medipol-header-right > .medipol-mobile-menu-button,
+            .medipol-quick-control {width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;flex-basis:42px!important;}
+            .medipol-quick-control > button,
+            .medipol-quick-control > a,
+            .medipol-quick-control > div > button:first-child,
+            .medipol-quick-control > div > a:first-child {width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;}
+            .medipol-header-avatar {width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;max-width:32px!important;max-height:32px!important;}
+          }
+          @media (max-width:355px) {
+            .medipol-header-right {min-width:190px!important;}
+            .medipol-header-right > .medipol-header-profile,
+            .medipol-header-right > .medipol-mobile-menu-button,
+            .medipol-quick-control {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;flex-basis:36px!important;}
+            .medipol-quick-control > button,
+            .medipol-quick-control > a,
+            .medipol-quick-control > div > button:first-child,
+            .medipol-quick-control > div > a:first-child {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;}
+          }
+          /* G6.9.2 — softer, faster mobile navigation (preserve quick actions) */
+          @media (max-width:700px), (pointer:coarse) and (max-width:1100px) {
+            .medipol-mobile-drawer { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:0 12px 24px rgba(0,0,0,.20)!important; }
+            .medipol-mobile-nav { gap:5px!important; padding:4px!important; }
+            .medipol-mobile-nav-link { min-height:45px!important; padding:0 12px!important; font-size:12px!important; font-weight:600!important; letter-spacing:0!important; }
+            .medipol-mobile-nav-link span:last-child { font-size:14px!important; font-weight:400!important; }
+            .medipol-header-profile-name { font-weight:650!important; }
+          }
+          /* G6.9.6: a visible reserved profile slot during first auth check. */
+          .medipol-header-profile-loading {visibility:visible!important;opacity:.65!important;pointer-events:none!important;}
           @media (prefers-reduced-motion:reduce){.medipol-header{transition:none!important;}}
         `}
       </style>
@@ -1789,15 +1851,11 @@ export default function Header() {
           {/* PROFILE */}
 
           {loading ? (
-            <div
-              style={{
-                width:
-                  44,
-
-                height:
-                  44,
-              }}
-            />
+            <span className="medipol-header-profile medipol-header-profile-loading" aria-label="Profil yükleniyor">
+              <span className="medipol-header-avatar" aria-hidden="true" />
+              <span className="medipol-header-profile-name" aria-hidden="true">Profil</span>
+              <span className="medipol-profile-arrow" aria-hidden="true">›</span>
+            </span>
           ) : displayName ? (
             <Link
               href="/profile"
@@ -1925,9 +1983,6 @@ export default function Header() {
           " "
         )}
       >
-        {compactHeader && <div className="medipol-mobile-tools" aria-label="Site kullanım rehberi">
-          <WelcomeTour />
-        </div>}
         <nav className="medipol-mobile-nav">
 
           {/* MENU ITEMS */}

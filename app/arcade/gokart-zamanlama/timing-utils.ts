@@ -3,6 +3,8 @@ export type Driver = {
   id: string;
   name: string;
   car: string;
+  team?: string;
+  photo?: string;
   laps: number[];
   penalties: Penalty[];
 };

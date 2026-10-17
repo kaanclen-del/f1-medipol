@@ -121,7 +121,7 @@ export default async function EventsPage() {
     .order(
       "start_at",
       {
-        ascending: true,
+        ascending: false,
       }
     );
 
