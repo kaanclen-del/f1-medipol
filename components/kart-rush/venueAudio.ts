@@ -25,7 +25,7 @@ export class KartRushVenueAudio{
    const Factory=window.AudioContext||(window as Window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
    if(!Factory)return;
    const ctx=new Factory();this.ctx=ctx;
-   const master=ctx.createGain();master.gain.value=this.volume*.95;master.connect(ctx.destination);this.master=master;
+   const master=ctx.createGain();master.gain.value=this.volume*1.15;master.connect(ctx.destination);this.master=master;
    const buffer=ctx.createBuffer(1,Math.floor(ctx.sampleRate*1.4),ctx.sampleRate);
    const data=buffer.getChannelData(0);
    for(let i=0;i<data.length;i++)data[i]=Math.random()*2-1;
@@ -41,7 +41,7 @@ export class KartRushVenueAudio{
    source.start();this.crowd=source;
   }catch{this.dispose();}
  }
- setVolume(v:number){this.volume=clamp(v,0,1);if(this.ctx&&this.master)this.master.gain.setTargetAtTime(this.volume*.95,this.ctx.currentTime,.08);}
+ setVolume(v:number){this.volume=clamp(v,0,1);if(this.ctx&&this.master)this.master.gain.setTargetAtTime(this.volume*1.15,this.ctx.currentTime,.08);}
  update(progress:number,speed:number,started:boolean,muted:boolean){
   if(!this.ctx||!this.master||this.ended)return;
   const t=this.ctx.currentTime;
@@ -54,8 +54,8 @@ export class KartRushVenueAudio{
   }
   const approach=clamp(1-nearest/.020,0,1);
   const speedScale=clamp((speed-12)/40,.10,1);
-  this.crowdGain?.gain.setTargetAtTime(enabled?(.018+.020*approach)*speedScale:0,t,.30);
-  this.cheerGain?.gain.setTargetAtTime(enabled?.08*approach*speedScale:0,t,.20);
+  this.crowdGain?.gain.setTargetAtTime(enabled?(.03+.038*approach)*speedScale:0,t,.30);
+  this.cheerGain?.gain.setTargetAtTime(enabled?.13*approach*speedScale:0,t,.20);
   // Grandstands react as the local car arrives. Trigger only once per approach,
   // not on every frame, and avoid continuous audio even on short laps.
   if(enabled&&speed>23&&sector!==-1&&nearest<.0068&&t-this.lastCheer>5.0&&

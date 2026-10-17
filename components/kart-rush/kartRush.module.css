@@ -1394,3 +1394,25 @@
   .raceScreen .raceActions .mobilePauseBtn {width:92px!important;min-width:92px!important;}
   .raceScreen .topHud {left:calc(7px + env(safe-area-inset-left,0px))!important;}
 }
+
+/* Kart Rush G6.4: legible racing HUD and adaptive mobile fidelity */
+.raceScreen .krHealthPower{position:absolute;bottom:105px;left:50%;transform:translateX(-50%);z-index:14;display:flex;align-items:center;gap:10px;pointer-events:auto;color:#fff;max-width:calc(100% - 24px)}
+.raceScreen .krHealth{width:176px;min-width:120px;padding:9px 11px;background:rgba(5,14,26,.85);border:1px solid #728ba366;border-radius:11px;backdrop-filter:blur(7px)}
+.raceScreen .krHealth>span{display:flex;justify-content:space-between;gap:7px;font-size:10px;font-weight:900;white-space:nowrap}
+.raceScreen .krHealthBar{height:7px;background:#35414e;border-radius:9px;margin-top:7px;overflow:hidden}
+.raceScreen .krHealthBar i{display:block;height:100%;border-radius:9px;transition:width .18s}
+.raceScreen .krPowerUse{color:white;background:rgba(116,31,52,.95);border:1px solid #faacb2;border-radius:11px;padding:8px 12px;display:flex;flex-direction:column;gap:3px;align-items:center;white-space:nowrap;cursor:pointer}
+.raceScreen .krPowerUse:disabled{opacity:.65;cursor:default}.raceScreen .krPowerUse strong{font-size:11px}.raceScreen .krPowerUse small{font-size:9px}
+.raceScreen .krRearAlert{position:absolute;top:44%;left:50%;transform:translateX(-50%);z-index:12;display:flex;align-items:center;gap:9px;pointer-events:none;color:#fff;border:1px solid #a6b8c9;background:rgba(15,31,46,.8);padding:5px 12px;border-radius:10px;white-space:nowrap;font-size:10px;box-shadow:0 2px 16px #05070a99}
+.raceScreen .krRearAlert>strong{font-size:24px}.raceScreen .krRearAlert small{display:block;font-size:9px}.raceScreen .krRearDanger{background:rgba(146,19,36,.93);border-color:#ff566c;animation:krThreatPulse .65s ease-in-out infinite alternate}
+@keyframes krThreatPulse{to{box-shadow:0 0 18px #ef365988}}
+.raceScreen .krNearbyStandings{position:absolute;left:12px;top:105px;z-index:13;pointer-events:none;display:none;min-width:122px;padding:7px 8px;color:white;border-radius:10px;background:rgba(7,19,31,.83);border:1px solid #50678288}
+.raceScreen .krNearbyStandings>strong{font-size:9px;color:#aac0d5}.raceScreen .krNearbyStandings>div{display:flex;gap:6px;align-items:center;font-size:10px;padding:3px 2px}.raceScreen .krNearbyStandings span{flex:1;max-width:82px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.raceScreen .krNearbyStandings small{font-size:9px;color:#d1dfed}.raceScreen .krNearbySelf{background:#b21e35a8;border-radius:5px}
+@media(pointer:fine){.raceScreen .raceActions .hudCameraBtn{display:none!important}.raceScreen .krHealthPower{bottom:90px}}
+@media(pointer:coarse){.raceScreen .krNearbyStandings{display:block!important;top:85px!important;left:8px!important}.raceScreen .krHealthPower{bottom:89px!important;left:50%!important;gap:5px!important}.raceScreen .krHealth{min-width:104px!important;width:120px!important;padding:6px 7px!important}.raceScreen .krHealth>span{font-size:8px!important}.raceScreen .krPowerUse{padding:6px!important}.raceScreen .krPowerUse strong{font-size:9px!important}.raceScreen .krPowerUse small{font-size:8px!important}.raceScreen .krRearAlert{top:42%!important;font-size:9px!important}.raceScreen .sideHud{display:none!important}}
+@media(pointer:coarse) and (orientation:landscape){.raceScreen .krHealthPower{bottom:72px!important}.raceScreen .krNearbyStandings{top:73px!important}.raceScreen .krRearAlert{top:47%!important}}
+
+/* G6.5: rear proximity warning above sightline rather than across the car/track. */
+.raceScreen .krRearAlert{top:32%;max-width:min(280px,calc(100% - 170px));white-space:normal;line-height:1.15;padding:5px 9px}
+@media(pointer:coarse){.raceScreen .krRearAlert{top:30%!important;max-width:min(210px,calc(100% - 155px));font-size:8px!important}}
+@media(pointer:coarse) and (orientation:landscape){.raceScreen .krRearAlert{top:27%!important}}

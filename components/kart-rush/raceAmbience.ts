@@ -61,7 +61,7 @@ export class KartRushAmbientSound {
       const ctx = new ctor();
       this.ctx = ctx;
       const master = ctx.createGain();
-      master.gain.value = this.volume * .47;
+      master.gain.value = this.volume * .76;
       master.connect(ctx.destination);
       this.master = master;
 
@@ -112,7 +112,7 @@ export class KartRushAmbientSound {
   setVolume(volume: number) {
     this.volume = limit(volume, 0, 1);
     if (this.ctx && this.master) {
-      this.master.gain.setTargetAtTime(this.volume * .47, this.ctx.currentTime, .07);
+      this.master.gain.setTargetAtTime(this.volume * .76, this.ctx.currentTime, .07);
     }
   }
 
@@ -165,12 +165,12 @@ export class KartRushAmbientSound {
       const pitch = 88 + speedFactor * 215 + index * 9;
       voice.low.frequency.setTargetAtTime(pitch, t, .08);
       voice.high.frequency.setTargetAtTime(pitch * 2.03, t, .09);
-      voice.gain.gain.setTargetAtTime(.042 * proximity, t, .14);
+      voice.gain.gain.setTargetAtTime(.077 * proximity, t, .14);
       const side = limit((rival.lane || 0) / 11 + (index - 1) * .13, -.9, .9);
       voice.pan.pan.setTargetAtTime(side, t, .16);
     });
 
-    const wind = disabled ? 0 : Math.pow(speed / 300, 1.25) * .067;
+    const wind = disabled ? 0 : Math.pow(speed / 300, 1.25) * .105;
     this.windGain?.gain.setTargetAtTime(wind, t, .22);
 
     const nearest = nearby[0];
@@ -208,7 +208,7 @@ export class KartRushAmbientSound {
     filter.frequency.value = effect === 'impact' ? 300 : effect === 'gravel' ? 1400 : 780;
     const gain = ctx.createGain();
     gain.gain.setValueAtTime(.0001, now);
-    gain.gain.linearRampToValueAtTime(effect === 'impact' ? .16 : .09, now + .02);
+    gain.gain.linearRampToValueAtTime(effect === 'impact' ? .23 : .14, now + .02);
     gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
     src.connect(filter);
     filter.connect(gain);

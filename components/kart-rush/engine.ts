@@ -12,7 +12,7 @@ export type KartHud = {
  speed: number; lap: number; totalLaps: number; remaining: number; cornerSpeed?: number; camera?: string; health: number; pit: boolean; pitProgress: number; magnet: boolean; lights: number;
  power: KartPower | null; rank: number; total: number; elapsed: number; started: boolean; countdown: number;
  shield: boolean; turbo: boolean; fps?: number; bestLapMs?: number; offroad?: boolean; progress?: number; throttle?: boolean; braking?: boolean; contact?: boolean;
- rivals?: { id: string; name: string; color: string; progress: number }[];
+ rivals?: { id: string; name: string; color: string; progress: number; lane?: number; speed?: number }[];
 };
 export type KartOptions = {
  id: string; color: string; name: string; startAt: number; gridSlot?:number; laps?: number; pace?: KartPace; bots?: boolean; difficulty?: KartDifficulty; graphics?: KartGraphics; weather?: KartWeather;
@@ -1729,7 +1729,7 @@ export class KartRushEngine{
    }finally{if(rv)this.gl.deleteShader(rv);if(rf)this.gl.deleteShader(rf);}
   }
   const sb=this.gl.createBuffer(),db=this.gl.createBuffer(),cb=this.gl.createBuffer();if(!sb||!db||!cb)throw Error('WebGL belleği oluşturulamadı');this.staticBuffer=sb;this.dynamicBuffer=db;this.crowdBuffer=cb;
-  const verts=buildWorld(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
+  const verts=buildWorld(this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
   // G2 textures load asynchronously; shaded procedural fallbacks remain while pending.
   if(typeof Image!=='undefined')this.loadMaterialAtlases();
   // Optional 3D track signage: if browser disallows 2D textures, the race still works.
@@ -1745,7 +1745,7 @@ export class KartRushEngine{
   this.resize=()=>{
    const r=canvas.getBoundingClientRect();
    // V12: resolution adapts only when sustained FPS is low; geometry settings remain intact.
-   const maxDpr=MOBILE_GPU?(this.graphics==='low'?1.0:1.30):(this.graphics==='ultra'?2.6:this.graphics==='high'?2.0:this.graphics==='balanced'?1.3:1);
+   const maxDpr=MOBILE_GPU?(this.graphics==='low'?1.05:this.graphics==='balanced'?1.55:this.graphics==='high'?1.8:2.0):(this.graphics==='ultra'?2.6:this.graphics==='high'?2.0:this.graphics==='balanced'?1.3:1);
    const dpr=Math.min(window.devicePixelRatio||1,maxDpr)*this.renderScale;
    const w=Math.max(1,Math.floor(r.width*dpr)),h=Math.max(1,Math.floor(r.height*dpr));
    if(canvas.width!==w||canvas.height!==h){canvas.width=w;canvas.height=h;this.gl.viewport(0,0,w,h);}
@@ -1753,9 +1753,9 @@ export class KartRushEngine{
   window.addEventListener('resize',this.resize,{passive:true});this.resize();this.raf=requestAnimationFrame(this.frame);
  }
  setGraphics(g:KartGraphics){if(this.graphics===g)return;this.graphics=g;this.crowdTemplates.clear();
-  const verts=buildWorld(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);
+  const verts=buildWorld(this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);
   this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
-  if(this.billboardBuffer){const signs=billboardGeometry(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);this.billboardCount=signs.length/5;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.billboardBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,signs,this.gl.STATIC_DRAW);}
+  if(this.billboardBuffer){const signs=billboardGeometry(this.graphics);this.billboardCount=signs.length/5;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.billboardBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,signs,this.gl.STATIC_DRAW);}
   this.resize();}
  private loadMaterialAtlases(){
   const gl=this.gl;
@@ -1803,7 +1803,7 @@ export class KartRushEngine{
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-  const signs=billboardGeometry(MOBILE_GPU?(this.graphics==='low'?'low':'balanced'):this.graphics);
+  const signs=billboardGeometry(this.graphics);
   gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.bufferData(gl.ARRAY_BUFFER,signs,gl.STATIC_DRAW);
   this.billboardCount=signs.length/5;this.billboardBuffer=buffer;this.billboardTexture=tex;this.billboardProgram=pr;
   this.billboardPos=gl.getAttribLocation(pr,'aPosition');this.billboardUV=gl.getAttribLocation(pr,'aUV');
@@ -1883,7 +1883,7 @@ export class KartRushEngine{
   this.options.onEffect?.('collision');
  }
  private updateBots(t:number,dt:number){
-  const difficulty=this.options.difficulty||'normal',base=(difficulty==='easy'?94:difficulty==='hard'?97.0:97.0)*this.paceFactor;
+  const difficulty=this.options.difficulty||'normal',base=(difficulty==='easy'?91:difficulty==='hard'?99.5:98.65)*this.paceFactor;
   const botDryCap=350/3.6,botTurboCap=370/3.6;
   for(let i=0;i<this.bots.length;i++){
    const b=this.bots[i];
@@ -1897,6 +1897,11 @@ export class KartRushEngine{
     continue;
    }
    const phase=wrap(b.progress),sector=.975+.045*Math.sin(phase*TAU*4+i*.9);
+   // G6.5: race-seeded form. A few strong opponents can win on merit;
+   // performance is stable within a race, not rubber-banded to the player.
+   const raceSeed=Math.sin((Math.floor(this.options.startAt/1000)%100000)*.137+i*17.37)*43758.5453;
+   const form=(raceSeed-Math.floor(raceSeed))*2-1;
+   const competitiveForm=difficulty==='normal'?1+form*.012+(i%7===0?.018:0):1;
    // Bravery and car control are independent. EVERY difficulty attempts racing-line moves.
    const courage=difficulty==='hard'?.76+((i*17+7)%13)/65:((i*17+7)%13)/12,skill=difficulty==='hard'?.89+((i*7+3)%17)/175:((i*7+3)%17)/16;
    const wet=this.weather==='rain',gripWeather=wet?(difficulty==='hard'?.91:difficulty==='normal'?.84:.77):1;
@@ -1928,13 +1933,14 @@ export class KartRushEngine{
    const boosted=t<this.botTurboUntil[i],protectedBot=t<this.botShieldUntil[i];
    const curve=cornerInfo(phase);
    const gapAhead=wrap(this.currentProgress-b.progress),gapBehind=wrap(b.progress-this.currentProgress);
-   let desired=(base+i*.22)*sector+(boosted?16:0)-Math.abs(b.lane)*.10;
+   const teamFactor=({'#00D2BE':1.040,'#E32636':1.030,'#FF8000':1.025,'#173B8A':1.018,'#B11F26':.981,'#006A4E':.975,'#2B7BFF':.983,'#F4F5F7':.965,'#C4CFD8':.962,'#FF6DAE':.968,'#B4AA78':.925} as Record<string,number>)[b.color]??.98;
+   let desired=(base+i*.12)*teamFactor*sector*competitiveForm+(boosted?16:0)-Math.abs(b.lane)*.10;
    if(gapAhead>.003&&gapAhead<.055)desired+=Math.min(4,(gapAhead-.003)*75);
    if(gapBehind<.03)desired+=1.0;
    if(curve.sharp<.14&&gapAhead>.003&&gapAhead<.05)desired+=3.1;
    if(t<this.botSlowedUntil[i]&&!protectedBot)desired*=.86;
    const cornerFloor=(difficulty==='easy'?34:difficulty==='hard'?68:49)*gripWeather;
-   const difficultyPace=(difficulty==='easy'?1.15:difficulty==='hard'?1.82:1.38);
+   const difficultyPace=(difficulty==='easy'?1.15:difficulty==='hard'?1.82:1.51);
    const bravery=.96+courage*.30+(skill-.5)*.10;
    let apexLimit=Math.max(cornerFloor,curve.recommended*bravery*difficultyPace*gripWeather+1)*this.paceFactor;
    // Different braking points, rather than the same hard speed cap for every AI.
@@ -2091,14 +2097,14 @@ export class KartRushEngine{
  private frame=(ts:number)=>{
   if(this.stopped)return;
   // Render at 30 FPS on phone: reduces GPU shading and battery drain.
-  if(MOBILE_GPU&&this.mobileFrameTime>0&&ts-this.mobileFrameTime<31){this.raf=requestAnimationFrame(this.frame);return;}
+  if(MOBILE_GPU&&this.mobileFrameTime>0&&ts-this.mobileFrameTime<(this.graphics==='low'?31:22)){this.raf=requestAnimationFrame(this.frame);return;}
   if(MOBILE_GPU)this.mobileFrameTime=ts;
   this.frameCounter++;if(ts-this.fpsTime>1400){
    this.fps=Math.round(this.frameCounter*1000/Math.max(ts-this.fpsTime,1));this.frameCounter=0;this.fpsTime=ts;
    const previous=this.renderScale;
    if(MOBILE_GPU){
-    if(this.fps<25)this.renderScale=Math.max(.70,this.renderScale-.065);
-    else if(this.fps>28)this.renderScale=Math.min(.94,this.renderScale+.018);
+    if(this.fps<29)this.renderScale=Math.max(this.graphics==='low'?.72:.82,this.renderScale-.04);
+    else if(this.fps>39)this.renderScale=Math.min(1,this.renderScale+.02);
    }else if(this.graphics==='high'||this.graphics==='ultra')this.renderScale=1;
    else if(this.fps<38)this.renderScale=Math.max(.68,this.renderScale-.10);
    else if(this.fps>57)this.renderScale=Math.min(1,this.renderScale+.035);
@@ -2239,7 +2245,7 @@ export class KartRushEngine{
    }
   }
   if(ts-this.lastHud>(this.options.bots?200:125)){this.lastHud=ts;const others=this.options.bots?this.bots:[...this.remote.values()];const rank=this.finished?this.finishRank:(1+others.filter(p=>p.progress>this.currentProgress).length);
-   const rivals=[{id:this.options.id,name:this.options.name,color:this.options.color,progress:this.currentProgress},...others.map(b=>({id:b.id,name:b.name,color:b.color,progress:b.progress}))].sort((a,b)=>b.progress-a.progress);
+   const rivals=[{id:this.options.id,name:this.options.name,color:this.options.color,progress:this.currentProgress,lane:this.lane,speed:this.speed},...others.map(b=>({id:b.id,name:b.name,color:b.color,progress:b.progress,lane:b.lane,speed:b.speed}))].sort((a,b)=>b.progress-a.progress);
    this.options.onHud({speed:Math.round(this.speed*3.6),camera:this.getCameraLabel(),cornerSpeed:this.cornerWarning,lap:Math.min(this.totalLaps,Math.max(1,Math.floor(Math.max(0,this.currentProgress))+1)),totalLaps:this.totalLaps,remaining:Math.max(0,this.totalLaps-this.currentProgress),health:Math.round(this.health),pit:this.pitActive,pitProgress:this.pitProgress,magnet:ts/1000<this.magnetUntil,lights:countdown>0?clamp(6-countdown,0,5):0,power:this.power,rank,total:others.length+1,elapsed:Math.max(0,this.elapsed),started,countdown,shield:ts/1000<this.shieldUntil,turbo:ts/1000<this.turboUntil,fps:this.fps,bestLapMs:this.bestLap,offroad:Math.abs(this.lane)>14.4&&!this.pitActive,progress:this.currentProgress,throttle:this.keys.throttle,braking:this.keys.brake,contact:ts/1000<this.contactUntil,rivals});
   }
   this.draw(ts/1000,dt);
@@ -2326,7 +2332,7 @@ export class KartRushEngine{
   }
   const fov=rear?1.12:this.cameraMode===5?1.00:this.cameraMode===6?.99:this.cameraMode===4?1.06:this.cameraMode===2?1.01:clamp(1.00+travel*.31+(boost?.11:0),.99,1.44);
   const proj=projection(fov,this.canvas.width/this.canvas.height,inCockpit?.05:.3,1250),mat=mul(proj,lookAt(this.eye,this.target!));gl.useProgram(this.program);gl.uniformMatrix4fv(this.uniformMat,false,mat);
-  gl.uniform1f(this.uniformTime,time);gl.uniform1f(this.uniformRain,this.weather==='rain'?1:0);gl.uniform1f(this.uniformDetail,MOBILE_GPU?.60:(this.graphics==='low'?.42:this.graphics==='balanced'?.82:this.graphics==='high'?1:1.14));
+  gl.uniform1f(this.uniformTime,time);gl.uniform1f(this.uniformRain,this.weather==='rain'?1:0);gl.uniform1f(this.uniformDetail,this.graphics==='low'?.42:this.graphics==='balanced'?.82:this.graphics==='high'?1:1.14);
   gl.uniform1f(this.uniformAtlasReady,this.materialReady?1:0);
   gl.uniform3f(this.uniformCamera,this.eye!.x,this.eye!.y,this.eye!.z);
   // Only the closest four towers affect surface lighting; extra visible poles stay geometric.
@@ -2428,16 +2434,16 @@ export class KartRushEngine{
   if(this.options.bots){for(let i=0;i<this.bots.length;i++)addVisible(this.bots[i],time<this.botShieldUntil[i],time<this.botTurboUntil[i]);}
   else for(const other of this.remote.values())addVisible(other,false,false);
   nearCars.sort((a,b)=>a.d-b.d);
-  const fullBudget=MOBILE_GPU?5:(this.graphics==='ultra'?20:this.graphics==='high'?14:this.graphics==='balanced'?8:3);
+  const fullBudget=MOBILE_GPU?(this.graphics==='ultra'?12:this.graphics==='high'?10:this.graphics==='balanced'?8:4):(this.graphics==='ultra'?20:this.graphics==='high'?14:this.graphics==='balanced'?8:3);
   // Only the closest cars or cars emitting abilities require procedural meshes each frame.
   // Other visible cars retain their EXACT full/Lite LOD using persistent mesh templates.
-  const animatedBudget=MOBILE_GPU?2:(this.graphics==='ultra'?5:this.graphics==='high'?4:this.graphics==='balanced'?3:2);
+  const animatedBudget=MOBILE_GPU?(this.graphics==='ultra'?4:this.graphics==='high'?3:this.graphics==='balanced'?3:2):(this.graphics==='ultra'?5:this.graphics==='high'?4:this.graphics==='balanced'?3:2);
   const queued:{mesh:Float32Array;progress:number;lane:number}[]=[];
   let queuedFloats=0;
   for(let i=0;i<nearCars.length;i++){
    const {car:opponent,d,shield,boost:boosted}=nearCars[i];
    const full=i<fullBudget&&d<190;
-   const lodQuality:KartGraphics=MOBILE_GPU?(full?'balanced':'low'):(full?(this.graphics==='ultra'&&i<12?'high':this.graphics==='high'&&i<8?'high':this.graphics==='low'?'low':'balanced'):this.graphics);
+   const lodQuality:KartGraphics=MOBILE_GPU?(full?(this.graphics==='ultra'?'high':this.graphics==='high'?'high':this.graphics==='low'?'low':'balanced'):this.graphics==='low'?'low':'balanced'):(full?(this.graphics==='ultra'&&i<12?'high':this.graphics==='high'&&i<8?'high':this.graphics==='low'?'low':'balanced'):this.graphics);
    const braking=this.options.bots?time<this.botBrakeUntil[Number(opponent.id.slice(3))]:(opponent.speed<17);
    if((i<animatedBudget&&full)||shield||boosted){
     if(full)car(dyn,opponent.progress,opponent.lane,opponent.color,shield,boosted,0,lodQuality,time,time*opponent.speed/.57,braking);

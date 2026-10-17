@@ -25,7 +25,7 @@ import { KartRushVenueAudio } from './venueAudio';
 type Racer={user_id:string;nickname:string;color:string;finish_ms:number|null;best_lap_ms:number|null;kr_points?:number;kr_last_award?:number};
 type Props={
  supabase:SupabaseClient;roomId:string|null;userId:string;displayName:string;color:string;startAt:number;members:Racer[];
- onExit:()=>void;onReload:()=>void;onReset?:()=>void;onRetry?:()=>void;isHost?:boolean;difficulty?:KartDifficulty;laps?:number;pace?:KartPace;weather?:KartWeather;graphics?:KartGraphics;onGraphicsChange?:(g:KartGraphics)=>void;volume?:number;onVolumeChange?:(v:number)=>void;championshipEnabled?:boolean;pointsTarget?:number;roundNo?:number;roundScored?:boolean;championId?:string|null;onFinalize?:()=>void;onNextRound?:()=>void;
+ onExit:()=>void;onReload:()=>void;onSoloFinish?:(rank:number,rivals:{id:string;name:string;progress:number}[])=>void;onReset?:()=>void;onRetry?:()=>void;isHost?:boolean;difficulty?:KartDifficulty;laps?:number;pace?:KartPace;weather?:KartWeather;graphics?:KartGraphics;onGraphicsChange?:(g:KartGraphics)=>void;volume?:number;onVolumeChange?:(v:number)=>void;championshipEnabled?:boolean;pointsTarget?:number;roundNo?:number;roundScored?:boolean;championId?:string|null;onFinalize?:()=>void;onNextRound?:()=>void;
 };
 const LABEL:Record<KartPower,string>={turbo:'TURBO',shield:'KALKAN',emp:'EMP DARBESİ',repair:'ONARIM',pulse:'ŞOK DALGASI',magnet:'MIKNATIS'};
 const POWER_ICON:Record<KartPower,string>={turbo:'⚡',shield:'⬡',emp:'✺',repair:'✚',pulse:'◉',magnet:'⊕'};
@@ -37,23 +37,7 @@ const PS5_PAD:PadBindings={throttle:7,brake:6,power:0,camera:3,lookBack:4,horn:2
 const PAD_ACTIONS:[PadAction,string][]=[['throttle','GAZ'],['brake','FREN'],['power','ÖZEL GÜÇ'],['camera','KAMERA'],['lookBack','ARKAYA BAK'],['horn','KORNA']];
 const POWER_COLORS:Record<KartPower,string>={turbo:'#ffbc4e',shield:'#52e4ff',emp:'#cc8fff',repair:'#6ed5a1',pulse:'#e78bff',magnet:'#e0cf8d'};
 const gridHash=(text:string)=>{let n=2166136261;for(let i=0;i<text.length;i++)n=Math.imul(n^text.charCodeAt(i),16777619);return n>>>0;};
-function trackXY(progress:number){
- const {x,z}=trackPosition(progress);
- return {x:69+x*.059,y:49+z*.066};
-}
-const MAP_PATH=Array.from({length:141},(_,i)=>{const p=trackXY(i/140);return (i?'L':'M')+p.x.toFixed(2)+','+p.y.toFixed(2)}).join(' ');
-function TrackMiniMap({hud,id}: {hud:KartHud;id:string}){
- return <div className={s.miniMap} aria-label="Pist haritası">
-  <svg viewBox="0 0 138 98" role="img" aria-label="Yarışçıların pistteki konumu">
-   <path d={MAP_PATH} stroke="rgba(2,9,19,.75)" strokeWidth="10" fill="none" strokeLinejoin="round" />
-   <path d={MAP_PATH} stroke="#718598" strokeWidth="6.5" fill="none" strokeLinejoin="round" />
-   <path d={MAP_PATH} stroke="rgba(224,240,248,.55)" strokeWidth="1.3" strokeDasharray="3 7" fill="none" />
-   {(hud.rivals||[]).filter(r=>r.id!==id).map(r=>{const q=trackXY(r.progress);return <circle key={r.id} cx={q.x} cy={q.y} r="3.4" fill={r.color} stroke="#fff" strokeWidth="1.2"/>;})}
-   {(()=>{const q=trackXY(hud.progress||0);return <circle cx={q.x} cy={q.y} r="5.4" fill="#ffed69" stroke="#fff" strokeWidth="1.6"/>;})()}
-  </svg><small>PİST TAKİBİ</small>
- </div>;
-}
-export default function KartRushTrack({supabase,roomId,userId,displayName,color,startAt,members,onExit,onReload,onReset,onRetry,isHost=false,difficulty='normal',laps=3,pace='standard',weather='clear',graphics='balanced',onGraphicsChange,volume=.45,onVolumeChange,championshipEnabled=false,pointsTarget=50,roundNo=1,roundScored=false,championId=null,onFinalize,onNextRound}:Props){
+export default function KartRushTrack({supabase,roomId,userId,displayName,color,startAt,members,onExit,onReload,onSoloFinish,onReset,onRetry,isHost=false,difficulty='normal',laps=3,pace='standard',weather='clear',graphics='balanced',onGraphicsChange,volume=.45,onVolumeChange,championshipEnabled=false,pointsTarget=50,roundNo=1,roundScored=false,championId=null,onFinalize,onNextRound}:Props){
  const canvas=useRef<HTMLCanvasElement|null>(null),engine=useRef<KartRushEngine|null>(null);
  const raceRoot=useRef<HTMLElement|null>(null);
  // Render the active race outside the site's header/layout stacking contexts on touch devices.
@@ -180,6 +164,8 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  },[]);
  const [isFullscreen,setIsFullscreen]=useState(false);
  const [showTouchControls,setShowTouchControls]=useState(false);
+ const finalRankRef=useRef(1);
+ const finalRivalsRef=useRef<{id:string;name:string;progress:number}[]>([]);
  const finishOnce=useRef(false),controls=useRef({left:false,right:false,brake:false,throttle:false});
  const lastInputMode=useRef<'touch'|'keyboard'|'gamepad'>('touch');
  const down=useCallback((key:'left'|'right'|'brake'|'throttle',on:boolean)=>{if(pausedRef.current&&on)return;controls.current[key]=on;engine.current?.setKeys({[key]:on||padHeld.current[key]});if(on){sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();}},[]);
@@ -233,7 +219,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   return()=>window.clearInterval(timer);
  },[powerRolling]);
  const finish=useCallback(async(duration:number,best:number)=>{
-  if(finishOnce.current)return;finishOnce.current=true;setEnded(duration);setShowResults(true);sound.current?.effect('finish');
+  if(finishOnce.current)return;finishOnce.current=true;setEnded(duration);setShowResults(true);sound.current?.effect('finish');if(!roomId)onSoloFinish?.(finalRankRef.current,finalRivalsRef.current);
   if(roomId){const {error}=await supabase.rpc('f1_kr_finish',{p_room_id:roomId,p_finish_ms:duration,p_best_lap_ms:best});if(error)setError('Sonucun kaydedilemedi: '+error.message);else onReload();}
  },[roomId,supabase,onReload]);
  useEffect(()=>{const audio=new KartRushSound(volume);sound.current=audio;return()=>{audio.dispose();sound.current=null;};},[]);
@@ -286,7 +272,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
     const {KartRushEngine:Engine}=await import('./engine');
     if(cancelled||!canvas.current)return;
     inst=new Engine(canvas.current,{id:userId,name:displayName,color,startAt:startAt+15000,gridSlot,bots:!roomId,difficulty,laps,pace,weather,graphics,
-     onHud:next=>{
+     onHud:next=>{finalRankRef.current=next.rank;finalRivalsRef.current=next.rivals||[];
       const tick=performance.now();
       const onPhone=typeof window!=='undefined'&&window.matchMedia('(pointer:coarse) and (max-width:1100px)').matches;
       if(!onPhone||tick-lastMobileUiUpdate.current>115){lastMobileUiUpdate.current=tick;setHud(next);}
@@ -401,6 +387,13 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    return {...p,pos:i+1,gapLabel:i===0?'LEADER':gapMeters>=1000?`+${(gapMeters/1000).toFixed(2)} km`:`+${gapMeters} m`};
   });
  },[sorted]);
+ const neighbors=classification.filter(x=>Math.abs(x.pos-hud.rank)<=2);
+ const rearThreat=(hud.rivals||[]).filter(r=>r.id!==userId).map(r=>{
+  const fractional=((r.progress-(hud.progress||0))%1+1)%1;
+  const behind=fractional>.5?1-fractional:0;
+  return {...r,meters:behind*TRACK_METERS};
+ }).filter(r=>r.meters>0&&r.meters<120).sort((a,b)=>a.meters-b.meters)[0];
+ const threatSide=rearThreat?(rearThreat.lane??0)<((hud.rivals||[]).find(r=>r.id===userId)?.lane??0)?'left':'right':'center';
  const elapsed=Math.max(0,hud.elapsed);
  const standings=[...members].sort((a,b)=>(b.kr_points||0)-(a.kr_points||0)||(b.kr_last_award||0)-(a.kr_last_award||0));
  const champion=members.find(x=>x.user_id===championId);
@@ -417,6 +410,12 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    <div className={`${s.hudBlock} ${s.hudTime}`}><span>SÜRE</span><strong>{Math.floor(elapsed/60).toString().padStart(2,'0')}:{Math.floor(elapsed%60).toString().padStart(2,'0')}<small>.{Math.floor(elapsed*10)%10}</small></strong></div>
    <div className={`${s.hudBlock} ${s.bestBlock}`}><span>EN İYİ</span><strong>{hud.bestLapMs?((hud.bestLapMs)/1000).toFixed(2):'—'}<small> s</small></strong></div>
   </div>
+  <div className={s.krHealthPower} aria-label="Araç sağlığı ve mevcut özel güç">
+   <div className={s.krHealth}><span>♥ ARAÇ SAĞLIĞI <b>%{hud.health}</b></span><div className={s.krHealthBar}><i style={{width:`${hud.health}%`,background:hud.health>55?'#28d69c':hud.health>25?'#f9bd4f':'#fc465c'}}/></div></div>
+   <button type="button" disabled={!ability} onClick={fire} className={s.krPowerUse}><strong>{ability?`${POWER_ICON[ability]} ${LABEL[ability]}`:'✦ GÜÇ YOK'}</strong><small>{ability?'GÜCÜ KULLAN · E':'KAPSÜL TOPLA'}</small></button>
+  </div>
+  {rearThreat&&hud.started&&ended===null&&<div className={`${s.krRearAlert} ${rearThreat.meters<20?s.krRearDanger:''}`} role="status"><strong>{threatSide==='left'?'↙':threatSide==='right'?'↘':'↓'}</strong><span>{rearThreat.meters<20?'DİKKAT · YAKIN ARAÇ':'ARKADAN YAKLAŞIYOR'}<small>{rearThreat.name} · {Math.round(rearThreat.meters)} m</small></span></div>}
+  <div className={s.krNearbyStandings}><strong>YAKIN SIRALAMA</strong>{neighbors.map(p=><div key={p.id} className={p.id===userId?s.krNearbySelf:''}><b>P{p.pos}</b><span>{p.id===userId?'SEN':p.name.split(' ').slice(-1)[0]}</span><small>{p.id===userId?'—':`${Math.round(Math.abs((p.progress-(hud.progress||0))*TRACK_METERS))} m`}</small></div>)}</div>
   <div className={s.raceActions}>
    <button type="button" className={s.mobilePauseBtn} onClick={()=>{
      const opening=!mobileMenuOpen;
@@ -498,7 +497,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
       onLostPointerCapture={()=>setRearCamera(false)} title="C: Arkaya bak">C · ARKA</button>
     </div>
    </div>
-   <TrackMiniMap hud={hud} id={userId}/>
+ 
   </div>
   <button type="button" className={s.leaderboardToggle} onClick={()=>setShowLeaderboard(v=>!v)} aria-expanded={showLeaderboard}>{showLeaderboard?'✕ KAPAT':'☰ SIRALAMA'} <span>{hud.rank}/{hud.total}</span></button>
   <div className={`${s.standings} ${showLeaderboard?s.boardOpen:''}`} aria-label="Canlı yarış sıralaması">

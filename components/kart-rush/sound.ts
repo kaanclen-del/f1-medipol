@@ -23,6 +23,7 @@ export class KartRushSound {
  private startLightCount=0;
  private startGoPlayed=false;
  private lastGear=-1;private lastBrake=false;private lastGearCue=-100;private lastBrakeCue=-100;
+ private lastTyreCue=-100;private engineBody:OscillatorNode|null=null;private engineBodyGain:GainNode|null=null;
  constructor(volume=.45){this.volume=Math.max(0,Math.min(1,volume));}
  setVolume(volume:number){this.volume=Math.max(0,Math.min(1,volume));}
  activate(){
@@ -42,29 +43,31 @@ export class KartRushSound {
    const engine=ctx.createOscillator();engine.setPeriodicWave(warmWave);
    const bass=ctx.createOscillator();bass.type='sine';
    const exhaust=ctx.createOscillator();exhaust.type='triangle';
-   engine.frequency.value=100;bass.frequency.value=50;exhaust.frequency.value=200;
+   const body=ctx.createOscillator();body.type='sawtooth';
+   engine.frequency.value=100;bass.frequency.value=50;exhaust.frequency.value=200;body.frequency.value=150;
    const coreGain=ctx.createGain();coreGain.gain.value=.65;
    const bassGain=ctx.createGain();bassGain.gain.value=.11;
    const exhaustGain=ctx.createGain();exhaustGain.gain.value=.025;
-   const mix=ctx.createGain();mix.gain.value=.80;
+   const bodyGain=ctx.createGain();bodyGain.gain.value=.034;
+   const mix=ctx.createGain();mix.gain.value=.88;
    engine.connect(coreGain);bass.connect(bassGain);exhaust.connect(exhaustGain);
-   coreGain.connect(mix);bassGain.connect(mix);exhaustGain.connect(mix);
-   const tone=ctx.createBiquadFilter();tone.type='lowpass';tone.frequency.value=1350;tone.Q.value=.40;
+   coreGain.connect(mix);bassGain.connect(mix);exhaustGain.connect(mix);body.connect(bodyGain);bodyGain.connect(mix);
+   const tone=ctx.createBiquadFilter();tone.type='lowpass';tone.frequency.value=1680;tone.Q.value=.40;
    const removeRumble=ctx.createBiquadFilter();removeRumble.type='highpass';removeRumble.frequency.value=52;removeRumble.Q.value=.70;
    const master=ctx.createGain();master.gain.value=0;
    const compressor=ctx.createDynamicsCompressor();
-   compressor.threshold.value=-14;compressor.knee.value=20;compressor.ratio.value=2.5;
+   compressor.threshold.value=-17;compressor.knee.value=18;compressor.ratio.value=2.8;
    compressor.attack.value=.012;compressor.release.value=.24;
    mix.connect(tone);tone.connect(removeRumble);removeRumble.connect(master);
    master.connect(compressor);compressor.connect(ctx.destination);
    // No delay/echo: short repeats used to make the motor sound metallic or broken.
-   engine.start();bass.start();exhaust.start();
+   engine.start();bass.start();exhaust.start();body.start();
    this.engine=engine;this.bass=bass;this.exhaust=exhaust;
-   this.exhaustGain=exhaustGain;this.tone=tone;this.mainGain=master;
+   this.exhaustGain=exhaustGain;this.engineBody=body;this.engineBodyGain=bodyGain;this.tone=tone;this.mainGain=master;
   }catch{
    if(ctx)void ctx.close().catch(()=>{});
    this.ctx=null;this.engine=null;this.bass=null;this.exhaust=null;
-   this.exhaustGain=null;this.tone=null;this.mainGain=null;
+   this.exhaustGain=null;this.engineBody=null;this.engineBodyGain=null;this.tone=null;this.mainGain=null;
   }
  }
  update(speed:number,throttle:boolean,paused:boolean,braking=false){
@@ -87,8 +90,13 @@ export class KartRushSound {
   }
   this.lastGear=gear;
   if(braking&&!this.lastBrake&&kph>48&&t-this.lastBrakeCue>.7&&!paused&&this.volume>0){
-   this.noiseSweep(.16,940,400,.032);this.note(190,140,0,.12,.018,'triangle');
+   this.noiseSweep(.19,1320,480,.11);this.note(190,120,0,.14,.035,'triangle');
    this.lastBrakeCue=t;
+  }
+  // Tyre scrub: only intermittent under substantial braking, not a looping shriek.
+  if(braking&&kph>105&&t-this.lastTyreCue>1.4&&!paused&&this.volume>.02){
+   this.noiseSweep(.24,1750,690,.052);
+   this.lastTyreCue=t;
   }
   this.lastBrake=braking;
 
@@ -102,10 +110,12 @@ export class KartRushSound {
   this.engine?.frequency.setTargetAtTime(note,t,.17);
   this.bass?.frequency.setTargetAtTime(note*.5,t,.20);
   this.exhaust?.frequency.setTargetAtTime(note*1.94,t,.23);
-  tone.frequency.setTargetAtTime(1080+350*this.rpmValue+190*(throttle?1:0),t,.26);
+  this.engineBody?.frequency.setTargetAtTime(note*1.5,t,.16);
+  this.engineBodyGain?.gain.setTargetAtTime(.021+.027*(throttle&&!braking?1:0),t,.24);
+  tone.frequency.setTargetAtTime(1280+540*this.rpmValue+220*(throttle?1:0),t,.25);
   this.exhaustGain?.gain.setTargetAtTime(.016+.016*(throttle&&!braking?1:0),t,.22);
   // Fatigue-resistant balance: RPM changes mostly in timbre/pitch, not volume.
-  const targetLevel=paused?0:this.volume*(.24+.040*this.rpmValue+.032*(throttle&&!braking?1:0));
+  const targetLevel=paused?0:this.volume*(.40+.065*this.rpmValue+.055*(throttle&&!braking?1:0));
   main.gain.setTargetAtTime(targetLevel,t,paused?.06:.22);
  }
  // Five separate light beeps and a distinct lights-out launch cue. All event changes are
@@ -188,11 +198,13 @@ export class KartRushSound {
    case 'pulse':this.noiseSweep(.4,170,1480,.13);this.note(100,510,0,.37,.11,'triangle');break;
    case 'repair':this.note(440,620,0,.15,.09);this.note(570,760,.14,.16,.09);this.note(680,940,.29,.22,.10);break;
    case 'magnet':this.note(210,700,0,.47,.12);this.note(460,260,.12,.34,.08,'triangle');break;
-   case 'rival-turbo':this.noiseSweep(.26,650,1600,.045);break;
+   case 'rival-turbo':this.noiseSweep(.32,650,1800,.085);break;
    case 'rival-shield':this.note(260,680,0,.3,.055);break;
    case 'finish':this.note(440,440,0,.2,.13);this.note(554,554,.19,.2,.13);this.note(659,659,.38,.21,.13);this.note(880,880,.58,.60,.16);break;
    case 'overtake':this.note(610,950,0,.18,.14,'triangle');this.note(840,1210,.10,.17,.10);break;
    case 'position-lost':this.note(590,320,0,.20,.09,'triangle');break;
+   case 'collision':this.noiseSweep(.23,500,105,.20);this.note(85,42,0,.24,.15,'sawtooth');break;
+   case 'pickup':this.note(740,1120,0,.13,.13,'sine');this.note(970,1520,.1,.17,.09,'triangle');break;
   }
  }
  effect(effect:SoundEffect){
@@ -221,9 +233,10 @@ export class KartRushSound {
   try{this.engine?.stop();}catch{}
   try{this.bass?.stop();}catch{}
   try{this.exhaust?.stop();}catch{}
-  try{this.engine?.disconnect();this.bass?.disconnect();this.exhaust?.disconnect();}catch{}
+  try{this.engineBody?.stop();}catch{}
+  try{this.engine?.disconnect();this.bass?.disconnect();this.exhaust?.disconnect();this.engineBody?.disconnect();this.engineBodyGain?.disconnect();}catch{}
   this.engine=null;this.bass=null;this.exhaust=null;
-  this.exhaustGain=null;this.tone=null;this.mainGain=null;
+  this.exhaustGain=null;this.engineBody=null;this.engineBodyGain=null;this.tone=null;this.mainGain=null;
   if(ctx)void ctx.close().catch(()=>{});
  }
 }
