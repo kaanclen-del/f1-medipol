@@ -1730,6 +1730,19 @@ export default function Header() {
               flex:0 0 37px!important;min-width:37px!important;max-width:37px!important;height:37px!important;
             }
           }
+          /* G6.13.1: unauthenticated visitors get a compact login control.
+             Signed-in profile keeps its reserved geometry to avoid layout shifts. */
+          @media (min-width:1101px) {
+            .medipol-header-right > .medipol-header-profile-guest {
+              width:auto!important;min-width:58px!important;max-width:92px!important;
+              flex:0 0 auto!important;box-sizing:border-box!important;
+              justify-content:center!important;gap:6px!important;
+              padding:5px 10px!important;
+            }
+            .medipol-header-profile-guest .medipol-header-login-label {
+              display:inline!important;font-size:12px!important;font-weight:650!important;
+            }
+          }
           /* G6.9.4 — desktop readability only; mobile dimensions unchanged. */
           @media (min-width:1101px) {
             .medipol-header {height:86px!important;min-height:86px!important;max-height:86px!important;}
@@ -1902,13 +1915,13 @@ export default function Header() {
           ) : (
             <Link
               href="/login"
-              className="medipol-header-profile"
+              className="medipol-header-profile medipol-header-profile-guest"
               onClick={() =>
                 setMenuOpen(false)
               }
               aria-label="Giriş yap"
             >
-              <span className="medipol-header-login-label">Giriş</span>
+              <span className="medipol-header-login-label">Giriş Yap</span>
               <svg className="medipol-header-login-icon" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21a8 8 0 0 1 16 0" />
