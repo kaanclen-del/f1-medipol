@@ -777,7 +777,7 @@ export default async function HomePage() {
           <div className="f1-next-race-track">
             {[0, 1].map((copy) => (
               <div className="f1-next-race-group" key={copy} aria-hidden={copy === 1}>
-                {Array.from({ length: 4 }, (_, index) => (
+                {Array.from({ length: 20 }, (_, index) => (
                   <span className="f1-next-race-item" key={index}>
                     <b>● F1 MEDİPOL</b><span aria-hidden="true">◆</span>
                     {tickerMessage ? <strong>{tickerMessage}</strong> : <strong>YAKLAŞAN YARIŞ: {race?.raceName}</strong>}
@@ -803,7 +803,7 @@ export default async function HomePage() {
           border-color: rgba(255,255,255,.22);
         }
         .f1-next-race-track { display: flex; width: max-content; flex: 0 0 auto; white-space: nowrap; animation: f1-next-race-scroll 45s linear infinite; will-change: transform; }
-        .f1-next-race-group { display: flex; width: max-content; flex: 0 0 auto; align-items: center; }
+        .f1-next-race-group { display: flex; width: max-content; min-width: 100vw; flex: 0 0 auto; align-items: center; justify-content: space-around; }
         .f1-next-race-item { display: flex; flex: 0 0 auto; align-items: center; gap: 13px; padding: 0 18px; font-size: 10px; letter-spacing: .04em; height: 27px; white-space: nowrap; }
         .f1-next-race-item strong { font-weight: 750; }
         .f1-next-race-item b { font-size: 9px; font-weight: 850; }
