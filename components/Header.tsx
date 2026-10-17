@@ -1734,13 +1734,13 @@ export default function Header() {
              Signed-in profile keeps its reserved geometry to avoid layout shifts. */
           @media (min-width:1101px) {
             .medipol-header-right > .medipol-header-profile-guest {
-              width:auto!important;min-width:58px!important;max-width:92px!important;
+              width:auto!important;min-width:96px!important;max-width:124px!important;
               flex:0 0 auto!important;box-sizing:border-box!important;
               justify-content:center!important;gap:6px!important;
               padding:5px 10px!important;
             }
             .medipol-header-profile-guest .medipol-header-login-label {
-              display:inline!important;font-size:12px!important;font-weight:650!important;
+              display:inline!important;font-size:12.5px!important;font-weight:800!important;letter-spacing:.01em!important;
             }
           }
           /* G6.9.4 — desktop readability only; mobile dimensions unchanged. */

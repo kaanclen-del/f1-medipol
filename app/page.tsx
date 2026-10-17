@@ -769,6 +769,57 @@ export default async function HomePage() {
 
       <Header />
 
+      {race && (
+        <div className="f1-next-race-strip" aria-label="Yaklaşan Formula 1 yarışı">
+          <div className="f1-next-race-track">
+            {Array.from({ length: 4 }, (_, index) => (
+              <span className="f1-next-race-item" key={index} aria-hidden={index > 0}>
+                <span className="f1-next-race-live">● F1 MEDİPOL</span>
+                <span className="f1-next-race-dot">◆</span>
+                <strong>YAKLAŞAN YARIŞ: {race.raceName}</strong>
+                <span className="f1-next-race-dot">◆</span>
+                <span>{formatSessionTimeTR(race.raceDate, race.raceTime)} (TSİ)</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      <style>{`
+        .f1-next-race-strip {
+          height: 37px; width: 100%; overflow: hidden; position: relative;
+          background: linear-gradient(90deg, #9c0c22, #d61f35 42%, #a40e27);
+          border-bottom: 1px solid rgba(255,255,255,.2);
+          color: #fff; display: flex; align-items: center;
+          font-family: inherit; z-index: 5;
+        }
+        .f1-next-race-track {
+          display: flex; align-items: center; width: max-content; min-width: max-content;
+          white-space: nowrap; animation: f1-next-race-scroll 38s linear infinite;
+          will-change: transform;
+        }
+        .f1-next-race-item {
+          display: inline-flex; align-items: center; justify-content: center;
+          gap: 20px; padding: 0 26px; font-size: 11px;
+          font-weight: 650; letter-spacing: .065em; line-height: 37px;
+          flex: 0 0 auto;
+        }
+        .f1-next-race-item strong { font-weight: 850; }
+        .f1-next-race-live { font-weight: 850; font-size: 10px; opacity: .95; }
+        .f1-next-race-dot { opacity: .65; font-size: 9px; }
+        @keyframes f1-next-race-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
+        }
+        @media (max-width: 700px) {
+          .f1-next-race-strip { height: 33px; }
+          .f1-next-race-item { font-size: 10px; line-height: 33px; gap: 14px; padding: 0 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .f1-next-race-track { animation: none; }
+          .f1-next-race-strip { overflow-x: auto; }
+        }
+      `}</style>
+
       <main className="home">
         <style>{`
           /* =================================================
