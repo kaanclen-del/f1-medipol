@@ -280,14 +280,14 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    try{
     const {KartRushEngine:Engine}=await import('./engine');
     if(cancelled||!canvas.current)return;
-    inst=new Engine(canvas.current,{id:userId,name:displayName,color,startAt:startAt+15000,gridSlot,bots:!roomId,difficulty,laps,pace,weather,graphics,
+    inst=new Engine(canvas.current,{id:userId,name:displayName,color,startAt:startAt+15000,gridSlot,bots:true,botCount:roomId?Math.max(0,22-members.length):undefined,onlineMode:Boolean(roomId),difficulty,laps,pace,weather,graphics,
      onHud:next=>{finalRankRef.current=next.rank;finalRivalsRef.current=next.rivals||[];
       const tick=performance.now();
       const onPhone=typeof window!=='undefined'&&window.matchMedia('(pointer:coarse) and (max-width:1100px)').matches;
       if(!onPhone||tick-lastMobileUiUpdate.current>115){lastMobileUiUpdate.current=tick;setHud(next);}
       sound.current?.update(next.speed,Boolean(next.throttle),pausedRef.current||finishOnce.current,Boolean(next.braking));sound.current?.startSignal(next.lights,next.started,pausedRef.current||finishOnce.current||!startSoundsRef.current);ambience.current?.update(next,userId,TRACK_METERS,pausedRef.current||finishOnce.current);venueAudio.current?.update(next.progress||0,next.speed,next.started,pausedRef.current||finishOnce.current);},onEffect:effect=>{sound.current?.effect(effect);ambience.current?.effect(effect);if(effect==='pickup'){powerSpinUntil.current=Date.now()+1250;setPowerRevealed(false);setPowerRolling(true);setPowerSpinIndex(0);}},onFinish:(dur,best)=>{void finish(dur,best);},
      onSnapshot:roomId?(st)=>{
-      const t=performance.now();if(t-lastSent.current<160)return;lastSent.current=t;
+      const t=performance.now();if(t-lastSent.current<120)return;lastSent.current=t;
       void currentChannel?.send({type:'broadcast',event:'kart-state',payload:st});
      }:undefined,
      onPower:roomId?(power,targets)=>{if(targets?.length)void currentChannel?.send({type:'broadcast',event:'kart-ability',payload:{id:userId,power,targets}});}:undefined,

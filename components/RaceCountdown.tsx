@@ -87,59 +87,32 @@ export default function RaceCountdown({
   raceDate,
   raceTime,
 }: Props) {
-  const [
-    countdown,
-    setCountdown,
-  ] =
-    useState<Countdown>(
-      () =>
-        calculateCountdown(
-          raceDate,
-          raceTime
-        )
-    );
+  // Render the same placeholder on server and during hydration.
+  // The browser clock is used only after the component has mounted.
+  const [countdown, setCountdown] = useState<Countdown | null>(null);
 
-  useEffect(
-    () => {
-      const timer =
-        window.setInterval(
-          () => {
-            setCountdown(
-              calculateCountdown(
-                raceDate,
-                raceTime
-              )
-            );
-          },
-          1000
-        );
-
-      return () =>
-        window.clearInterval(
-          timer
-        );
-    },
-    [
-      raceDate,
-      raceTime,
-    ]
-  );
+  useEffect(() => {
+    const update = () => setCountdown(calculateCountdown(raceDate, raceTime));
+    update();
+    const timer = window.setInterval(update, 1000);
+    return () => window.clearInterval(timer);
+  }, [raceDate, raceTime]);
 
   const values = [
     [
-      countdown.days,
+      countdown?.days ?? null,
       "GÜN",
     ],
     [
-      countdown.hours,
+      countdown?.hours ?? null,
       "SAAT",
     ],
     [
-      countdown.minutes,
+      countdown?.minutes ?? null,
       "DAK",
     ],
     [
-      countdown.seconds,
+      countdown?.seconds ?? null,
       "SN",
     ],
   ] as const;
@@ -206,12 +179,7 @@ export default function RaceCountdown({
                   1,
               }}
             >
-              {String(
-                value
-              ).padStart(
-                2,
-                "0"
-              )}
+              {value === null ? "--" : String(value).padStart(2, "0")}
             </b>
 
             <small

@@ -15,7 +15,7 @@ export type KartHud = {
  rivals?: { id: string; name: string; color: string; progress: number; lane?: number; speed?: number }[];
 };
 export type KartOptions = {
- id: string; color: string; name: string; startAt: number; gridSlot?:number; laps?: number; pace?: KartPace; bots?: boolean; difficulty?: KartDifficulty; graphics?: KartGraphics; weather?: KartWeather;
+ id: string; color: string; name: string; startAt: number; gridSlot?:number; laps?: number; pace?: KartPace; bots?: boolean; botCount?: number; onlineMode?: boolean; difficulty?: KartDifficulty; graphics?: KartGraphics; weather?: KartWeather;
  onHud: (hud: KartHud) => void; onFinish: (durationMs: number, bestLapMs: number) => void;
  onSnapshot?: (s: KartState) => void; onPower?: (power: KartPower, targets?: string[]) => void; onEffect?: (effect:'pickup'|'boost'|'shield'|'emp'|'collision'|'horn'|'repair'|'pulse'|'magnet'|'rival-turbo'|'rival-shield'|'overtake'|'position-lost') => void;
 };
@@ -1734,7 +1734,7 @@ export class KartRushEngine{
   if(typeof Image!=='undefined')this.loadMaterialAtlases();
   // Optional 3D track signage: if browser disallows 2D textures, the race still works.
   if(typeof document!=='undefined')try{this.prepareBillboards();this.loadSponsorLogo();}catch(e){console.warn('Kart Rush signage fallback:',e);}
-  for(let i=0;i<AI_DRIVERS.length;i++){
+  for(let i=0;i<Math.min(AI_DRIVERS.length,Math.max(0,this.options.botCount??AI_DRIVERS.length));i++){
    const playerSlot=clamp(Math.floor(this.options.gridSlot??GRID_PLAYER_SLOT),0,21);
    const slot=i>=playerSlot?i+1:i;
    const lane=slot%2===0?-GRID_LANE:GRID_LANE;
@@ -1850,7 +1850,20 @@ export class KartRushEngine{
   if(value)this.pausedAt=Date.now();else{this.pauseTotalMs+=Date.now()-this.pausedAt;this.last=0;}
   this.keys={throttle:false,brake:false,left:false,right:false};this.lateralVelocity=0;
  }
- setRemote(players:KartState[]){const n=new Map<string,KartState>();for(const p of players){if(p.id!==this.options.id)n.set(p.id,p);}this.remote=n;}
+ setRemote(players:KartState[]){
+  const n=new Map<string,KartState>();
+  for(const p of players){
+   if(p.id===this.options.id)continue;
+   const old=this.remote.get(p.id);
+   if(!old){n.set(p.id,p);continue;}
+   // Keep movement continuous between intermittent network packets.
+   // Resync immediately only when a real lap/teleport-sized discontinuity occurs.
+   const delta=p.progress-old.progress;
+   const alpha=Math.abs(delta)>.22 ? 1 : .38;
+   n.set(p.id,{...p,progress:old.progress+delta*alpha,lane:old.lane+(p.lane-old.lane)*alpha,speed:old.speed+(p.speed-old.speed)*alpha});
+  }
+  this.remote=n;
+ }
  receiveAttack(power:KartPower){if((power==='emp'||power==='pulse')&&performance.now()/1000>this.shieldUntil){this.slowUntil=performance.now()/1000+2.3;this.options.onEffect?.('emp');}}
  dispose(){this.stopped=true;cancelAnimationFrame(this.raf);window.removeEventListener('resize',this.resize);this.crowdTemplates.clear();this.gl.deleteBuffer(this.crowdBuffer);this.gl.deleteBuffer(this.staticBuffer);this.gl.deleteBuffer(this.dynamicBuffer);this.gl.deleteProgram(this.program);this.gl.deleteBuffer(this.skyBuffer);this.gl.deleteProgram(this.skyProgram);
   if(this.surfaceAlbedo)this.gl.deleteTexture(this.surfaceAlbedo);
@@ -2204,7 +2217,7 @@ export class KartRushEngine{
    }else this.pitProgress=0;
    this.wheelRotation=(this.wheelRotation+this.speed*dt/.57)%TAU;
    const lap=Math.max(0,Math.floor(Math.max(0,this.currentProgress)));
-   if(this.currentProgress>=this.totalLaps){this.finished=true;this.finishElapsed=this.elapsed;this.finishRank=1+(this.options.bots?this.bots:[...this.remote.values()]).filter(p=>p.progress>this.currentProgress).length;const end=Math.round(this.elapsed*1000);const last=end-this.lapStart;if(last>0)this.bestLap=this.bestLap===0?last:Math.min(this.bestLap,last);this.options.onFinish(end,this.bestLap||end);}
+   if(this.currentProgress>=this.totalLaps){this.finished=true;this.finishElapsed=this.elapsed;this.finishRank=1+([...(this.options.bots?this.bots:[]),...this.remote.values()]).filter(p=>p.progress>this.currentProgress).length;const end=Math.round(this.elapsed*1000);const last=end-this.lapStart;if(last>0)this.bestLap=this.bestLap===0?last:Math.min(this.bestLap,last);this.options.onFinish(end,this.bestLap||end);}
    else if(lap>this.lastLapNumber){const now=Math.round(this.elapsed*1000);if(this.lastLapNumber>=0){const ms=now-this.lapStart;this.bestLap=this.bestLap===0?ms:Math.min(this.bestLap,ms);}this.lapStart=now;this.lastLapNumber=lap;}
    for(let i=0;i<PICKUP_POS.length;i++)for(let j=0;j<PICKUP_LANES.length;j++){
     const p=PICKUP_POS[i],lane=PICKUP_LANES[j],key=`${Math.floor(this.currentProgress)}:${i}:${j}`;
@@ -2240,11 +2253,12 @@ export class KartRushEngine{
    this.inputPower=false;
    if(this.options.bots){this.updateBots(t,dt);
     for(let i=0;i<this.bots.length;i++)this.tryContact(this.bots[i],t,t<this.botShieldUntil[i]);
-   }else for(const rival of this.remote.values())this.tryContact(rival,t);
+   }
+   for(const rival of this.remote.values())this.tryContact(rival,t);
    if(ts-this.lastBroadcast>150){this.lastBroadcast=ts;this.options.onSnapshot?.({id:this.options.id,progress:this.currentProgress,lane:this.lane,speed:this.speed,color:this.options.color,name:this.options.name,finished:this.finished});}
    }
   }
-  if(ts-this.lastHud>(this.options.bots?200:125)){this.lastHud=ts;const others=this.options.bots?this.bots:[...this.remote.values()];const rank=this.finished?this.finishRank:(1+others.filter(p=>p.progress>this.currentProgress).length);
+  if(ts-this.lastHud>(this.options.bots?200:125)){this.lastHud=ts;const others=[...(this.options.bots?this.bots:[]),...this.remote.values()];const rank=this.finished?this.finishRank:(1+others.filter(p=>p.progress>this.currentProgress).length);
    const rivals=[{id:this.options.id,name:this.options.name,color:this.options.color,progress:this.currentProgress,lane:this.lane,speed:this.speed},...others.map(b=>({id:b.id,name:b.name,color:b.color,progress:b.progress,lane:b.lane,speed:b.speed}))].sort((a,b)=>b.progress-a.progress);
    this.options.onHud({speed:Math.round(this.speed*3.6),camera:this.getCameraLabel(),cornerSpeed:this.cornerWarning,lap:Math.min(this.totalLaps,Math.max(1,Math.floor(Math.max(0,this.currentProgress))+1)),totalLaps:this.totalLaps,remaining:Math.max(0,this.totalLaps-this.currentProgress),health:Math.round(this.health),pit:this.pitActive,pitProgress:this.pitProgress,magnet:ts/1000<this.magnetUntil,lights:countdown>0?clamp(6-countdown,0,5):0,power:this.power,rank,total:others.length+1,elapsed:Math.max(0,this.elapsed),started,countdown,shield:ts/1000<this.shieldUntil,turbo:ts/1000<this.turboUntil,fps:this.fps,bestLapMs:this.bestLap,offroad:Math.abs(this.lane)>14.4&&!this.pitActive,progress:this.currentProgress,throttle:this.keys.throttle,braking:this.keys.brake,contact:ts/1000<this.contactUntil,rivals});
   }
@@ -2432,7 +2446,7 @@ export class KartRushEngine{
    if(visible)nearCars.push({car:other,d:minDist,shield,boost:boosted});
   };
   if(this.options.bots){for(let i=0;i<this.bots.length;i++)addVisible(this.bots[i],time<this.botShieldUntil[i],time<this.botTurboUntil[i]);}
-  else for(const other of this.remote.values())addVisible(other,false,false);
+  for(const other of this.remote.values())addVisible(other,false,false);
   nearCars.sort((a,b)=>a.d-b.d);
   const fullBudget=MOBILE_GPU?(this.graphics==='ultra'?12:this.graphics==='high'?10:this.graphics==='balanced'?8:4):(this.graphics==='ultra'?20:this.graphics==='high'?14:this.graphics==='balanced'?8:3);
   // Only the closest cars or cars emitting abilities require procedural meshes each frame.

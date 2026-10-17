@@ -1737,7 +1737,7 @@ export default function Header() {
             .medipol-header-logo {width:205px!important;min-width:205px!important;max-width:205px!important;flex:0 0 205px!important;height:68px!important;}
             .medipol-header-logo-art {width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;max-height:48px!important;}
             .medipol-header-nav {gap:2px!important;}
-            .medipol-header-nav-link {font-size:12px!important;font-weight:650!important;padding:11px 8px!important;}
+            .medipol-header-nav-link {font-size:12.6px!important;font-weight:650!important;padding:11px 8px!important;}
             .medipol-header-right {gap:9px!important;}
             .medipol-header-profile {min-height:48px!important;padding:5px 12px 5px 6px!important;}
             .medipol-header-avatar {width:37px!important;height:37px!important;min-width:37px!important;}

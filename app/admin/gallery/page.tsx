@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import AdminGalleryForm from "@/components/AdminGalleryForm";
 import AdminGalleryActions from "@/components/AdminGalleryActions";
+import GallerySortControls from "@/components/GallerySortControls";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -143,6 +144,8 @@ export default async function AdminGalleryPage() {
               Toplam {images?.length ?? 0} görsel
             </div>
           </div>
+
+          {images && images.length > 1 && <GallerySortControls images={images.map((image) => ({ id: image.id, title: image.title || "Başlıksız", image_url: image.image_url }))} />}
 
           {!images || images.length === 0 ? (
             <div
