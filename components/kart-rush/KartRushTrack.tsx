@@ -163,6 +163,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   };
  },[]);
  const [isFullscreen,setIsFullscreen]=useState(false);
+ const fullscreenStateRef=useRef(false);
  const [showTouchControls,setShowTouchControls]=useState(false);
  const finalRankRef=useRef(1);
  const finalRivalsRef=useRef<{id:string;name:string;progress:number}[]>([]);
@@ -172,13 +173,21 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const fire=useCallback(()=>{if(pausedRef.current)return;sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();engine.current?.usePower();},[]);
  const horn=useCallback(()=>{if(pausedRef.current)return;sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();engine.current?.honk();},[]);
  const togglePause=useCallback(()=>{if(roomId)return;const next=!pausedRef.current;pausedRef.current=next;engine.current?.setPaused(next);sound.current?.update(0,false,next);ambience.current?.mute(next);setPaused(next);setShowGraphics(false);},[roomId]);
+ // iOS Safari cannot fullscreen arbitrary elements. Keep an in-page fullscreen
+ // fallback, and use the native Fullscreen API where supported.
  const toggleFullscreen=useCallback(async()=>{
   const target=raceRoot.current;
   if(!target)return;
-  try{
-   if(document.fullscreenElement)await document.exitFullscreen();
-   else if(target.requestFullscreen)await target.requestFullscreen();
-  }catch{}
+  const next=!fullscreenStateRef.current;
+  fullscreenStateRef.current=next;
+  setIsFullscreen(next);
+  if(!next){
+   if(document.fullscreenElement){try{await document.exitFullscreen();}catch{}}
+   return;
+  }
+  if(typeof target.requestFullscreen==='function'){
+   try{await target.requestFullscreen();}catch{/* CSS fullscreen remains active */}
+  }
  },[]);
  // Poll standard Gamepad API without disturbing keyboard/touch input.
  useEffect(()=>{
@@ -236,7 +245,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   return()=>{document.body.style.overflow=prevBody;document.documentElement.style.overscrollBehavior=prevOverscroll;};
  },[]);
  useEffect(()=>{
-  const onFs=()=>setIsFullscreen(Boolean(document.fullscreenElement));
+  const onFs=()=>{const active=Boolean(document.fullscreenElement);if(active){fullscreenStateRef.current=true;setIsFullscreen(true);}else if(fullscreenStateRef.current){fullscreenStateRef.current=false;setIsFullscreen(false);}};
   document.addEventListener('fullscreenchange',onFs);
   onFs();
   return()=>document.removeEventListener('fullscreenchange',onFs);
@@ -400,7 +409,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const multiplayerGrid=[...members].sort((a,b)=>gridHash(String(startAt)+a.user_id)-gridHash(String(startAt)+b.user_id));
  const gridSlot=roomId?Math.max(0,multiplayerGrid.findIndex(m=>m.user_id===userId)) : gridHash(String(startAt)+userId)%22;
  const everyoneFinished=members.length>=2&&members.every(x=>x.finish_ms!==null);
- const raceView=<section className={`${s.raceScreen} ${ended!==null?s.paradeMode:''}`} ref={raceRoot}
+ const raceView=<section className={`${s.raceScreen} ${ended!==null?s.paradeMode:''}`} data-kr-fullscreen={isFullscreen?"true":"false"} ref={raceRoot}
   onPointerDownCapture={()=>{sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();}}>
   <canvas ref={canvas} className={s.canvas} aria-label="Kart Rush 3D yarış pisti" />
   <div className={s.racingVignette} aria-hidden="true" />
@@ -474,7 +483,6 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
     </div>
     <div className={s.mobileMenuSection}><strong>YARIŞ SEÇENEKLERİ</strong>
      <div className={s.mobileMenuChoices}>
-      <button type="button" onClick={cycleCamera}>▣ KAMERA</button>
       <button type="button" onClick={()=>{setShowLeaderboard(v=>!v);setMobileMenuOpen(false);if(!roomId&&pausedRef.current)togglePause();}}>☰ SIRALAMA</button>
       <button type="button" onClick={()=>{void toggleFullscreen();}}>⛶ TAM EKRAN</button>
       <button type="button" onClick={onExit}>← ANA MENÜ</button>

@@ -1883,7 +1883,7 @@ export class KartRushEngine{
   this.options.onEffect?.('collision');
  }
  private updateBots(t:number,dt:number){
-  const difficulty=this.options.difficulty||'normal',base=(difficulty==='easy'?91:difficulty==='hard'?99.5:98.65)*this.paceFactor;
+  const difficulty=this.options.difficulty||'normal',base=(difficulty==='easy'?91:difficulty==='hard'?99.5:99.05)*this.paceFactor;
   const botDryCap=350/3.6,botTurboCap=370/3.6;
   for(let i=0;i<this.bots.length;i++){
    const b=this.bots[i];
@@ -1901,7 +1901,7 @@ export class KartRushEngine{
    // performance is stable within a race, not rubber-banded to the player.
    const raceSeed=Math.sin((Math.floor(this.options.startAt/1000)%100000)*.137+i*17.37)*43758.5453;
    const form=(raceSeed-Math.floor(raceSeed))*2-1;
-   const competitiveForm=difficulty==='normal'?1+form*.012+(i%7===0?.018:0):1;
+   const competitiveForm=difficulty==='normal'?1+form*.014+(i%7===0?.020:0):1;
    // Bravery and car control are independent. EVERY difficulty attempts racing-line moves.
    const courage=difficulty==='hard'?.76+((i*17+7)%13)/65:((i*17+7)%13)/12,skill=difficulty==='hard'?.89+((i*7+3)%17)/175:((i*7+3)%17)/16;
    const wet=this.weather==='rain',gripWeather=wet?(difficulty==='hard'?.91:difficulty==='normal'?.84:.77):1;
@@ -1940,7 +1940,7 @@ export class KartRushEngine{
    if(curve.sharp<.14&&gapAhead>.003&&gapAhead<.05)desired+=3.1;
    if(t<this.botSlowedUntil[i]&&!protectedBot)desired*=.86;
    const cornerFloor=(difficulty==='easy'?34:difficulty==='hard'?68:49)*gripWeather;
-   const difficultyPace=(difficulty==='easy'?1.15:difficulty==='hard'?1.82:1.51);
+   const difficultyPace=(difficulty==='easy'?1.15:difficulty==='hard'?1.82:1.535);
    const bravery=.96+courage*.30+(skill-.5)*.10;
    let apexLimit=Math.max(cornerFloor,curve.recommended*bravery*difficultyPace*gripWeather+1)*this.paceFactor;
    // Different braking points, rather than the same hard speed cap for every AI.
