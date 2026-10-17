@@ -1256,3 +1256,141 @@
   }
   .raceScreen.preRaceStage .mobileMenuOverlay{z-index:90!important;}
 }
+
+/* G6.2.4 — FULL LANDSCAPE + FOUR-SQUARE RACE DATA CENTER.
+   Overrides legacy G6.2.3 layout using a single final cascade layer. */
+.raceScreen .topHud{
+ display:grid!important;grid-template-columns:repeat(4,68px)!important;
+ width:max-content!important;max-width:calc(100% - 240px)!important;
+ min-width:0!important;gap:5px!important;left:12px!important;right:auto!important;
+ top:12px!important;align-items:start!important;pointer-events:none!important;
+ z-index:15!important;
+}
+.raceScreen .topHud .hudBlock{
+ box-sizing:border-box!important;display:flex!important;flex-direction:column!important;
+ align-items:center!important;justify-content:center!important;gap:3px!important;
+ width:68px!important;height:68px!important;min-height:0!important;min-width:0!important;
+ padding:5px 3px!important;border-radius:12px!important;text-align:center!important;
+ background:linear-gradient(150deg,rgba(8,17,31,.91),rgba(19,29,45,.83))!important;
+ border:1px solid rgba(255,255,255,.24)!important;
+ box-shadow:0 7px 19px rgba(0,0,0,.2)!important;
+}
+.raceScreen .topHud .hudBlock span{font-size:8px!important;letter-spacing:.11em!important;line-height:1!important;color:#bed4ec!important;}
+.raceScreen .topHud .hudBlock strong{font-size:20px!important;letter-spacing:-.04em!important;line-height:1.1!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important;}
+.raceScreen .topHud .hudBlock small{font-size:9px!important;letter-spacing:0!important;}
+.raceScreen .topHud .bestBlock{display:flex!important;}
+.raceScreen .raceActions .hudCameraBtn{
+ box-sizing:border-box!important;display:inline-flex!important;flex-direction:column!important;
+ justify-content:center!important;align-items:center!important;gap:2px!important;
+ width:92px!important;min-width:80px!important;min-height:44px!important;
+ padding:6px 9px!important;border-radius:11px!important;background:rgba(10,29,48,.91)!important;
+ border:1px solid #76b3d8a8!important;color:#f3fbff!important;font-size:10px!important;
+ font-weight:900!important;white-space:nowrap!important;touch-action:manipulation!important;
+}
+.raceScreen .raceActions .hudCameraBtn small{font-size:8px!important;color:#a9d7f6!important;letter-spacing:.04em!important;}
+/* Existing camera widget in side HUD is redundant now; track map stays visible. */
+.raceScreen .sideHud .cameraControls{display:none!important;}
+@media (pointer:coarse){
+ .raceScreen{
+  position:fixed!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;
+  display:block!important;box-sizing:border-box!important;
+  width:100vw!important;width:100dvw!important;max-width:none!important;
+  height:100vh!important;height:100dvh!important;max-height:none!important;min-height:0!important;
+  padding:0!important;margin:0!important;border:0!important;border-radius:0!important;
+  overflow:hidden!important;z-index:2147483000!important;transform:none!important;
+  box-shadow:none!important;background:#071220!important;
+  touch-action:none!important;overscroll-behavior:none!important;
+ }
+ .raceScreen .canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;}
+ .raceScreen .qualityMark,.raceScreen .broadcastTag,.raceScreen .controlsCenter{display:none!important;}
+ .raceScreen .topHud{
+  top:calc(5px + env(safe-area-inset-top,0px))!important;
+  left:calc(6px + env(safe-area-inset-left,0px))!important;
+  width:max-content!important;max-width:calc(100% - 190px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px))!important;
+  display:grid!important;grid-template-columns:repeat(4,55px)!important;gap:3px!important;
+ }
+ .raceScreen .topHud .hudBlock{width:55px!important;height:55px!important;min-height:0!important;padding:3px 2px!important;border-radius:9px!important;}
+ .raceScreen .topHud .hudBlock span{font-size:7px!important;letter-spacing:0!important;}
+ .raceScreen .topHud .hudBlock strong{font-size:16px!important;}
+ .raceScreen .topHud .hudBlock small{font-size:8px!important;}
+ .raceScreen .raceActions{
+  top:calc(5px + env(safe-area-inset-top,0px))!important;
+  right:calc(6px + env(safe-area-inset-right,0px))!important;
+  width:auto!important;max-width:185px!important;left:auto!important;
+  display:flex!important;grid-template-columns:none!important;gap:5px!important;
+  align-items:flex-start!important;z-index:31!important;
+ }
+ .raceScreen .raceActions button:not(.mobilePauseBtn):not(.hudCameraBtn){display:none!important;}
+ .raceScreen .raceActions .mobilePauseBtn{width:84px!important;min-width:0!important;min-height:45px!important;max-height:53px!important;padding:6px 4px!important;font-size:9px!important;line-height:1.1!important;white-space:normal!important;}
+ .raceScreen .raceActions .hudCameraBtn{width:82px!important;min-width:0!important;min-height:45px!important;max-height:53px!important;padding:5px 4px!important;font-size:9px!important;}
+ .raceScreen .raceActions .hudCameraBtn small{font-size:8px!important;max-width:100%!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+ .raceScreen .leaderboardToggle{top:calc(68px + env(safe-area-inset-top,0px))!important;}
+ .raceScreen .raceBottom{z-index:35!important;}
+ .raceScreen .speedHud{top:calc(99px + env(safe-area-inset-top,0px))!important;left:calc(8px + env(safe-area-inset-left,0px))!important;max-width:100px!important;min-height:0!important;padding:5px 7px!important;}
+ .raceScreen .speedHud b{font-size:28px!important;}
+ .raceScreen .damageHud{top:calc(96px + env(safe-area-inset-top,0px))!important;right:calc(8px + env(safe-area-inset-right,0px))!important;}
+}
+@media (pointer:coarse) and (orientation:landscape){
+ .raceScreen .topHud{grid-template-columns:repeat(4,58px)!important;gap:4px!important;}
+ .raceScreen .topHud .hudBlock{width:58px!important;height:58px!important;}
+ .raceScreen .topHud .hudBlock strong{font-size:18px!important;}
+ .raceScreen .raceBottom{bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;}
+ .raceScreen .steerControls button,.raceScreen .abilityControls .gas,
+ .raceScreen .abilityControls .brake,.raceScreen .abilityControls .powerBtn{
+   height:clamp(60px,21dvh,82px)!important;min-height:60px!important;
+ }
+ .raceScreen .mobilePowerReveal{top:calc(73px + env(safe-area-inset-top,0px))!important;}
+ .raceScreen .powerDescription{top:calc(143px + env(safe-area-inset-top,0px))!important;}
+}
+@media (pointer:coarse) and (orientation:portrait) and (max-width:420px){
+ .raceScreen .topHud{grid-template-columns:repeat(4,47px)!important;gap:3px!important;max-width:calc(100% - 170px)!important;}
+ .raceScreen .topHud .hudBlock{width:47px!important;height:47px!important;}
+ .raceScreen .topHud .hudBlock strong{font-size:14px!important;}
+ .raceScreen .raceActions .mobilePauseBtn{width:73px!important;}
+ .raceScreen .raceActions .hudCameraBtn{width:70px!important;}
+}
+
+/* G6.2.6 — persistent, tappable in-race camera + robust iPhone touch targets. */
+@media (pointer:coarse) and (max-width:1100px) {
+  .raceScreen .raceActions {
+    z-index:81!important;
+    pointer-events:auto!important;
+    isolation:isolate!important;
+    overflow:visible!important;
+    display:flex!important;
+    flex-wrap:nowrap!important;
+    gap:6px!important;
+  }
+  .raceScreen .raceActions .hudCameraBtn,
+  .raceScreen .raceActions .mobilePauseBtn {
+    display:inline-flex!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+    position:relative!important;
+    z-index:82!important;
+    touch-action:manipulation!important;
+    -webkit-tap-highlight-color:transparent!important;
+    min-height:48px!important;
+  }
+  .raceScreen .steerControls,.raceScreen .abilityControls {
+    pointer-events:auto!important;
+    z-index:83!important;
+    isolation:isolate!important;
+  }
+  .raceScreen [data-kr-drive] {
+    touch-action:none!important;
+    overscroll-behavior:none!important;
+    -webkit-user-select:none!important;
+    user-select:none!important;
+    pointer-events:auto!important;
+    -webkit-tap-highlight-color:transparent!important;
+  }
+  .raceScreen .canvas {touch-action:none!important;}
+}
+@media (pointer:coarse) and (orientation:landscape) and (max-height:650px) {
+  .raceScreen .raceActions {right:calc(7px + env(safe-area-inset-right,0px))!important;top:calc(6px + env(safe-area-inset-top,0px))!important;max-width:none!important;width:auto!important;}
+  .raceScreen .raceActions .hudCameraBtn {width:86px!important;min-width:86px!important;}
+  .raceScreen .raceActions .mobilePauseBtn {width:92px!important;min-width:92px!important;}
+  .raceScreen .topHud {left:calc(7px + env(safe-area-inset-left,0px))!important;}
+}

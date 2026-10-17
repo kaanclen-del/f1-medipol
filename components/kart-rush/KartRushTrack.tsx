@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
+import { createPortal } from 'react-dom';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { trackPosition } from './engine';
 // Route length derived once from the existing track geometry (no guessed distance).
@@ -27,7 +28,6 @@ type Props={
  onExit:()=>void;onReload:()=>void;onReset?:()=>void;onRetry?:()=>void;isHost?:boolean;difficulty?:KartDifficulty;laps?:number;pace?:KartPace;weather?:KartWeather;graphics?:KartGraphics;onGraphicsChange?:(g:KartGraphics)=>void;volume?:number;onVolumeChange?:(v:number)=>void;championshipEnabled?:boolean;pointsTarget?:number;roundNo?:number;roundScored?:boolean;championId?:string|null;onFinalize?:()=>void;onNextRound?:()=>void;
 };
 const LABEL:Record<KartPower,string>={turbo:'TURBO',shield:'KALKAN',emp:'EMP DARBESİ',repair:'ONARIM',pulse:'ŞOK DALGASI',magnet:'MIKNATIS'};
-const DETAILS:Record<KartPower,string>={turbo:'Hız patlaması · 3,5 sn',shield:'Darbe koruması · 7 sn',emp:'Yakındaki en fazla 2 hedefi yavaşlat',repair:'Aracın hasarını azalt',pulse:'Yakındaki en yakın rakibe şok',magnet:'11 sn uzaktan güç toplama'};
 const POWER_ICON:Record<KartPower,string>={turbo:'⚡',shield:'⬡',emp:'✺',repair:'✚',pulse:'◉',magnet:'⊕'};
 type PadAction='throttle'|'brake'|'power'|'camera'|'lookBack'|'horn';
 type PadProfile='auto'|'xbox'|'ps5'|'custom'|'off';
@@ -36,8 +36,6 @@ const DEFAULT_PAD:PadBindings={throttle:7,brake:6,power:0,camera:3,lookBack:4,ho
 const PS5_PAD:PadBindings={throttle:7,brake:6,power:0,camera:3,lookBack:4,horn:2};
 const PAD_ACTIONS:[PadAction,string][]=[['throttle','GAZ'],['brake','FREN'],['power','ÖZEL GÜÇ'],['camera','KAMERA'],['lookBack','ARKAYA BAK'],['horn','KORNA']];
 const POWER_COLORS:Record<KartPower,string>={turbo:'#ffbc4e',shield:'#52e4ff',emp:'#cc8fff',repair:'#6ed5a1',pulse:'#e78bff',magnet:'#e0cf8d'};
-const RACE_TEAM_LABELS:Record<string,string>={'#E32636':'FERRARI','#FF8000':'McLAREN','#00D2BE':'MERCEDES','#173B8A':'RED BULL','#006A4E':'ASTON MARTIN','#2B7BFF':'WILLIAMS','#FF6DAE':'ALPINE','#C4CFD8':'HAAS','#F4F5F7':'RACING BULLS','#B11F26':'AUDI','#B4AA78':'CADILLAC'};
-const raceTeamName=(color:string)=>RACE_TEAM_LABELS[color.toUpperCase()]||'ÖZEL KAPLAMA';
 const gridHash=(text:string)=>{let n=2166136261;for(let i=0;i<text.length;i++)n=Math.imul(n^text.charCodeAt(i),16777619);return n>>>0;};
 function trackXY(progress:number){
  const {x,z}=trackPosition(progress);
@@ -58,13 +56,15 @@ function TrackMiniMap({hud,id}: {hud:KartHud;id:string}){
 export default function KartRushTrack({supabase,roomId,userId,displayName,color,startAt,members,onExit,onReload,onReset,onRetry,isHost=false,difficulty='normal',laps=3,pace='standard',weather='clear',graphics='balanced',onGraphicsChange,volume=.45,onVolumeChange,championshipEnabled=false,pointsTarget=50,roundNo=1,roundScored=false,championId=null,onFinalize,onNextRound}:Props){
  const canvas=useRef<HTMLCanvasElement|null>(null),engine=useRef<KartRushEngine|null>(null);
  const raceRoot=useRef<HTMLElement|null>(null);
+ // Render the active race outside the site's header/layout stacking contexts on touch devices.
+ const [renderMode,setRenderMode]=useState<'pending'|'mobile'|'desktop'>('pending');
+ useEffect(()=>{setRenderMode(window.matchMedia('(pointer:coarse)').matches?'mobile':'desktop');},[]);
  const channel=useRef<ReturnType<SupabaseClient['channel']>|null>(null);
  const friends=useRef<Map<string,KartState>>(new Map());
  const lastSent=useRef(0);
  const [hud,setHud]=useState<KartHud>({speed:0,lap:1,totalLaps:3,remaining:3,health:100,pit:false,pitProgress:0,magnet:false,lights:0,power:null,rank:1,total:6,elapsed:0,started:false,countdown:20,shield:false,turbo:false});
  const [error,setError]=useState(''),[ended,setEnded]=useState<number|null>(null);
  const [showResults,setShowResults]=useState(false);
- const [preRaceChoice,setPreRaceChoice]=useState<'boost'|'penalty'|null>(null);
  const previousRank=useRef<number|null>(null);
  const [showGraphics,setShowGraphics]=useState(false);
  const [mobileMenuOpen,setMobileMenuOpen]=useState(false);
@@ -76,6 +76,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const powerSpinUntil=useRef<number>(0);
  const [showLeaderboard,setShowLeaderboard]=useState(false);
  const [cameraName,setCameraName]=useState('TAKİP');
+ const lastCameraTouch=useRef(0);
  const [gamepadProfile,setGamepadProfile]=useState<PadProfile>('auto');
  const [gamepadBindings,setGamepadBindings]=useState<PadBindings>({...DEFAULT_PAD});
  const [gamepadName,setGamepadName]=useState('');
@@ -91,26 +92,52 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const sound=useRef<KartRushSound|null>(null);
  const ambience=useRef<KartRushAmbientSound|null>(null);
  const venueAudio=useRef<KartRushVenueAudio|null>(null);
- const [audioEnabled,setAudioEnabled]=useState(false);
- // Safari iPhone landscape: lock page scroll only while the race occupies the viewport.
+ // Use the actual visual viewport; do not let the app header, browser safe-area
+ // padding, or an ancestor transform clip the WebGL race on iPhone landscape.
  useEffect(()=>{
-  const query=window.matchMedia('(pointer:coarse) and (orientation:landscape) and (max-height:650px)');
-  const root=document.documentElement, body=document.body;
-  const previousRoot=root.style.overflow, previousBody=body.style.overflow;
+  if(renderMode!=='mobile')return;
+  const root=document.documentElement,body=document.body;
+  const originalRootOverflow=root.style.overflow;
+  const originalBodyOverflow=body.style.overflow;
+  const originalRootOverscroll=root.style.overscrollBehavior;
+  const originalBodyOverscroll=body.style.overscrollBehavior;
+  const meta=document.querySelector<HTMLMetaElement>('meta[name="viewport"]');
+  const originalViewport=meta?.getAttribute('content')??null;
+  if(meta&&originalViewport&&!/viewport-fit\s*=/.test(originalViewport))meta.setAttribute('content',originalViewport+', viewport-fit=cover');
+  const media=window.matchMedia('(orientation:landscape)');
+  const hidden=new Map<HTMLElement,{value:string;priority:string}>();
+  const restoreHeaders=()=>{
+   for(const [element,previous] of hidden){
+    if(previous.value)element.style.setProperty('display',previous.value,previous.priority);
+    else element.style.removeProperty('display');
+   }
+   hidden.clear();
+  };
   const sync=()=>{
-   root.style.overflow=query.matches?'hidden':previousRoot;
-   body.style.overflow=query.matches?'hidden':previousBody;
+   restoreHeaders();
+   body.classList.toggle('kartRushLandscapeActive',media.matches);
+   if(media.matches){
+    document.querySelectorAll<HTMLElement>('header, [role="banner"]').forEach(element=>{
+     if(raceRoot.current?.contains(element))return;
+     hidden.set(element,{value:element.style.getPropertyValue('display'),priority:element.style.getPropertyPriority('display')});
+     element.style.setProperty('display','none','important');
+    });
+   }
+   root.style.overflow='hidden';body.style.overflow='hidden';
+   root.style.overscrollBehavior='none';body.style.overscrollBehavior='none';
   };
   sync();
-  query.addEventListener?.('change',sync);
+  media.addEventListener?.('change',sync);
   window.addEventListener('resize',sync);
   return()=>{
-   query.removeEventListener?.('change',sync);
+   media.removeEventListener?.('change',sync);
    window.removeEventListener('resize',sync);
-   root.style.overflow=previousRoot;
-   body.style.overflow=previousBody;
+   restoreHeaders();body.classList.remove('kartRushLandscapeActive');
+   root.style.overflow=originalRootOverflow;body.style.overflow=originalBodyOverflow;
+   root.style.overscrollBehavior=originalRootOverscroll;body.style.overscrollBehavior=originalBodyOverscroll;
+   if(meta&&originalViewport!==null)meta.setAttribute('content',originalViewport);
   };
- },[]);
+ },[renderMode]);
  const [startSoundsEnabled,setStartSoundsEnabled]=useState(true);
  const startSoundsRef=useRef(true);
  const toggleStartSounds=useCallback(()=>{setStartSoundsEnabled(v=>{startSoundsRef.current=!v;return !v;});},[]);
@@ -118,7 +145,6 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   sound.current?.activate();
   ambience.current?.activate();
   venueAudio.current?.activate();
-  setAudioEnabled(true);
  },[]);
  // Audio is enabled by default; browsers may require the first key/tap gesture to unlock it.
  useEffect(()=>{const unlock=()=>enableAudio();window.addEventListener('pointerdown',unlock,{once:true});window.addEventListener('keydown',unlock,{once:true});return()=>{window.removeEventListener('pointerdown',unlock);window.removeEventListener('keydown',unlock);};},[enableAudio]);
@@ -156,7 +182,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const [showTouchControls,setShowTouchControls]=useState(false);
  const finishOnce=useRef(false),controls=useRef({left:false,right:false,brake:false,throttle:false});
  const lastInputMode=useRef<'touch'|'keyboard'|'gamepad'>('touch');
- const down=useCallback((key:'left'|'right'|'brake'|'throttle',on:boolean)=>{if(pausedRef.current&&on)return;controls.current[key]=on;engine.current?.setKeys({[key]:on||padHeld.current[key]});if(on){sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();setAudioEnabled(true);}},[]);
+ const down=useCallback((key:'left'|'right'|'brake'|'throttle',on:boolean)=>{if(pausedRef.current&&on)return;controls.current[key]=on;engine.current?.setKeys({[key]:on||padHeld.current[key]});if(on){sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();}},[]);
  const fire=useCallback(()=>{if(pausedRef.current)return;sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();engine.current?.usePower();},[]);
  const horn=useCallback(()=>{if(pausedRef.current)return;sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();engine.current?.honk();},[]);
  const togglePause=useCallback(()=>{if(roomId)return;const next=!pausedRef.current;pausedRef.current=next;engine.current?.setPaused(next);sound.current?.update(0,false,next);ambience.current?.mute(next);setPaused(next);setShowGraphics(false);},[roomId]);
@@ -230,6 +256,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   return()=>document.removeEventListener('fullscreenchange',onFs);
  },[]);
  useEffect(()=>{
+  if(renderMode==='pending')return;
   let cancelled=false,inst:KartRushEngine|null=null,currentChannel:ReturnType<SupabaseClient['channel']>|null=null;
   const keydown=(e:KeyboardEvent)=>{
    if(['ArrowLeft','ArrowRight','ArrowDown','ArrowUp',' ','a','d','s','w','A','D','S','W','e','E','f','F','h','H','c','C','v','V','Escape'].includes(e.key))e.preventDefault();
@@ -289,7 +316,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   return()=>{cancelled=true;window.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',hidden);inst?.dispose();engine.current=null;if(currentChannel)void supabase.removeChannel(currentChannel);channel.current=null;};
   // For online races, roster is frozen for the duration of this match.
   // eslint-disable-next-line react-hooks/exhaustive-deps
- },[roomId,userId,color,displayName,startAt,difficulty,laps,pace,weather,toggleFullscreen,togglePause,horn,cycleCamera,setRearCamera]);
+ },[renderMode,roomId,userId,color,displayName,startAt,difficulty,laps,pace,weather,toggleFullscreen,togglePause,horn,cycleCamera,setRearCamera]);
  useEffect(()=>{engine.current?.setGraphics(graphics);},[graphics]);
  useEffect(()=>{
   if(!hud.started||ended!==null||paused){previousRank.current=hud.rank;return;}
@@ -299,14 +326,70 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   }
   previousRank.current=hud.rank;
  },[hud.rank,hud.started,ended,paused]);
+ // iOS Safari may cancel pointer capture or fire touchend before pointerup.
+ // Track each finger at the DOM level; two simultaneous pedals/directions stay held.
+ useEffect(() => {
+  if (renderMode !== 'mobile') return;
+  const root = raceRoot.current;
+  if (!root) return;
+  type DriveKey = 'left'|'right'|'brake'|'throttle';
+  const fingers = new Map<number, DriveKey>();
+  const valid = (s: string | undefined): s is DriveKey =>
+   s === 'left' || s === 'right' || s === 'brake' || s === 'throttle';
+  const startTouch = (ev: TouchEvent) => {
+   let handled = false;
+   for (const touch of Array.from(ev.changedTouches)) {
+    const node = touch.target;
+    const button = node instanceof Element ? node.closest<HTMLButtonElement>('[data-kr-drive]') : null;
+    const key = button?.dataset.krDrive;
+    if (!button || !root.contains(button) || !valid(key)) continue;
+    fingers.set(touch.identifier, key);
+    lastInputMode.current = 'touch';
+    down(key, true);
+    handled = true;
+   }
+   if (handled && ev.cancelable) ev.preventDefault();
+  };
+  const endTouch = (ev: TouchEvent) => {
+   let handled = false;
+   for (const touch of Array.from(ev.changedTouches)) {
+    const key = fingers.get(touch.identifier);
+    if (!key) continue;
+    fingers.delete(touch.identifier);
+    if (![...fingers.values()].includes(key)) down(key, false);
+    handled = true;
+   }
+   if (handled && ev.cancelable) ev.preventDefault();
+  };
+  const releaseAll = () => {
+   fingers.clear();
+   for (const key of ['left','right','brake','throttle'] as const) down(key, false);
+  };
+  const onVisibility = () => { if (document.hidden) releaseAll(); };
+  root.addEventListener('touchstart', startTouch, {passive:false});
+  root.addEventListener('touchend', endTouch, {passive:false});
+  root.addEventListener('touchcancel', endTouch, {passive:false});
+  window.addEventListener('blur', releaseAll);
+  document.addEventListener('visibilitychange', onVisibility);
+  return () => {
+   root.removeEventListener('touchstart', startTouch);
+   root.removeEventListener('touchend', endTouch);
+   root.removeEventListener('touchcancel', endTouch);
+   window.removeEventListener('blur', releaseAll);
+   document.removeEventListener('visibilitychange', onVisibility);
+   releaseAll();
+  };
+ }, [renderMode, down]);
  const pressProps=(k:'left'|'right'|'brake'|'throttle')=>({
+  'data-kr-drive':k,
   onPointerDown:(e:ReactPointerEvent<HTMLButtonElement>)=>{
+   if(e.pointerType==='touch' && 'ontouchstart' in window) return; // native touch path owns this finger
    e.preventDefault();e.stopPropagation();lastInputMode.current='touch';
    down(k,true);try{e.currentTarget.setPointerCapture(e.pointerId);}catch{}
   },
-  onPointerUp:()=>down(k,false),onPointerCancel:()=>down(k,false),onLostPointerCapture:()=>down(k,false),
-  onTouchStart:()=>{lastInputMode.current='touch';down(k,true);},
-  onTouchEnd:()=>down(k,false),onTouchCancel:()=>down(k,false),
+  onPointerUp:(e:ReactPointerEvent<HTMLButtonElement>)=>{if(e.pointerType!=='touch'||!('ontouchstart' in window))down(k,false);},
+  onPointerCancel:(e:ReactPointerEvent<HTMLButtonElement>)=>{if(e.pointerType!=='touch'||!('ontouchstart' in window))down(k,false);},
+  onLostPointerCapture:(e:ReactPointerEvent<HTMLButtonElement>)=>{if(e.pointerType!=='touch'||!('ontouchstart' in window))down(k,false);},
  });
  const ability=hud.power;
  const sorted=useMemo(()=>hud.rivals||[],[hud.rivals]);
@@ -323,24 +406,16 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const champion=members.find(x=>x.user_id===championId);
  const multiplayerGrid=[...members].sort((a,b)=>gridHash(String(startAt)+a.user_id)-gridHash(String(startAt)+b.user_id));
  const gridSlot=roomId?Math.max(0,multiplayerGrid.findIndex(m=>m.user_id===userId)) : gridHash(String(startAt)+userId)%22;
- const startGrid=roomId?multiplayerGrid.map((m,i)=>({id:m.user_id,name:m.nickname,color:m.color,slot:i}))
-  : (hud.rivals||[]).map(m=>({id:m.id,name:m.name,color:m.color,slot:0}));
- const arrangedGrid=roomId?startGrid:[...startGrid].sort((a,b)=>{const pa=(hud.rivals||[]).find(m=>m.id===a.id)?.progress??0;const pb=(hud.rivals||[]).find(m=>m.id===b.id)?.progress??0;return pb-pa;});
- const rollRisk=()=>{if(preRaceChoice||!engine.current||hud.started||hud.countdown<=5)return;
-  const result=engine.current.rollStartEvent();if(result){setPreRaceChoice(result);sound.current?.effect(result==='boost'?'boost':'collision');}};
  const everyoneFinished=members.length>=2&&members.every(x=>x.finish_ms!==null);
- return <section className={`${s.raceScreen} ${!hud.started&&ended===null?s.preRaceStage:''} ${ended!==null?s.paradeMode:''}`} ref={raceRoot}
+ const raceView=<section className={`${s.raceScreen} ${ended!==null?s.paradeMode:''}`} ref={raceRoot}
   onPointerDownCapture={()=>{sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();}}>
   <canvas ref={canvas} className={s.canvas} aria-label="Kart Rush 3D yarış pisti" />
-  {weather==='rain'&&<div aria-hidden="true" style={{position:'absolute',top:74,left:'50%',transform:'translateX(-50%)',fontSize:11,letterSpacing:'1.3px',fontWeight:800,padding:'6px 12px',borderRadius:7,background:'rgba(9,22,32,.62)',color:'#d7e8f8',pointerEvents:'none',zIndex:4}}>🌧 ISLAK PİST · DAHA UZUN FREN MESAFESİ</div>}
-  <div className={s.qualityMark}>KART RUSH <span>G3.5 · IMMERSIVE</span></div>
   <div className={s.racingVignette} aria-hidden="true" />
-  <div className={s.broadcastTag}>F1 MEDIPOL · RACE CONTROL</div>
   <div className={s.topHud}>
-   <div className={`${s.hudBlock} ${s.hudPosition}`}><span>POS</span><strong>{hud.rank}<small> / {hud.total}</small></strong></div>
-   <div className={`${s.hudBlock} ${s.hudLap}`}><span>LAP</span><strong>{hud.lap}<small> / {hud.totalLaps}</small></strong></div>
-   <div className={`${s.hudBlock} ${s.hudTime}`}><span>RACE TIME</span><strong>{Math.floor(elapsed/60).toString().padStart(2,'0')}:{Math.floor(elapsed%60).toString().padStart(2,'0')}<small>.{Math.floor(elapsed*10)%10}</small></strong></div>
-   <div className={`${s.hudBlock} ${s.bestBlock}`}><span>BEST LAP</span><strong>{hud.bestLapMs?((hud.bestLapMs)/1000).toFixed(2):'—'}<small> s</small></strong></div>
+   <div className={`${s.hudBlock} ${s.hudPosition}`}><span>SIRA</span><strong>{hud.rank}<small> / {hud.total}</small></strong></div>
+   <div className={`${s.hudBlock} ${s.hudLap}`}><span>TUR</span><strong>{hud.lap}<small> / {hud.totalLaps}</small></strong></div>
+   <div className={`${s.hudBlock} ${s.hudTime}`}><span>SÜRE</span><strong>{Math.floor(elapsed/60).toString().padStart(2,'0')}:{Math.floor(elapsed%60).toString().padStart(2,'0')}<small>.{Math.floor(elapsed*10)%10}</small></strong></div>
+   <div className={`${s.hudBlock} ${s.bestBlock}`}><span>EN İYİ</span><strong>{hud.bestLapMs?((hud.bestLapMs)/1000).toFixed(2):'—'}<small> s</small></strong></div>
   </div>
   <div className={s.raceActions}>
    <button type="button" className={s.mobilePauseBtn} onClick={()=>{
@@ -349,6 +424,10 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
      if(!roomId&&opening!==pausedRef.current)togglePause();
      setShowGraphics(false);setShowLeaderboard(false);setMobileMenuOpen(opening);
    }}>{mobileMenuOpen?'✕ KAPAT':roomId?'Ⅱ MENÜ':'Ⅱ DURAKLAT'}</button>
+   <button type="button" className={s.hudCameraBtn}
+    onTouchEnd={(e)=>{e.preventDefault();e.stopPropagation();lastCameraTouch.current=Date.now();cycleCamera();}}
+    onClick={()=>{if(Date.now()-lastCameraTouch.current>550)cycleCamera();}}
+    aria-label="Kamerayı değiştir">▣ KAMERA<small>{cameraName}</small></button>
    <button type="button" onClick={()=>setShowGraphics(v=>!v)} className={s.graphicsToggle} aria-label="Grafik ve ses ayarları" aria-expanded={showGraphics}>⚙ AYARLAR <span>{graphics==='ultra'?'ULTRA':graphics==='high'?'YÜKSEK':graphics==='low'?'DÜŞÜK':'DENGELİ'}</span></button>
    <button type="button" onClick={()=>void toggleFullscreen()} className={s.fullscreenBtn}>{isFullscreen?'🡼 ÇIK':'⛶ TAM'}</button>
    {!roomId&&<button type="button" className={s.fullscreenBtn} onClick={togglePause}>{paused?'▶ DEVAM':'Ⅱ DURAKLAT'}</button>}
@@ -422,41 +501,17 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    <TrackMiniMap hud={hud} id={userId}/>
   </div>
   <button type="button" className={s.leaderboardToggle} onClick={()=>setShowLeaderboard(v=>!v)} aria-expanded={showLeaderboard}>{showLeaderboard?'✕ KAPAT':'☰ SIRALAMA'} <span>{hud.rank}/{hud.total}</span></button>
-  {showTouchControls&&<button type="button" className={s.mobileCameraToggle} onClick={()=>{lastInputMode.current='touch';setShowTouchControls(true);sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();cycleCamera();}} aria-label="Kamerayı değiştir">▣ KAMERA</button>}
   <div className={`${s.standings} ${showLeaderboard?s.boardOpen:''}`} aria-label="Canlı yarış sıralaması">
    <div className={s.standingsTitle}><strong>LIVE CLASSIFICATION</strong><small>GAP TO LEADER</small></div>
    {classification.map((p)=><p key={p.id} className={p.id===userId?s.isMe:''}><i>{p.pos}</i><span style={{background:p.color}}/><b>{p.id===userId?'SEN':p.name}</b><small>{p.gapLabel}</small></p>)}
   </div>
-  <div className={s.damageHud}><span>ARAÇ DURUMU</span><strong>{hud.health}%</strong><div><i style={{width:`${hud.health}%`,background:hud.health>50?'#65bc91':hud.health>25?'#e1ab54':'#d95757'}}/></div></div>
   {hud.pit&&<div className={s.pitIndicator}>PIT ALANI · {hud.pitProgress>0?`SERVİS %${Math.round(hud.pitProgress*100)}`:'GAZI BIRAK VE DUR'}<div><i style={{width:`${hud.pitProgress*100}%`}}/></div></div>}
   {hud.magnet&&<div className={s.magnetIndicator}>⊕ MIKNATIS AKTİF</div>}
-  {preRaceChoice&&hud.started&&hud.elapsed<30&&<div aria-live="polite" style={{position:'absolute',top:'clamp(190px,32vh,280px)',left:10,padding:'7px 10px',fontSize:10,fontWeight:900,borderRadius:8,color:preRaceChoice==='boost'?'#a6f9c0':'#ffb6aa',background:'rgba(4,11,22,.86)',zIndex:9,pointerEvents:'none'}}>{preRaceChoice==='boost'?'⬆ RİSK ÖDÜLÜ · +GÜÇ / TUTUŞ':'⬇ RİSK CEZASI · -GÜÇ / TUTUŞ'} · {Math.ceil(30-hud.elapsed)}sn</div>}
-  {cameraName==='KOKPİT'&&<div aria-hidden="true" style={{position:'absolute',bottom:120,left:'50%',transform:'translateX(-50%)',padding:'4px 13px',background:'rgba(7,16,26,.65)',border:'1px solid #ffffff33',borderRadius:10,pointerEvents:'none',zIndex:3,fontSize:10,fontWeight:800,letterSpacing:2}}>◉ KOKPİT KAMERASI</div>}
-  <div className={s.speedHud}><small>SPEED {hud.contact?' · TEMAS!':''}</small><b>{hud.speed}</b><span>KM/SA</span><div className={s.speedBar}><i style={{width:Math.min(100,hud.speed/285*100)+'%'}}/></div></div>
-  <div className={s.progressLine}><span style={{width:`${Math.max(0,Math.min(100,(hud.progress||0)/hud.totalLaps*100))}%`}}/></div>
   {hud.cornerSpeed&&hud.speed>hud.cornerSpeed+18&&<div className={s.cornerAlert}>⚠ SERT VİRAJ · FREN · {hud.cornerSpeed} KM/SA</div>}
   {hud.offroad&&<div className={s.offroad}>⚠ PİST DIŞINDASIN · FRENLE, DİREKSİYONLA GERİ DÖN</div>}
   {hud.shield&&<span className={s.activeShield}>⬡ KALKAN AKTİF</span>}
   {hud.turbo&&<span className={s.activeTurbo}>⚡ TURBO AKTİF</span>}
-  {!hud.started&&ended===null&&hud.countdown>5&&<div className={s.countdown} style={{background:'linear-gradient(90deg,rgba(2,7,17,.32),rgba(5,13,25,.07))',justifyContent:'space-between',alignItems:'center',padding:'clamp(10px,2vw,20px)',pointerEvents:'none'}}>
-   <div className={s.raceIntroTicker} style={{pointerEvents:'none',position:'absolute',top:'clamp(8px,2vh,18px)',left:'50%',transform:'translateX(-50%)',padding:'7px 20px',background:'rgba(4,9,18,.92)',border:'1px solid #ffffff50',borderRadius:12,fontWeight:950,fontSize:'clamp(18px,3vw,28px)',whiteSpace:'nowrap',zIndex:9}}>🎬 PİST TANITIMI · {Math.max(1,Math.min(15,hud.countdown-5))} SANİYE</div>
-   <div className={s.startSequence} style={{pointerEvents:'auto',maxWidth:600,marginTop:58,background:'rgba(6,12,23,.82)',border:'1px solid rgba(255,255,255,.24)',padding:'clamp(12px,2vw,20px)',borderRadius:16,overflowY:'auto',maxHeight:'70%'}}>
-    <small>F1 MEDIPOL · RACE DIRECTOR</small>
-    <strong style={{fontSize:'clamp(19px,3vw,28px)'}}>GRAND PRIX · GRID WALK</strong>
-    <p style={{fontSize:12,margin:'7px 0'}}>🎥 Pist turu · {weather==='rain'?'🌧 YAĞMUR':'☀ KURU'} · {hud.totalLaps} tur · {roomId?'ÇEVRİM İÇİ':'21 AI RAKİP'}</p>
-    <div style={{fontSize:11,fontWeight:850,color:'#f5d78b'}}>RASTGELE START GRID · SEN P{gridSlot+1}</div>
-    <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:5,margin:'9px 0',maxHeight:125,overflow:'auto'}}>
-     {arrangedGrid.slice(0,roomId?22:12).map((m,i)=><span key={m.id} style={{textAlign:'left',minWidth:0,fontSize:10,padding:'5px 6px',borderRadius:5,borderLeft:'3px solid '+m.color,background:m.id===userId?'rgba(245,198,85,.25)':'rgba(255,255,255,.07)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{i+1}. {m.id===userId?'SEN':m.name} · {raceTeamName(m.color)}</span>)}
-    </div>
-    <div style={{padding:10,borderRadius:12,background:'rgba(12,26,43,.95)',border:'1px solid rgba(239,193,86,.38)',display:'grid',gap:5}}>
-     <strong style={{fontSize:14}}>🎲 START RİSK KARTI</strong>
-     {preRaceChoice?<p style={{fontSize:12,margin:0,color:preRaceChoice==='boost'?'#9af3b6':'#ffad99'}}>{preRaceChoice==='boost'?'✅ %15 kalkış gücü ve daha yüksek tutuş · 30 saniye':'⚠️ %12 güç kaybı ve daha az tutuş · 30 saniye'}</p>
-      :<><p style={{fontSize:11,margin:0}}>İstersen şansını dene: %50 avantaj / %50 dezavantaj. Katılmadan da yarışabilirsin.</p><button type="button" onClick={rollRisk} style={{border:'1px solid #ffffff7a',borderRadius:9,padding:'9px 12px',background:'#ce3346',color:'#fff',cursor:'pointer',fontWeight:900}}>🎲 RİSKİ AL · RASTGELE ETKİ</button></>}
-    </div>
-    <small style={{display:'block',marginTop:8}}>Ardından 5 kırmızı ışık · {audioEnabled?'🔊 SES HAZIR':'🔇 SES İÇİN EKRANA DOKUN'}</small>
-   </div>
-  </div>}
-  {!hud.started&&!ended&&hud.countdown<=5&&<div className={s.countdown} style={{pointerEvents:'auto'}}><div className={s.startSequence}><small>F1 MEDİPOL · NIGHT GRAND PRIX</small><em>22 ARAÇ · {hud.totalLaps} TUR · ANA GRID</em><div className={s.startLights}>{[0,1,2,3,4].map(i=><span key={i} className={i<hud.lights?s.lightOn:''}/>)}</div><strong>{hud.lights>0?'LIGHTS ON':'READY TO LAUNCH'}</strong><small>BEŞ KIRMIZI IŞIK · SAKIN ERKEN ÇIKMA</small><button type="button" onClick={toggleStartSounds} style={{marginTop:12,border:'1px solid rgba(255,255,255,.4)',borderRadius:12,padding:'9px 16px',background:'rgba(12,16,24,.82)',color:'#fff',fontWeight:800,cursor:'pointer'}}>{startSoundsEnabled?'🔊 START SESLERİ AÇIK · KAPAT':'🔇 START SESLERİ KAPALI · AÇ'}</button></div></div>}
+  {/* Start lights are rendered by the 3D circuit; no blocking overlay or risk-card popup. */}
   {error&&<p role="alert" className={s.raceError}>{error}</p>}
   <div className={s.raceBottom}>
    {showTouchControls&&<div className={s.steerControls}><button {...pressProps('left')} aria-label="Sola dön">◀</button><button {...pressProps('right')} aria-label="Sağa dön">▶</button></div>}
@@ -474,7 +529,6 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    <div style={{display:'flex',gap:3,marginTop:10}}>{(Object.keys(LABEL) as KartPower[]).map(p=><i key={p} style={{height:3,flex:1,background:POWER_COLORS[p],opacity:powerSpinIndex===(Object.keys(LABEL) as KartPower[]).indexOf(p)?1:.24}}/>)}</div>
    <style>{`@keyframes krPowerPop{from{transform:scale(.90);filter:brightness(.9)}to{transform:scale(1.06);filter:brightness(1.2)}}`}</style>
   </div>}
-  {ability&&<div className={s.powerDescription} style={{top:'96px',bottom:'auto',left:'50%',transform:'translateX(-50%)',minWidth:'360px',maxWidth:'min(560px, calc(100vw - 32px))',padding:'10px 18px',borderRadius:'14px',textAlign:'center',whiteSpace:'normal',lineHeight:1.25,background:'rgba(10,17,26,.92)',border:'1px solid rgba(255,255,255,.18)',boxShadow:'0 14px 34px rgba(0,0,0,.35)'}}>{POWER_ICON[ability]} {DETAILS[ability]} · BOŞLUK / E</div>}
   {ended!==null&&<div className={s.finishNotice} role="status">
    <span>🏁 FİNİŞ · {(ended/1000).toFixed(2)} sn</span>
    <button type="button" onClick={()=>setShowResults(v=>!v)}>{showResults?'✕ KAPAT':'🏆 SONUÇLARI GÖR'}</button>
@@ -508,4 +562,6 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    <button onClick={onExit}>{roomId?'✕ LOBİDEN AYRIL':'Arcade’e dön'}</button>
   </div></div>}
  </section>;
+ if(renderMode==='pending')return null;
+ return renderMode==='mobile'?createPortal(raceView,document.body):raceView;
 }

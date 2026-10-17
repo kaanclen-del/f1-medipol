@@ -162,6 +162,15 @@ export default function Header() {
   ] =
     useState(false);
 
+  // Compact header is also used on iPhone landscape (CSS viewport > 700px).
+  const [compactHeader, setCompactHeader] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 700px), (pointer: coarse) and (max-width: 1100px)');
+    const update = () => setCompactHeader(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
   const [mobileHeaderHidden, setMobileHeaderHidden] = useState(false);
   useEffect(() => {
     let previousY = window.scrollY;
@@ -429,8 +438,7 @@ export default function Header() {
       const onResize =
         () => {
           if (
-            window.innerWidth >
-            700
+            !window.matchMedia('(max-width: 700px), (pointer: coarse) and (max-width: 1100px)').matches
           ) {
             setMenuOpen(
               false
@@ -1516,6 +1524,54 @@ export default function Header() {
             .medipol-header[data-scroll-hidden="true"] {transform:translate3d(0,-105%,0)!important;pointer-events:none!important;}
             .medipol-mobile-header-spacer {display:block;height:68px;min-height:68px;flex:none;}
           }
+          /* G6.2.6: iPhone portrait AND landscape use hamburger-only header.
+             Do not keep desktop DM / notification / profile in the top bar. */
+          @media (max-width:700px), (pointer:coarse) and (max-width:1100px) {
+            .medipol-header {
+              position:fixed!important;top:0!important;left:0!important;right:0!important;
+              z-index:1900!important;
+              height:64px!important;
+              max-width:100vw!important;
+              overflow:visible!important;
+            }
+            .medipol-header-inner {
+              width:calc(100% - 20px)!important;
+              max-width:100%!important;
+              justify-content:space-between!important;
+              gap:8px!important;
+              min-width:0!important;
+            }
+            .medipol-header[data-scroll-hidden="true"] {transform:translate3d(0,-105%,0)!important;pointer-events:none!important;}
+            .medipol-header-nav { display:none!important; }
+            .medipol-header-logo {
+              width:124px!important;min-width:100px!important;max-width:124px!important;
+              flex-basis:124px!important;flex-shrink:1!important;
+            }
+            .medipol-header-logo-art {width:118px!important;min-width:0!important;max-width:118px!important;height:31px!important;}
+            .medipol-header-right {margin-left:auto!important;min-width:44px!important;width:44px!important;flex:none!important;gap:0!important;}
+            .medipol-header-right > .medipol-header-profile { display:none!important; }
+            .medipol-mobile-menu-button {display:flex!important;min-width:44px!important;min-height:44px!important;}
+            .medipol-mobile-drawer {
+              position:fixed!important;top:64px!important;left:0!important;right:0!important;
+              max-height:calc(100dvh - 64px - env(safe-area-inset-bottom,0px))!important;
+              overflow-y:auto!important;overscroll-behavior:contain!important;
+              -webkit-overflow-scrolling:touch!important;
+              z-index:2005!important;
+            }
+            .medipol-mobile-drawer:not(.open){display:none!important;}
+            .medipol-mobile-drawer.open{display:block!important;}
+            .medipol-mobile-tools {
+              display:flex;align-items:center;justify-content:center;gap:14px;
+              max-width:520px;margin:3px auto 12px;padding:12px 10px;
+              border:1px solid ${profileBorder};border-radius:12px;
+              background:${profileBackground};min-height:60px;
+            }
+            .medipol-mobile-nav {grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+            .medipol-mobile-header-spacer {height:64px!important;min-height:64px!important;}
+          }
+          @media (max-width:460px) {
+            .medipol-mobile-nav{grid-template-columns:1fr!important;}
+          }
           @media (prefers-reduced-motion:reduce){.medipol-header{transition:none!important;}}
         `}
       </style>
@@ -1574,12 +1630,12 @@ export default function Header() {
             ================================================= */}
 
         <div className="medipol-header-right">
-          <HeaderThemeMenu />
-
-          {/* NOTIFICATIONS */}
-          <NotificationBell isLight={isLight} />
-          <WelcomeTour />
-          <DmDock isLight={isLight} />
+          {!compactHeader && <>
+            <HeaderThemeMenu />
+            <NotificationBell isLight={isLight} />
+            <DmDock isLight={isLight} />
+          </>}
+          {!compactHeader && <WelcomeTour />}
 
           {/* PROFILE */}
 
@@ -1702,6 +1758,12 @@ export default function Header() {
           " "
         )}
       >
+        {compactHeader && <div className="medipol-mobile-tools" aria-label="Bildirim, mesaj ve görünüm ayarları">
+          <HeaderThemeMenu />
+          <NotificationBell isLight={isLight} />
+          <DmDock isLight={isLight} />
+          <WelcomeTour />
+        </div>}
         <nav className="medipol-mobile-nav">
 
           {/* MOBILE PROFILE */}
