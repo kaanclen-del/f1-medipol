@@ -1572,6 +1572,40 @@ export default function Header() {
           @media (max-width:460px) {
             .medipol-mobile-nav{grid-template-columns:1fr!important;}
           }
+          /* G6.4: landscape touch header: account, DM and notifications stay outside menu. */
+          @media (pointer:coarse) and (orientation:landscape) and (min-width:600px) and (max-width:1100px){
+           .medipol-header-right{width:auto!important;min-width:0!important;gap:5px!important;flex:0 1 auto!important}
+           .medipol-header-right>.medipol-header-profile{display:flex!important;width:auto!important;min-width:0!important;height:38px!important;min-height:38px!important;padding:3px 7px!important;gap:5px!important}
+           .medipol-header-profile-name{display:block!important;max-width:94px!important;font-size:10px!important}
+           .medipol-profile-arrow{display:none!important}
+           .medipol-header-avatar{width:28px!important;height:28px!important;min-width:28px!important}
+           .medipol-mobile-menu-button{min-width:38px!important;width:38px!important;height:38px!important;min-height:38px!important;flex:0 0 38px!important}
+           .medipol-landscape-quick{display:flex!important;align-items:center;gap:3px;flex:0 0 auto}
+           .medipol-landscape-quick>*{flex:0 0 auto}
+           .medipol-header-logo{width:110px!important;min-width:96px!important;max-width:110px!important;flex-basis:110px!important}
+           .medipol-header-logo-art{width:106px!important;max-width:106px!important}
+          }
+          .medipol-landscape-quick{display:none}
+          /* G6.7 — profile, messaging and notifications always visible on mobile */
+          @media (max-width:700px), (pointer:coarse) and (max-width:1100px){
+            .medipol-header-right{display:flex!important;width:auto!important;min-width:0!important;flex:0 1 auto!important;gap:4px!important}
+            .medipol-header-right>.medipol-header-profile{display:flex!important;width:auto!important;min-width:0!important;max-width:110px!important;min-height:36px!important;height:36px!important;padding:3px 5px!important;gap:5px!important}
+            .medipol-header-profile-name{display:block!important;max-width:66px!important;font-size:9px!important}
+            .medipol-profile-arrow{display:none!important}
+            .medipol-header-avatar{width:27px!important;height:27px!important;min-width:27px!important}
+            .medipol-landscape-quick{display:flex!important;align-items:center!important;gap:2px!important;flex:0 0 auto!important}
+            .medipol-landscape-quick>*{flex:0 0 auto!important}
+            .medipol-mobile-menu-button{width:36px!important;min-width:36px!important;flex:0 0 36px!important;min-height:36px!important;height:36px!important}
+            .medipol-header-logo{width:105px!important;min-width:76px!important;max-width:105px!important;flex-basis:105px!important}
+            .medipol-header-logo-art{width:98px!important;max-width:98px!important;min-width:0!important}
+            .medipol-header-inner{gap:4px!important}
+          }
+          @media (max-width:390px){
+            .medipol-header-logo{width:84px!important;min-width:72px!important;max-width:84px!important;flex-basis:84px!important}
+            .medipol-header-logo-art{width:80px!important;max-width:80px!important}
+            .medipol-header-profile-name{max-width:40px!important}
+            .medipol-header-right{gap:2px!important}
+          }
           @media (prefers-reduced-motion:reduce){.medipol-header{transition:none!important;}}
         `}
       </style>
@@ -1704,6 +1738,7 @@ export default function Header() {
             </Link>
           )}
 
+          {compactHeader && <div className="medipol-landscape-quick" aria-label="Mesajlar ve bildirimler"><DmDock isLight={isLight}/><NotificationBell isLight={isLight}/></div>}
           {/* MOBILE MENU BUTTON */}
 
           <button
@@ -1760,64 +1795,9 @@ export default function Header() {
       >
         {compactHeader && <div className="medipol-mobile-tools" aria-label="Bildirim, mesaj ve görünüm ayarları">
           <HeaderThemeMenu />
-          <NotificationBell isLight={isLight} />
-          <DmDock isLight={isLight} />
           <WelcomeTour />
         </div>}
         <nav className="medipol-mobile-nav">
-
-          {/* MOBILE PROFILE */}
-
-          {displayName && (
-            <Link
-              href="/profile"
-              className="medipol-mobile-profile-link"
-              onClick={() =>
-                setMenuOpen(false)
-              }
-            >
-              <div
-                className="medipol-header-avatar"
-                style={{
-                  background:
-                    avatarUrl
-                      ? "#ffffff"
-                      : "linear-gradient(135deg,#e10600,#ff5149)",
-                }}
-              >
-                {avatarUrl ? (
-                  <img
-                    src={
-                      avatarUrl
-                    }
-                    alt={
-                      displayName
-                    }
-                  />
-                ) : (
-                  displayName
-                    .charAt(0)
-                    .toUpperCase()
-                )}
-              </div>
-
-              <div className="medipol-mobile-profile-copy">
-                <strong>
-                  {
-                    displayName
-                  }
-                </strong>
-
-                <span>
-                  PROFİLİ GÖR
-                </span>
-              </div>
-
-              <span>
-                →
-              </span>
-            </Link>
-          )}
 
           {/* MENU ITEMS */}
 
