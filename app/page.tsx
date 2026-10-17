@@ -620,6 +620,9 @@ export default async function HomePage() {
   });
 
   const editorialAdmin = createAdminClient();
+  const { data: raceTickerConfig } = await editorialAdmin.from("site_race_ticker")
+    .select("message").eq("id", 1).maybeSingle();
+  const tickerMessage = typeof raceTickerConfig?.message === "string" ? raceTickerConfig.message.trim() : "";
   const { data: commentaryRow, error: commentaryError } = await editorialAdmin
     .from("weekly_commentaries")
     .select("id,week_label,title,summary,content,image_url,published_at")
@@ -769,55 +772,44 @@ export default async function HomePage() {
 
       <Header />
 
-      {race && (
-        <div className="f1-next-race-strip" aria-label="Yaklaşan Formula 1 yarışı">
+      {(tickerMessage || race) && (
+        <div className="f1-next-race-strip" aria-label="F1 Medipol kayan duyuru şeridi">
           <div className="f1-next-race-track">
-            {Array.from({ length: 4 }, (_, index) => (
-              <span className="f1-next-race-item" key={index} aria-hidden={index > 0}>
-                <span className="f1-next-race-live">● F1 MEDİPOL</span>
-                <span className="f1-next-race-dot">◆</span>
-                <strong>YAKLAŞAN YARIŞ: {race.raceName}</strong>
-                <span className="f1-next-race-dot">◆</span>
-                <span>{formatSessionTimeTR(race.raceDate, race.raceTime)} (TSİ)</span>
-              </span>
+            {[0, 1].map((copy) => (
+              <div className="f1-next-race-group" key={copy} aria-hidden={copy === 1}>
+                {Array.from({ length: 4 }, (_, index) => (
+                  <span className="f1-next-race-item" key={index}>
+                    <b>● F1 MEDİPOL</b><span aria-hidden="true">◆</span>
+                    {tickerMessage ? <strong>{tickerMessage}</strong> : <strong>YAKLAŞAN YARIŞ: {race?.raceName}</strong>}
+                    {!tickerMessage && race && <><span aria-hidden="true">◆</span><span>{formatSessionTimeTR(race.raceDate, race.raceTime)} (TSİ)</span></>}
+                  </span>
+                ))}
+              </div>
             ))}
           </div>
         </div>
       )}
       <style>{`
         .f1-next-race-strip {
-          height: 29px; width: 100%; overflow: hidden; position: relative;
-          background: linear-gradient(90deg, rgba(156,12,34,.48), rgba(214,31,53,.56) 42%, rgba(164,14,39,.48));
-          border-bottom: 1px solid rgba(255,255,255,.12);
-          color: #fff; display: flex; align-items: center;
-          font-family: inherit; z-index: 5;
+          height: 27px; margin-top: 8px; width: 100%; overflow: hidden;
+          position: relative; z-index: 5; display: flex; align-items: center;
+          color: #fff; font-family: inherit; border-block: 1px solid rgba(255,255,255,.12);
+          background: rgba(148, 17, 34, .44);
         }
-        .f1-next-race-track {
-          display: flex; align-items: center; width: max-content; min-width: max-content;
-          white-space: nowrap; animation: f1-next-race-scroll 38s linear infinite;
-          will-change: transform;
+        :root[data-site-theme="dark"] .f1-next-race-strip,
+        :root:not([data-site-theme]) .f1-next-race-strip { background: rgba(38, 43, 53, .78); }
+        :root[data-site-theme="light"] .f1-next-race-strip {
+          background: rgba(188, 35, 52, .28); color: #fff;
+          border-color: rgba(255,255,255,.22);
         }
-        .f1-next-race-item {
-          display: inline-flex; align-items: center; justify-content: center;
-          gap: 16px; padding: 0 22px; font-size: 10px;
-          font-weight: 650; letter-spacing: .06em; line-height: 29px;
-          flex: 0 0 auto;
-        }
-        .f1-next-race-item strong { font-weight: 850; }
-        .f1-next-race-live { font-weight: 850; font-size: 9px; opacity: .95; }
-        .f1-next-race-dot { opacity: .65; font-size: 9px; }
-        @keyframes f1-next-race-scroll {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
-        }
-        @media (max-width: 700px) {
-          .f1-next-race-strip { height: 26px; }
-          .f1-next-race-item { font-size: 9px; line-height: 26px; gap: 12px; padding: 0 16px; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .f1-next-race-track { animation: none; }
-          .f1-next-race-strip { overflow-x: auto; }
-        }
+        .f1-next-race-track { display: flex; width: max-content; flex: 0 0 auto; white-space: nowrap; animation: f1-next-race-scroll 45s linear infinite; will-change: transform; }
+        .f1-next-race-group { display: flex; width: max-content; flex: 0 0 auto; align-items: center; }
+        .f1-next-race-item { display: flex; flex: 0 0 auto; align-items: center; gap: 13px; padding: 0 18px; font-size: 10px; letter-spacing: .04em; height: 27px; white-space: nowrap; }
+        .f1-next-race-item strong { font-weight: 750; }
+        .f1-next-race-item b { font-size: 9px; font-weight: 850; }
+        @keyframes f1-next-race-scroll { to { transform: translateX(-50%); } }
+        @media(max-width:700px) { .f1-next-race-strip { height: 25px; margin-top: 7px; } .f1-next-race-item { height: 25px; font-size: 9px; } }
+        @media(prefers-reduced-motion:reduce) { .f1-next-race-track { animation: none; } }
       `}</style>
 
       <main className="home">

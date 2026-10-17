@@ -1,3 +1,4 @@
+import AdminRaceTicker from "@/components/AdminRaceTicker";
 
 import Link from "next/link";
 
@@ -77,6 +78,7 @@ export default async function AdminPage() {
   }
 
   const admin = createAdminClient();
+  const { data: raceTickerConfig } = await admin.from("site_race_ticker").select("message").eq("id", 1).maybeSingle();
   const {data: ownerConfig} = await admin.from("site_admin_config")
     .select("owner_id").eq("singleton", true).maybeSingle();
 
@@ -153,6 +155,8 @@ export default async function AdminPage() {
               ● YÖNETİCİ OTURUMU AKTİF
             </div>
           </section>
+
+          <AdminRaceTicker initialText={raceTickerConfig?.message ?? ""} />
 
           {/* İSTATİSTİKLER */}
 
