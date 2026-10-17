@@ -786,9 +786,9 @@ export default async function HomePage() {
       )}
       <style>{`
         .f1-next-race-strip {
-          height: 37px; width: 100%; overflow: hidden; position: relative;
-          background: linear-gradient(90deg, #9c0c22, #d61f35 42%, #a40e27);
-          border-bottom: 1px solid rgba(255,255,255,.2);
+          height: 29px; width: 100%; overflow: hidden; position: relative;
+          background: linear-gradient(90deg, rgba(156,12,34,.48), rgba(214,31,53,.56) 42%, rgba(164,14,39,.48));
+          border-bottom: 1px solid rgba(255,255,255,.12);
           color: #fff; display: flex; align-items: center;
           font-family: inherit; z-index: 5;
         }
@@ -799,20 +799,20 @@ export default async function HomePage() {
         }
         .f1-next-race-item {
           display: inline-flex; align-items: center; justify-content: center;
-          gap: 20px; padding: 0 26px; font-size: 11px;
-          font-weight: 650; letter-spacing: .065em; line-height: 37px;
+          gap: 16px; padding: 0 22px; font-size: 10px;
+          font-weight: 650; letter-spacing: .06em; line-height: 29px;
           flex: 0 0 auto;
         }
         .f1-next-race-item strong { font-weight: 850; }
-        .f1-next-race-live { font-weight: 850; font-size: 10px; opacity: .95; }
+        .f1-next-race-live { font-weight: 850; font-size: 9px; opacity: .95; }
         .f1-next-race-dot { opacity: .65; font-size: 9px; }
         @keyframes f1-next-race-scroll {
           from { transform: translateX(0); }
           to { transform: translateX(-50%); }
         }
         @media (max-width: 700px) {
-          .f1-next-race-strip { height: 33px; }
-          .f1-next-race-item { font-size: 10px; line-height: 33px; gap: 14px; padding: 0 18px; }
+          .f1-next-race-strip { height: 26px; }
+          .f1-next-race-item { font-size: 9px; line-height: 26px; gap: 12px; padding: 0 16px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .f1-next-race-track { animation: none; }
