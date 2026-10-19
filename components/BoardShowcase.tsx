@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type BoardMember = {
   id: string;
@@ -23,18 +23,78 @@ export default function BoardShowcase({
 }: Props) {
   const [selectedIndex, setSelectedIndex] =
     useState<number | null>(null);
+  const [imagePending, setImagePending] = useState<number | null>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [expansion, setExpansion] = useState({ width: 850, shift: 0 });
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const pendingAction = useRef(0);
+  const readyImages = useRef(new Set<string>());
+
+  // Reserve the original grid slot and expand over it; never move an item
+  // into the next flex line (the old problem on columns 3 and 4).
+  function measureExpansion(index: number) {
+    const grid = gridRef.current;
+    const slot = slotRefs.current[index];
+    if (!grid || !slot) return;
+    const gridRect = grid.getBoundingClientRect();
+    const slotRect = slot.getBoundingClientRect();
+    const width = Math.min(850, gridRect.width);
+    const x = slotRect.left - gridRect.left;
+    const shift = Math.max(0, Math.min(x, x + width - gridRect.width));
+    setExpansion({ width, shift });
+  }
+
+  useEffect(() => {
+    if (selectedIndex === null) return;
+    // The first frame is the compact card; expand on the next frame so
+    // width and horizontal offset actually animate from that position.
+    let secondFrame = 0;
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(() => setExpanded(true));
+    });
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      window.cancelAnimationFrame(secondFrame);
+    };
+  }, [selectedIndex]);
+
+  useEffect(() => {
+    if (selectedIndex === null) return;
+    const onResize = () => measureExpansion(selectedIndex);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [selectedIndex]);
 
   function closeSelected() {
+    pendingAction.current += 1;
+    setImagePending(null);
+    setExpanded(false);
     setSelectedIndex(null);
   }
 
-  function openMember(index: number) {
-    if (selectedIndex === index) {
-      closeSelected();
-      return;
+  async function selectMember(index: number) {
+    const selectionToken = ++pendingAction.current;
+    const source = members[index]?.detail_image_url || members[index]?.image_url;
+    if (source && !readyImages.current.has(source)) {
+      setImagePending(index);
+      try {
+        const img = new window.Image();
+        img.src = source;
+        await img.decode();
+        readyImages.current.add(source);
+      } catch { /* Broken image still shows its normal fallback. */ }
     }
-
+    if (selectionToken !== pendingAction.current) return;
+    setImagePending(null);
+    measureExpansion(index);
+    setExpanded(false);
     setSelectedIndex(index);
+  }
+
+  function openMember(index: number) {
+    if (selectedIndex === index) { closeSelected(); return; }
+    void selectMember(index);
   }
 
   function nextMember() {
@@ -45,11 +105,7 @@ export default function BoardShowcase({
       return;
     }
 
-    setSelectedIndex(
-      selectedIndex === members.length - 1
-        ? 0
-        : selectedIndex + 1
-    );
+    void selectMember(selectedIndex === members.length - 1 ? 0 : selectedIndex + 1);
   }
 
   function previousMember() {
@@ -60,11 +116,7 @@ export default function BoardShowcase({
       return;
     }
 
-    setSelectedIndex(
-      selectedIndex === 0
-        ? members.length - 1
-        : selectedIndex - 1
-    );
+    void selectMember(selectedIndex === 0 ? members.length - 1 : selectedIndex - 1);
   }
 
   useEffect(() => {
@@ -118,40 +170,72 @@ export default function BoardShowcase({
 
   return (
     <div
+      ref={gridRef}
+      className="f1-board-stable-grid"
       style={{
-        display: "flex",
-        flexWrap: "wrap",
-        gap: "24px",
-        alignItems: "flex-start",
+        display: "grid",
+        gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gap: "20px",
+        alignItems: "start",
+        position: "relative",
+        isolation: "isolate",
+        overflow: "visible",
       }}
     >
+      <style>{`
+        @media (max-width: 980px) { .f1-board-stable-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; } }
+        @media (max-width: 680px) { .f1-board-stable-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
+        @media (max-width: 440px) { .f1-board-stable-grid { grid-template-columns: minmax(0, 1fr) !important; } }
+
+        @keyframes f1BoardRevealLeft {
+          from { clip-path: inset(0 9% 0 0); opacity: .92; }
+          to { clip-path: inset(0 0 0 0); opacity: 1; }
+        }
+        @keyframes f1BoardRevealRight {
+          from { clip-path: inset(0 0 0 9%); opacity: .92; }
+          to { clip-path: inset(0 0 0 0); opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .f1-board-expanding, .f1-board-image-reveal {
+            transition: none !important;
+            animation: none !important;
+          }
+        }
+      `}</style>
       {members.map((member, index) => {
         const selected =
           selectedIndex === index;
 
-        const displayImage = selected
-          ? member.detail_image_url ||
-            member.image_url
+        const displayImage = selected && expanded
+          ? member.detail_image_url || member.image_url
           : member.image_url;
 
         return (
-          <article
+          <div
             key={member.id}
+            ref={(node) => { slotRefs.current[index] = node; }}
             style={{
               position: "relative",
-
-              flexGrow: 0,
-              flexShrink: 1,
-
-              flexBasis: selected
-                ? "min(850px, 100%)"
-                : "300px",
-
-              width: selected
-                ? "min(850px, 100%)"
-                : "300px",
-
-              maxWidth: "100%",
+              minWidth: 0,
+              zIndex: selected ? 10 : 1,
+            }}
+          >
+            {/* Keep the thumbnail's place in the grid while its real card
+                opens across nearby columns. No item jumps to a lower row. */}
+            {selected && (
+              <>
+                <div style={{ width: "100%", aspectRatio: "3 / 4" }} />
+                {(member.name || member.role) && <div style={{ height: "68px" }} />}
+              </>
+            )}
+            <article
+            className={selected ? "f1-board-expanding" : undefined}
+            style={{
+              position: selected ? "absolute" : "relative",
+              top: 0,
+              left: selected && expanded ? -expansion.shift : 0,
+              width: selected && expanded ? expansion.width : "100%",
+              zIndex: selected ? 15 : 1,
 
               overflow: "hidden",
 
@@ -169,20 +253,16 @@ export default function BoardShowcase({
                 ? "0 28px 80px rgba(0,0,0,0.55)"
                 : "0 18px 50px rgba(0,0,0,0.32)",
 
-              transition:
-                "flex-basis 500ms cubic-bezier(0.22, 1, 0.36, 1), width 500ms cubic-bezier(0.22, 1, 0.36, 1), border-radius 350ms ease, border-color 350ms ease, box-shadow 350ms ease",
-
-              transformOrigin:
-                index % 2 === 0
-                  ? "left center"
-                  : "right center",
+              // Animate in the SAME grid row. Last columns expand toward
+              // the left, first columns toward the right, without reflow.
+              transition: "width 330ms cubic-bezier(.2,.7,.25,1), left 330ms cubic-bezier(.2,.7,.25,1), border-color 180ms ease, box-shadow 180ms ease",
+              transformOrigin: expansion.shift > 0 ? "right center" : "left center",
             }}
           >
             <button
               type="button"
-              onClick={() =>
-                openMember(index)
-              }
+              onClick={() => openMember(index)}
+              aria-busy={imagePending === index}
               style={{
                 display: "block",
                 width: "100%",
@@ -195,16 +275,22 @@ export default function BoardShowcase({
               }}
             >
               <div
+                className={selected && expanded ? "f1-board-image-reveal" : undefined}
                 style={{
                   position: "relative",
 
+                  // A very small side-to-side reveal with no scaling/zooming.
+                  animation: selected && expanded
+                    ? `${expansion.shift > 0 ? "f1BoardRevealRight" : "f1BoardRevealLeft"} 330ms cubic-bezier(.2,.7,.25,1) both`
+                    : undefined,
+
                   width: "100%",
 
-                  aspectRatio: selected
+                  aspectRatio: selected && expanded
                     ? "16 / 9"
                     : "3 / 4",
 
-                  minHeight: selected
+                  minHeight: selected && expanded && expansion.width >= 700
                     ? "420px"
                     : undefined,
 
@@ -212,8 +298,7 @@ export default function BoardShowcase({
 
                   background: "#111",
 
-                  transition:
-                    "aspect-ratio 500ms cubic-bezier(0.22, 1, 0.36, 1)",
+                  transition: "none",
                 }}
               >
                 {displayImage ? (
@@ -226,15 +311,12 @@ export default function BoardShowcase({
                     style={{
                       width: "100%",
                       height: "100%",
-                      objectFit: "cover",
+                      objectFit: selected && expanded ? "contain" : "cover",
                       display: "block",
 
-                      transform: selected
-                        ? "scale(1)"
-                        : "scale(1.01)",
+                      transform: selected && expanded ? "scale(1)" : "scale(1.01)",
 
-                      transition:
-                        "transform 500ms ease, opacity 250ms ease",
+                      transition: "none",
                     }}
                   />
                 ) : (
@@ -268,7 +350,7 @@ export default function BoardShowcase({
               </div>
             </button>
 
-            {selected && (
+            {selected && expanded && (
               <>
                 <button
                   type="button"
@@ -420,7 +502,7 @@ export default function BoardShowcase({
                 </div>
               )}
 
-            {selected &&
+            {selected && expanded &&
               (member.bio ||
                 member.instagram_url ||
                 member.linkedin_url) && (
@@ -527,7 +609,8 @@ export default function BoardShowcase({
                   )}
                 </div>
               )}
-          </article>
+            </article>
+          </div>
         );
       })}
     </div>
