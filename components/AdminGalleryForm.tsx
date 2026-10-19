@@ -47,6 +47,7 @@ export default function AdminGalleryForm() {
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [sortOrder, setSortOrder] = useState(0);
+  const [imageLayout, setImageLayout] = useState<"portrait" | "landscape">("portrait");
   const [isPublished, setIsPublished] =
     useState(true);
 
@@ -119,6 +120,7 @@ export default function AdminGalleryForm() {
             caption,
             imageUrl,
             sortOrder,
+            imageLayout,
             isPublished,
           }),
         }
@@ -140,6 +142,7 @@ export default function AdminGalleryForm() {
       setTitle("");
       setCaption("");
       setSortOrder(0);
+      setImageLayout("portrait");
       setIsPublished(true);
       setImageFile(null);
 
@@ -201,6 +204,20 @@ export default function AdminGalleryForm() {
         JPG, PNG veya WEBP. Maksimum 5 MB.
       </div>
 
+      <fieldset style={{ border: "1px solid #333", borderRadius: 10, padding: 14 }}>
+        <legend style={{ padding: "0 8px", fontSize: 13, color: "#ddd" }}>Galeride gösterim oranı</legend>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 18 }}>
+          <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input type="radio" name="imageLayout" value="portrait" checked={imageLayout === "portrait"} onChange={() => setImageLayout("portrait")} />
+            Dikey (3:4)
+          </label>
+          <label style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <input type="radio" name="imageLayout" value="landscape" checked={imageLayout === "landscape"} onChange={() => setImageLayout("landscape")} />
+            Yatay (16:9)
+          </label>
+        </div>
+        <p style={{ color: "#999", fontSize: 12, margin: "10px 0 0" }}>Yatay görseller galeride iki sütun genişliğinde, kırpılmadan gösterilir.</p>
+      </fieldset>
       <label style={labelStyle}>
         Başlık
         <input

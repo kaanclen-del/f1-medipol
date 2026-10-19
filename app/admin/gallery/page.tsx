@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import AdminGalleryForm from "@/components/AdminGalleryForm";
 import AdminGalleryActions from "@/components/AdminGalleryActions";
 import GallerySortControls from "@/components/GallerySortControls";
+import GalleryLayoutSelect from "@/components/GalleryLayoutSelect";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 
@@ -180,7 +181,7 @@ export default async function AdminGalleryPage() {
                 >
                   <div
                     style={{
-                      aspectRatio: "3 / 4",
+                      aspectRatio: image.image_layout === "landscape" ? "16 / 9" : "3 / 4",
                       background: "#161616",
                     }}
                   >
@@ -193,7 +194,7 @@ export default async function AdminGalleryPage() {
                       style={{
                         width: "100%",
                         height: "100%",
-                        objectFit: "cover",
+                        objectFit: image.image_layout === "landscape" ? "contain" : "cover",
                         display: "block",
                       }}
                     />
@@ -263,6 +264,7 @@ export default async function AdminGalleryPage() {
                       Sıra: {image.sort_order}
                     </div>
 
+                    <GalleryLayoutSelect id={image.id} initial={image.image_layout ?? "portrait"} />
                     <AdminGalleryActions
                       imageId={image.id}
                       imageTitle={image.title}

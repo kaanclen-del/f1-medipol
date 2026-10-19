@@ -105,7 +105,7 @@ type Achievement = {
   image_url: string | null; category: string;
   rarity: "common" | "rare" | "epic" | "legendary";
   xp_reward: number; is_automatic: boolean; condition_type: string;
-  condition_value: number | null; is_published: boolean; sort_order: number;
+  condition_value: number | null; is_published: boolean; show_when_locked: boolean; sort_order: number;
 };
 type UserAchievement = {
   achievement_id: string; award_source: string;
@@ -200,7 +200,7 @@ export default async function ProfilePage() {
   }
   const [achievementsResult, userAchievementsResult] = await Promise.all([
     admin.from("achievements")
-      .select("id,slug,name,description,image_url,category,rarity,xp_reward,is_automatic,condition_type,condition_value,is_published,sort_order")
+      .select("id,slug,name,description,image_url,category,rarity,xp_reward,is_automatic,condition_type,condition_value,is_published,show_when_locked,sort_order")
       .eq("is_published", true)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -212,7 +212,7 @@ export default async function ProfilePage() {
   const userAchievements = (userAchievementsResult.data ?? []) as UserAchievement[];
   const awardIds = new Set(userAchievements.map((a) => a.achievement_id));
   const unlockedAchievementCount = achievements.filter((a) => awardIds.has(a.id)).length;
-  const totalAchievementCount = achievements.length;
+  const totalAchievementCount = achievements.filter((a) => awardIds.has(a.id) || a.show_when_locked !== false).length;
   const achievementXp = userAchievements.reduce((total, a) => total + Math.max(Number(a.xp_awarded ?? 0), 0), 0);
   const totalXp = predictionXp + achievementXp;
   const currentLevel = calculateLevel(totalXp);

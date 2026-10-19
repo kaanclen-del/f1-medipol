@@ -119,6 +119,8 @@ export async function POST(request: Request) {
         ? body.isPublished
         : true;
 
+    const imageLayout = body.imageLayout === "landscape" ? "landscape" : "portrait";
+
     const sortOrder =
       typeof body.sortOrder === "number" &&
       Number.isFinite(body.sortOrder)
@@ -142,6 +144,7 @@ export async function POST(request: Request) {
         image_url: imageUrl,
         is_published: isPublished,
         sort_order: sortOrder,
+        image_layout: imageLayout,
       })
       .select()
       .single();

@@ -16,6 +16,7 @@ type Achievement = {
   condition_type: string;
   condition_value: number | null;
   is_published: boolean;
+  show_when_locked?: boolean;
   sort_order: number;
 };
 
@@ -329,7 +330,7 @@ export default function ProfileAchievements({
   const locked = achievements
     .filter(
       (achievement) =>
-        !awardMap.has(achievement.id)
+        !awardMap.has(achievement.id) && achievement.show_when_locked !== false
     )
     .sort(compareByXp);
 
@@ -345,7 +346,7 @@ export default function ProfileAchievements({
 
         <div className="profile-ach-counter">
           <strong>{unlocked.length}</strong>
-          <span>/{achievements.length}</span>
+          <span>/{unlocked.length + locked.length}</span>
         </div>
       </div>
 

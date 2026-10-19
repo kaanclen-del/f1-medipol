@@ -196,6 +196,24 @@ export default async function AdminPage() {
             <h2>Kontrol Merkezi</h2>
 
             <div className="admin-module-grid">
+              {/* G6.16.3 Â· TEAM RADIO YONETIM KISAYOLU */}
+              <Link
+                href="/admin/team-radio"
+                className="admin-module"
+                style={{
+                  background:
+                    "radial-gradient(circle at 88% 12%, rgba(255, 73, 94, .23), transparent 45%), linear-gradient(145deg, #291721, #131820)",
+                }}
+              >
+                <div className="module-icon">ğŸ“»</div>
+                <span>OPENF1 Â· TEAM RADIO</span>
+                <h3>Telsiz ArÅŸivi</h3>
+                <p>
+                  YÄ±l, Grand Prix, seans ve pilot seÃ§erek OpenF1
+                  telsizlerini ara, dinle ve yayÄ±n listesini yÃ¶net.
+                </p>
+                <strong>ARÅÄ°VÄ° YÃ–NET â†’</strong>
+              </Link>
                 <Link href="/admin/profile-wallpapers" className="admin-module">
                   <div className="module-icon">🎨</div>
                   <span>NEW MODULE</span>

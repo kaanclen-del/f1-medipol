@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import AdminEventForm from "@/components/AdminEventForm";
 import AdminEventActions from "@/components/AdminEventActions";
+import EventPreviewPositionEditor from "@/components/EventPreviewPositionEditor";
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
@@ -15,6 +16,7 @@ type EventRow = {
   location_name: string | null;
   is_published: boolean;
   featured: boolean;
+  cover_image_url: string | null;
 };
 
 function formatDate(date: string) {
@@ -119,7 +121,8 @@ export default async function AdminEventsPage() {
       start_at,
       location_name,
       is_published,
-      featured
+      featured,
+      cover_image_url
       `
     )
     .order("start_at", {
@@ -127,6 +130,10 @@ export default async function AdminEventsPage() {
     });
 
   const events = (data ?? []) as EventRow[];
+  const {data: thumbnailSettings} = await admin.from("event_thumbnail_settings")
+    .select("event_id,position_x,position_y");
+  const thumbnailMap = new Map((thumbnailSettings ?? []).map(item => [item.event_id, {x:item.position_x,y:item.position_y}]));
+
 
   const publishedCount = events.filter(
     (event) => event.is_published
@@ -432,6 +439,12 @@ export default async function AdminEventsPage() {
                         ? ` · ${event.location_name}`
                         : ""}
                     </div>
+                    <EventPreviewPositionEditor
+                      eventId={event.id}
+                      imageUrl={event.cover_image_url}
+                      initialX={thumbnailMap.get(event.id)?.x ?? 50}
+                      initialY={thumbnailMap.get(event.id)?.y ?? 50}
+                    />
                   </div>
 
                   <AdminEventActions

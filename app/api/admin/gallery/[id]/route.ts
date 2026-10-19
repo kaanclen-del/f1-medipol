@@ -65,18 +65,16 @@ export async function PATCH(
 
     const body = await request.json();
 
-    if (typeof body.isPublished !== "boolean") {
-      return NextResponse.json(
-        { error: "Yayın durumu geçersiz." },
-        { status: 400 }
-      );
+    const updates: Record<string, unknown> = {};
+    if (typeof body.isPublished === "boolean") updates.is_published = body.isPublished;
+    if (body.imageLayout === "portrait" || body.imageLayout === "landscape") updates.image_layout = body.imageLayout;
+    if (!Object.keys(updates).length) {
+      return NextResponse.json({error: "Güncellenecek alan bulunamadı."}, {status: 400});
     }
 
     const { data, error } = await auth.admin
       .from("gallery_images")
-      .update({
-        is_published: body.isPublished,
-      })
+      .update(updates)
       .eq("id", id)
       .select()
       .single();

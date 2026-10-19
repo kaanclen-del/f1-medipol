@@ -20,6 +20,7 @@ type Achievement = {
   condition_type: string;
   condition_value: number | null;
   is_published: boolean;
+  show_when_locked: boolean;
   sort_order: number;
   award_count: number;
 };
@@ -61,6 +62,7 @@ function emptyForm() {
     conditionType: "manual",
     conditionValue: "1",
     isPublished: true,
+    showWhenLocked: true,
     sortOrder: "0",
   };
 }
@@ -309,6 +311,7 @@ export default function AdminAchievementManager() {
             : "manual",
           conditionValue: Number(form.conditionValue),
           isPublished: form.isPublished,
+          showWhenLocked: form.showWhenLocked,
           sortOrder: Number(form.sortOrder),
         }),
       });
@@ -355,6 +358,7 @@ export default function AdminAchievementManager() {
         achievement.condition_value ?? 1
       ),
       isPublished: achievement.is_published,
+      showWhenLocked: achievement.show_when_locked !== false,
       sortOrder: String(achievement.sort_order),
     });
 
@@ -671,6 +675,16 @@ export default function AdminAchievementManager() {
               />
               Profilde göster
             </label>
+          </div>
+
+          <div className="field">
+            Kilitli Başarım Görünürlüğü
+            <label className="toggle">
+              <input type="checkbox" checked={form.showWhenLocked}
+                onChange={event => setField("showWhenLocked", event.target.checked)} />
+              Kilitli başarımlar arasında göster
+            </label>
+            <small style={{color:"#a1a1aa"}}>Kapatılırsa kazanılmamış kullanıcılar görmez; daha önce kazanmış kullanıcılar görmeye devam eder.</small>
           </div>
 
           {form.isAutomatic && (

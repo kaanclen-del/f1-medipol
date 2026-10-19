@@ -276,6 +276,8 @@ export async function PATCH(
             body.isPublished !==
             false,
 
+          show_when_locked: body.showWhenLocked !== false,
+
           sort_order:
             Number.isFinite(
               Number(

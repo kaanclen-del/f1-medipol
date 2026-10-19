@@ -475,6 +475,8 @@ export async function POST(
             body.isPublished !==
             false,
 
+          show_when_locked: body.showWhenLocked !== false,
+
           sort_order:
             sortOrder,
         })
