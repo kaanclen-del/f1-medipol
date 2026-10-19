@@ -737,6 +737,30 @@ export default async function HomePage() {
     ...((pastEventRows.data ?? []) as EventCard[]).map((event) => ({ event, upcoming: false })),
   ].slice(0, 16);
 
+  // G6.14.2 — Admin panelindeki kaydedilmiş etkinlik kadrajlarını ana sayfaya uygula.
+  // Bu tablo ayrı tutulduğu için events sorgusundan otomatik gelmez.
+  const eventThumbnailPositions = new Map<string, { x: number; y: number }>();
+  if (homeEvents.length > 0) {
+    const { data: thumbnailRows, error: thumbnailError } = await editorialAdmin
+      .from("event_thumbnail_settings")
+      .select("event_id,position_x,position_y")
+      .in("event_id", homeEvents.map(({ event }) => event.id));
+    if (thumbnailError) {
+      console.warn("HOME EVENT THUMBNAILS:", thumbnailError.message);
+    }
+    for (const row of thumbnailRows ?? []) {
+      const x = Number(row.position_x);
+      const y = Number(row.position_y);
+      if (
+        typeof row.event_id === "string" &&
+        Number.isFinite(x) && x >= 0 && x <= 100 &&
+        Number.isFinite(y) && y >= 0 && y <= 100
+      ) {
+        eventThumbnailPositions.set(row.event_id, { x, y });
+      }
+    }
+  }
+
   const boardMembers =
     (
       boardRows ??
@@ -3103,14 +3127,15 @@ export default async function HomePage() {
             gap:22px; align-items:center; min-height:126px; padding:12px 24px 12px 18px;
             border:1px solid var(--border); border-radius:15px; background:var(--panel);
             color:var(--text); text-decoration:none; transition:border-color .2s,transform .2s,background .2s; }
-          .event-list-row:hover { border-color:var(--accent); transform:translateY(-1px);
+          .event-list-row:hover { border-color:var(--accent);
             background:color-mix(in srgb,var(--panel),var(--accent) 5%); }
           .event-list-index { color:var(--accent); font-size:27px; font-weight:950;
             font-variant-numeric:tabular-nums; opacity:.85; }
-          .event-list-cover { height:99px; overflow:hidden; display:grid; place-items:center;
+          .event-list-cover { position:relative; height:99px; min-width:0; overflow:hidden; display:flex; align-items:center; justify-content:center;
             border-radius:10px; background:linear-gradient(145deg,#510e15,#151820); color:#fff;
             border:1px solid var(--border); font-weight:950; font-size:23px; }
-          .event-list-cover img { width:100%; height:100%; object-fit:cover; display:block; }
+          .event-list-cover img { position:absolute; inset:0; display:block; width:100%; height:100%;
+            max-width:none; max-height:none; object-fit:cover; }
           .event-list-info { min-width:0; }
           .event-list-meta { display:flex; align-items:center; gap:9px; color:var(--accent);
             font-size:10px; font-weight:900; letter-spacing:.05em; }
@@ -3123,23 +3148,25 @@ export default async function HomePage() {
           .events-stack-empty { padding:30px 25px; border:1px solid var(--border); border-radius:14px;
             background:var(--panel); color:var(--muted); font-size:13px; }
 
-          .arcade-home-grid { margin-top:14px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
-          .arcade-home-card { position:relative; min-height:310px; overflow:hidden;
-            display:flex; flex-direction:column; justify-content:flex-start; padding:33px;
-            color:#fff!important; text-decoration:none; border:1px solid rgba(255,255,255,.11);
-            border-radius:18px; transition:transform .2s,border-color .2s; }
-          .arcade-home-card:hover { transform:translateY(-3px); border-color:rgba(255,100,92,.6); }
-          .arcade-home-manager { background:radial-gradient(circle at 100% 0%,rgba(255,75,70,.22),transparent 53%),linear-gradient(130deg,#301115,#171a22 75%); }
-          .arcade-home-whatif { background:radial-gradient(circle at 82% 16%,rgba(240,190,85,.14),transparent 42%),linear-gradient(120deg,#1c1625,#141a26 78%); }
-          .arcade-home-kicker { color:#ff736d; font-size:10px; font-weight:950; letter-spacing:.14em; }
-          .arcade-home-whatif .arcade-home-kicker { color:#f4cb74; }
-          .arcade-home-card h3 { margin:18px 0 10px; color:#fff!important; font-size:clamp(28px,3vw,41px); line-height:1.10; letter-spacing:-.045em; }
-          .arcade-home-card p { max-width:48ch; color:#b7b4bd; line-height:1.6; font-size:13px; }
-          .arcade-home-bottom { margin-top:auto; padding-top:22px; display:flex; align-items:center;
-            justify-content:space-between; gap:12px; font-size:11px; font-weight:950; color:#fff;
-            letter-spacing:.07em; }
-          .arcade-home-bottom b { width:38px; height:38px; display:grid; place-items:center;
-            border:1px solid rgba(255,255,255,.18); border-radius:50%; font-size:22px; }
+          .arcade-home-grid { margin-top:16px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+          .arcade-home-card { position:relative; min-height:250px; overflow:hidden;
+            display:flex; flex-direction:column; justify-content:flex-end; padding:30px;
+            color:#fff!important; text-decoration:none; border:1px solid rgba(255,255,255,.10);
+            border-radius:22px; transition:transform .22s ease,border-color .22s ease, box-shadow .22s ease;
+            box-shadow:0 22px 46px rgba(0,0,0,.26); isolation:isolate; }
+          .arcade-home-card::before { content:""; position:absolute; inset:-20% auto auto -8%; width:58%; height:70%; border-radius:999px;
+            background:radial-gradient(circle,rgba(255,255,255,.13),transparent 68%); filter:blur(10px); opacity:.85; z-index:-1; }
+          .arcade-home-card::after { content:""; position:absolute; inset:0; z-index:-1;
+            background:linear-gradient(130deg, rgba(255,255,255,.05), transparent 28%, transparent 65%, rgba(255,255,255,.04)),
+                       repeating-linear-gradient(115deg, rgba(255,255,255,.04) 0 2px, transparent 2px 18px);
+            opacity:.32; pointer-events:none; }
+          .arcade-home-card:hover { transform:translateY(-4px); border-color:rgba(255,100,92,.55); box-shadow:0 28px 64px rgba(0,0,0,.34); }
+          .arcade-home-manager { background:radial-gradient(circle at 100% 0%,rgba(255,75,70,.34),transparent 45%),radial-gradient(circle at 14% 85%,rgba(255,145,110,.16),transparent 42%),linear-gradient(130deg,#311018,#171c28 78%); }
+          .arcade-home-whatif { background:radial-gradient(circle at 88% 15%,rgba(240,190,85,.22),transparent 42%),radial-gradient(circle at 0% 100%,rgba(117,88,255,.15),transparent 40%),linear-gradient(120deg,#1f1728,#131a26 78%); }
+          .arcade-home-kartrush { background:radial-gradient(circle at 84% 18%,rgba(76,197,255,.23),transparent 45%),radial-gradient(circle at 12% 82%,rgba(255,87,87,.18),transparent 42%),linear-gradient(130deg,#101d31,#121821 76%); }
+          .arcade-home-timing { background:radial-gradient(circle at 86% 12%,rgba(100,255,208,.20),transparent 42%),radial-gradient(circle at 0% 100%,rgba(255,124,72,.16),transparent 42%),linear-gradient(135deg,#10231e,#131a25 78%); }
+          .arcade-home-card h3 { margin:0 0 10px; color:#fff!important; font-size:clamp(28px,3vw,39px); line-height:1.08; letter-spacing:-.04em; }
+          .arcade-home-card p { max-width:46ch; color:#d1d5df; line-height:1.65; font-size:14px; margin:0; }
 
           .intel-weekend-program { margin-top:auto; padding:16px 16px 10px;
             border:1px solid var(--hero-border); border-radius:13px;
@@ -3337,14 +3364,16 @@ export default async function HomePage() {
           @media (prefers-reduced-motion: reduce) { .pilot-news-content { animation:none; } }
           @media (max-width:740px) { .intel { padding:19px; } .pilot-news-card { min-height:160px; } }
 
-          /* Dört etkinlik görünür; liste kendi içerisinde kaydırılır. */
+          /* G6.14.5: Kaydırılabilir etkinlik listesi geri geldi.
+             Offscreen kartları geç çizerek uzun listelerde kaydırma yükünü azalt. */
           .events-stack {
             max-height: 534px;
             overflow-y: auto;
             overflow-x: hidden;
             padding-right: 8px;
             align-content: start;
-            overscroll-behavior: contain;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
             scrollbar-width: thin;
             scrollbar-color: rgba(255,80,75,.55) rgba(255,255,255,.04);
           }
@@ -3352,8 +3381,13 @@ export default async function HomePage() {
           .events-stack::-webkit-scrollbar { width: 7px; }
           .events-stack::-webkit-scrollbar-thumb { background: rgba(255,80,75,.46); border-radius: 20px; }
           .events-stack::-webkit-scrollbar-track { background: rgba(255,255,255,.035); border-radius: 20px; }
-          @media(max-width:740px) {
+          .events-stack .event-list-row {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 126px;
+          }
+          @media (max-width: 740px) {
             .events-stack { max-height: 450px; padding-right: 4px; }
+            .events-stack .event-list-row { contain-intrinsic-size: auto 104px; }
           }
 
           /* Pist hakkında kısa ve dönüşümlü bilgi kartı. */
@@ -4114,13 +4148,26 @@ export default async function HomePage() {
             </Link>
           </div>
 
-          <section className="events-stack" tabIndex={0} aria-label="Kulüp etkinlikleri, daha fazlası için aşağı kaydırın">
+          <section className="events-stack" tabIndex={0} aria-label="Kulüp etkinlikleri. Daha fazla etkinlik için listeyi kaydırın">
             {homeEvents.length ? homeEvents.map(({ event, upcoming }, index) => (
               <Link href="/events" className="event-list-row" key={event.id}>
                 <div className="event-list-index">{String(index + 1).padStart(2, "0")}</div>
                 <div className="event-list-cover">
                   {event.cover_image_url ? (
-                    <img src={event.cover_image_url} alt={`${event.title} etkinlik görseli`} loading="lazy" />
+                    <img
+                      src={event.cover_image_url}
+                      alt={`${event.title} etkinlik görseli`}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: `${eventThumbnailPositions.get(event.id)?.x ?? 50}% ${eventThumbnailPositions.get(event.id)?.y ?? 50}%`,
+                      }}
+                    />
                   ) : <span>F1</span>}
                 </div>
                 <div className="event-list-info">
@@ -4146,22 +4193,26 @@ export default async function HomePage() {
           <div className="section-head">
             <div className="section-title">
               <h2>F1 Arcade</h2>
-              <p>Takımını yönet veya alternatif yarış sonuçlarıyla şampiyonayı yeniden yaz.</p>
+              <p>F1 Medipol arcade alanında dört farklı deneyime hemen gir.</p>
             </div>
           </div>
 
           <section className="arcade-home-grid" aria-label="F1 Arcade oyunları">
             <Link href="/arcade/manager" className="arcade-home-card arcade-home-manager">
-              <span className="arcade-home-kicker">01 · MANAGER CAREER</span>
-              <h3>Pit Wall senin.<br />Takımı sen yönet.</h3>
-              <p>Pilot transferleri, Ar-Ge, yarış stratejisi ve çok sezonlu F1 menajerliği.</p>
-              <span className="arcade-home-bottom">MANAGER'I AÇ <b aria-hidden="true">↗</b></span>
+              <h3>F1 Manager</h3>
+              <p>Takımını yönet, pilot transferlerini planla ve çok sezonlu kariyer yapısında pit wall kararlarını sen ver.</p>
             </Link>
             <Link href="/arcade/what-if" className="arcade-home-card arcade-home-whatif">
-              <span className="arcade-home-kicker">02 · WHAT IF</span>
-              <h3>Ya o yarışı<br />başkası kazansaydı?</h3>
-              <p>Finiş sırasını sen belirle. Alternatif pilot ve takım puan tablolarını anında gör.</p>
-              <span className="arcade-home-bottom">WHAT IF OYNA <b aria-hidden="true">↗</b></span>
+              <h3>What If</h3>
+              <p>Alternatif finiş sıraları kur, şampiyona puanlarını anında hesapla ve farklı senaryoları karşılaştır.</p>
+            </Link>
+            <Link href="/arcade/kart-rush" className="arcade-home-card arcade-home-kartrush">
+              <h3>Kart Rush 3D</h3>
+              <p>3D pistte sür, rakiplerine karşı yarış ve kulübün arcade bölümündeki hızlı aksiyon deneyimine gir.</p>
+            </Link>
+            <Link href="/arcade/gokart-zamanlama" className="arcade-home-card arcade-home-timing">
+              <h3>Go-Kart Zamanlama</h3>
+              <p>Gerçek karting turlarını kaydet, sürücü ve takım sıralamalarını takip et, seans sonuçlarını kolayca yönet.</p>
             </Link>
           </section>
         </div>

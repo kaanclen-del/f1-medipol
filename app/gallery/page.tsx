@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import GalleryLightboxGrid from "@/components/GalleryLightboxGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -109,88 +110,7 @@ export default async function GalleryPage() {
             bulunmuyor.
           </div>
         ) : (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fill, minmax(340px, 380px))",
-              gap: "24px",
-              justifyContent: "start",
-            }}
-          >
-            {images.map((image) => (
-              <article
-                key={image.id}
-                style={{
-                  width: "100%",
-                  overflow: "hidden",
-                  borderRadius: "18px",
-                  background: "#101010",
-                  border: "1px solid #242424",
-                  boxShadow:
-                    "0 20px 50px rgba(0,0,0,0.35)",
-                }}
-              >
-                <div
-                  style={{
-                    aspectRatio: "3 / 4",
-                    background: "#151515",
-                    overflow: "hidden",
-                  }}
-                >
-                  <img
-                    src={image.image_url}
-                    alt={
-                      image.title ||
-                      "Medipol F1 Kulübü galeri görseli"
-                    }
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-
-                {(image.title || image.caption) && (
-                  <div
-                    style={{
-                      padding: "18px 18px 20px",
-                    }}
-                  >
-                    {image.title && (
-                      <h2
-                        style={{
-                          margin: 0,
-                          fontSize: "19px",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {image.title}
-                      </h2>
-                    )}
-
-                    {image.caption && (
-                      <p
-                        style={{
-                          margin:
-                            image.title
-                              ? "9px 0 0"
-                              : 0,
-                          color: "#999",
-                          fontSize: "14px",
-                          lineHeight: 1.6,
-                        }}
-                      >
-                        {image.caption}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </article>
-            ))}
-          </div>
+          <GalleryLightboxGrid images={images} />
         )}
       </div>
     </main>
