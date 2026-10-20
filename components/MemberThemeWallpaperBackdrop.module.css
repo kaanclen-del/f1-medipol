@@ -1,0 +1,6 @@
+.stage{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.stage>.dark,.stage>.light,.stage>.red{position:absolute;inset:0;overflow:hidden}
+.stage>.light,.stage>.red{display:none}
+:global(:root[data-site-theme="light"]) .stage>.dark,:global(:root[data-site-theme="red"]) .stage>.dark{display:none}
+:global(:root[data-site-theme="light"]) .stage>.light{display:block}
+:global(:root[data-site-theme="red"]) .stage>.red{display:block}

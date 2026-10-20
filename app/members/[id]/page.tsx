@@ -1,4 +1,6 @@
 import Link from "next/link";
+import MemberPublicFriends from "@/components/MemberPublicFriends";
+import MemberThemeWallpaperBackdrop from "@/components/MemberThemeWallpaperBackdrop";
 import Header from "@/components/Header";
 import ProfileWallpaperBackdrop from "@/components/ProfileWallpaperBackdrop";
 import { createClient } from "@/utils/supabase/server";
@@ -22,7 +24,7 @@ type ProfileRow = {
   display_name: string | null; username: string | null;
   avatar_url: string | null; bio: string | null;
   favorite_team: string | null; favorite_driver: string | null;
-  profile_wallpaper: string | null; profile_accent: string | null;
+  profile_wallpaper: string | null; profile_wallpaper_light: string | null; profile_wallpaper_red: string | null; profile_accent: string | null;
 };
 type Award = { achievement_id: string; xp_awarded: number };
 type Badge = { id: string; name: string; rarity: string; image_url: string | null };
@@ -55,7 +57,7 @@ export default async function MemberPage({ params }: { params: Promise<{ id: str
   const { data:friendData } = await supabase.rpc("dm_friend_profile", { p_target:id });
   if (Array.isArray(friendData)) friend = friendData[0] as PublicFriend | undefined;
   const [profileResult, predictionsResult, awardsResult, postsResult] = await Promise.all([
-    admin.from("profiles").select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_accent").eq("id",id).maybeSingle(),
+    admin.from("profiles").select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_wallpaper_light,profile_wallpaper_red,profile_accent").eq("id",id).maybeSingle(),
     admin.from("predictions").select("points").eq("user_id",id).not("points","is",null),
     admin.from("user_achievements").select("achievement_id,xp_awarded").eq("user_id",id),
     admin.from("paddock_posts").select("id,content,created_at").eq("user_id",id).eq("is_published",true).order("created_at",{ascending:false}).limit(4),
@@ -101,7 +103,7 @@ export default async function MemberPage({ params }: { params: Promise<{ id: str
   } as CSSProperties;
 
   return <><Header/><main className={styles.page} style={accentStyle}>
-    <ProfileWallpaperBackdrop wallpaper={wallpaper}/><div className={styles.shade}/>
+    <MemberThemeWallpaperBackdrop wallpaper={wallpaper} lightId={profile.profile_wallpaper_light} redId={profile.profile_wallpaper_red} /><div className={styles.shade}/>
     <div className={styles.container}>
       <nav className={styles.nav}><span>F1 MEDİPOL <strong>· SÜRÜCÜ PROFİLİ</strong></span><Link href={friend ? `/messages?dm=${encodeURIComponent(id)}` : "/paddock"}>← {friend ? "Sohbete dön" : "Paddock'a dön"}</Link></nav>
       <section className={styles.hero}>
@@ -132,7 +134,8 @@ export default async function MemberPage({ params }: { params: Promise<{ id: str
         <div className={styles.levelBadge}><div className={styles.ring}><small>LEVEL</small><b>{level}</b></div><div><strong>{xp.toLocaleString("tr-TR")}</strong><small>TOPLAM XP</small></div></div>
         <div className={styles.progressArea}><span className={styles.kicker}>LEVEL {level} · SEVİYE İLERLEMESİ</span><div className={styles.track}><div style={{width:`${progress}%`}}/></div><div className={styles.progressInfo}><span>{(xp-xpForLevel(level)).toLocaleString("tr-TR")} XP kazanıldı</span><span>{Math.max(0,nextXp-xp).toLocaleString("tr-TR")} XP kaldı</span></div></div>
       </section>
-      <div className={styles.contentGrid}>
+      <MemberPublicFriends memberId={id} />
+       <div className={styles.contentGrid}>
         <section className={styles.panel}><div className={styles.kicker}>PADDOCK ACTIVITY</div><h2>Paddock Paylaşımları</h2>{posts.length ? posts.map(post=><article className={styles.post} key={post.id}><span>{new Date(post.created_at).toLocaleDateString("tr-TR")}</span><p>{post.content || "Medya paylaşımı"}</p></article>):<p className={styles.empty}>Henüz herkese açık gönderi yok.</p>}</section>
         <section className={styles.panel}><div className={styles.kicker}>ACHIEVEMENT GARAGE</div><h2>Rozetler & Başarımlar</h2><span className={styles.total}>{badges.length} kazanılan rozet</span>{badges.length ? <div className={styles.badges}>{badges.map(badge=><div className={styles.badge} key={badge.id}>{badge.image_url ? <img src={badge.image_url} alt=""/>:<span>🏆</span>}<div><strong>{badge.name}</strong><small>{badge.rarity}</small></div></div>)}</div> : <p className={styles.empty}>Henüz kazanılmış rozet yok.</p>}</section>
       </div>
