@@ -547,3 +547,30 @@
     transform: none;
   }
 }
+
+/* G6.17.2 — Arcade follows the light palette; game artwork remains colorful. */
+:global(:root[data-site-theme="light"]) .page {
+  color:#18202b;
+  background:radial-gradient(ellipse 55% 38% at 90% 0%,rgba(225,6,0,.075),transparent 70%),linear-gradient(155deg,#f9fafc,#edf1f5);
+}
+:global(:root[data-site-theme="light"]) .hero {
+  background:radial-gradient(ellipse at 55% 100%,rgba(225,6,0,.08),transparent 70%),linear-gradient(135deg,#fff,#f1f4f8);
+  border-color:rgba(20,30,44,.15);box-shadow:0 16px 45px rgba(23,32,47,.10);
+}
+:global(:root[data-site-theme="light"]) .hero h1,
+:global(:root[data-site-theme="light"]) .sectionHead h2 { color:#17202a!important; }
+:global(:root[data-site-theme="light"]) .hero h1 em {color:#d51c35!important;}
+:global(:root[data-site-theme="light"]) .hero p {color:#526072;}
+:global(:root[data-site-theme="light"]) .heroEyebrow,
+:global(:root[data-site-theme="light"]) .sectionHead span {color:#b61d35;}
+:global(:root[data-site-theme="light"]) .card {
+  background:radial-gradient(ellipse at 50% 0%,var(--soft),transparent 54%),linear-gradient(165deg,#fff,#f3f5f9 92%);
+  border-color:rgba(25,35,47,.15);box-shadow:0 14px 35px rgba(23,31,45,.10);
+}
+:global(:root[data-site-theme="light"]) .card:hover {border-color:rgba(209,32,55,.5);box-shadow:0 20px 44px rgba(23,31,45,.15);}
+:global(:root[data-site-theme="light"]) .cardContent h3 {color:#18202a!important;}
+:global(:root[data-site-theme="light"]) .cardContent p {color:#505f70!important;}
+:global(:root[data-site-theme="light"]) .cardLink {
+  background:#f8fafc;border-color:rgba(25,34,46,.15);color:#162230!important;
+}
+:global(:root[data-site-theme="light"]) .cardLink:hover {background:#ffedf0;border-color:rgba(220,35,60,.45);}

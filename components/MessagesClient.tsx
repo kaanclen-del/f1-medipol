@@ -454,6 +454,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
     if (!userId) return;
     const params = new URLSearchParams(window.location.search);
     const requested = initialTarget || params.get("dm");
+    if (requested === "find") { setView("find"); setActive(null); setSearch(""); }
     if (requested === "groups") { setView("groups");setActive(null); }
     else if (requested === "requests") { setView("requests"); setActive(null); }
     else if (params.get("dmview") === "groups") { setView("groups"); setActive(null); }

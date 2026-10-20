@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import Header from "@/components/Header";
-import LegendaryTeamRadio from "@/components/LegendaryTeamRadio";
 import HomeChampionshipLive from "@/components/HomeChampionshipLive";
 import LiveAutoRefresh from "@/components/LiveAutoRefresh";
 import RaceCountdown from "@/components/RaceCountdown";
@@ -4219,7 +4218,6 @@ export default async function HomePage() {
           </section>
         </div>
       </main>
-      <LegendaryTeamRadio />
     </>
   );
 }

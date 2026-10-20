@@ -26,3 +26,14 @@
 .bottom button { background: none; border: 0; color: #aeb5c2; cursor: pointer; font-size: 11px; }
 @media (max-width: 700px) { .bell { width: 42px; height: 42px; } .popover { right: -105px; width: min(360px, calc(100vw - 16px)); } }
 @media (max-width: 390px) { .popover { right: -101px; } }
+
+/* G6.17.2: light-mode header notification dropdown */
+:global(:root[data-site-theme="light"]) .popover {color:#1a2430;background:#fff;border-color:rgba(24,37,53,.15);box-shadow:0 18px 45px rgba(21,31,45,.17);}
+:global(:root[data-site-theme="light"]) .top small,
+:global(:root[data-site-theme="light"]) .permission,
+:global(:root[data-site-theme="light"]) .body {color:#536273;}
+:global(:root[data-site-theme="light"]) .item {color:#202b37;border-color:rgba(27,39,52,.12);}
+:global(:root[data-site-theme="light"]) .item:hover {background:#f3f6fa;}
+:global(:root[data-site-theme="light"]) .unread {background:#fff0f1;}
+:global(:root[data-site-theme="light"]) .bottom button {color:#536273;}
+:global(:root[data-site-theme="light"]) .permission {border-color:rgba(27,39,52,.12);}

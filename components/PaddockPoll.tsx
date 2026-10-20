@@ -143,6 +143,7 @@ export default function PaddockPoll({
 
   return (
     <div
+      className="paddock-poll-card"
       style={{
         marginTop: "16px",
         padding: "16px",
@@ -189,6 +190,7 @@ export default function PaddockPoll({
           return (
             <button
               key={option.id}
+              className="paddock-poll-choice"
               type="button"
               onClick={() =>
                 vote(option.id)

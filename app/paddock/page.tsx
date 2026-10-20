@@ -421,6 +421,7 @@ export default async function PaddockPage({
 
   return (
     <main
+      className="paddock-theme-page"
       style={{
         minHeight: "100vh",
         background: "#060606",

@@ -1,6 +1,6 @@
 import Header from "@/components/Header";
 
-import { createClient } from "@/utils/supabase/server";
+import { loadPublishedEvents } from "@/lib/public-events-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -91,42 +91,7 @@ function formatEventTime(
 }
 
 export default async function EventsPage() {
-  const supabase =
-    await createClient();
-
-  const {
-    data,
-  } = await supabase
-    .from("events")
-    .select(
-      `
-      id,
-      title,
-      description,
-      event_type,
-      location_name,
-      location_address,
-      start_at,
-      end_at,
-      cover_image_url,
-      registration_url,
-      featured,
-      is_published
-      `
-    )
-    .eq(
-      "is_published",
-      true
-    )
-    .order(
-      "start_at",
-      {
-        ascending: false,
-      }
-    );
-
-  const events =
-    (data ?? []) as EventRow[];
+  const events = (await loadPublishedEvents()) as EventRow[];
 
   const now =
     Date.now();
@@ -265,6 +230,8 @@ export default async function EventsPage() {
                   src={
                     featuredEvent.cover_image_url
                   }
+                  fetchPriority="high"
+                  decoding="async"
                   alt={
                     featuredEvent.title
                   }
@@ -919,6 +886,7 @@ export default async function EventsPage() {
                         {event.cover_image_url ? (
                           <img
                             src={event.cover_image_url}
+                            decoding="async"
                             alt={`${event.title} etkinlik görseli`}
                             loading="lazy"
                             style={{

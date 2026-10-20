@@ -22,6 +22,8 @@ import {
   getWallpaperBackground,
 } from "@/lib/profile-wallpapers";
 
+import { managedToWallpaper, type ManagedWallpaper } from "@/lib/profile-wallpaper-catalog";
+
 import {
   DEFAULT_PROFILE_ACCENT,
   PROFILE_ACCENTS,
@@ -121,6 +123,24 @@ export default function EditProfilePage() {
       DEFAULT_PROFILE_WALLPAPER
     );
 
+  const [lightWallpaperId, setLightWallpaperId] = useState(DEFAULT_PROFILE_WALLPAPER);
+  const [redWallpaperId, setRedWallpaperId] = useState(DEFAULT_PROFILE_WALLPAPER);
+  const [wallpaperTheme, setWallpaperTheme] = useState<"dark" | "red" | "light">("dark");
+  const [managedWallpapers, setManagedWallpapers] = useState<ReturnType<typeof managedToWallpaper>[]>([]);
+
+  const allWallpapers = useMemo(() => [...PROFILE_WALLPAPERS, ...managedWallpapers], [managedWallpapers]);
+  const currentThemeWallpaperId = wallpaperTheme === "light" ? lightWallpaperId : wallpaperTheme === "red" ? redWallpaperId : wallpaperId;
+  const changeThemeWallpaper = (id: string) => {
+    if (wallpaperTheme === "light") setLightWallpaperId(id);
+    else if (wallpaperTheme === "red") setRedWallpaperId(id);
+    else setWallpaperId(id);
+  };
+  const useWallpaperForEveryTheme = () => {
+    setWallpaperId(currentThemeWallpaperId);
+    setLightWallpaperId(currentThemeWallpaperId);
+    setRedWallpaperId(currentThemeWallpaperId);
+  };
+
   const [
     accentId,
     setAccentId,
@@ -168,6 +188,8 @@ export default function EditProfilePage() {
               favorite_team,
               favorite_driver,
               profile_wallpaper,
+              profile_wallpaper_light,
+              profile_wallpaper_red,
               profile_accent
             `)
             .eq(
@@ -203,10 +225,19 @@ export default function EditProfilePage() {
             ""
         );
 
-        setWallpaperId(
-          profile?.profile_wallpaper ||
-            DEFAULT_PROFILE_WALLPAPER
-        );
+        const originalWallpaper = profile?.profile_wallpaper || DEFAULT_PROFILE_WALLPAPER;
+        setWallpaperId(originalWallpaper);
+        setLightWallpaperId(profile?.profile_wallpaper_light || originalWallpaper);
+        setRedWallpaperId(profile?.profile_wallpaper_red || originalWallpaper);
+        const siteTheme = document.documentElement.getAttribute("data-site-theme");
+        if (siteTheme === "light" || siteTheme === "red") setWallpaperTheme(siteTheme);
+        try {
+          const result = await fetch("/api/profile/wallpapers", { cache: "no-store" });
+          if (result.ok) {
+            const payload = await result.json() as { wallpapers?: ManagedWallpaper[] };
+            setManagedWallpapers((payload.wallpapers ?? []).map(managedToWallpaper));
+          }
+        } catch { /* Custom wallpapers are optional. */ }
 
         setAccentId(
           profile?.profile_accent ||
@@ -228,10 +259,9 @@ export default function EditProfilePage() {
   const selectedWallpaper =
     useMemo(
       () =>
-        getProfileWallpaper(
-          wallpaperId
-        ),
-      [wallpaperId]
+        allWallpapers.find((wallpaper) => wallpaper.id === currentThemeWallpaperId)
+          ?? getProfileWallpaper(currentThemeWallpaperId),
+      [allWallpapers, currentThemeWallpaperId]
     );
 
   const selectedAccent =
@@ -327,8 +357,9 @@ export default function EditProfilePage() {
             favoriteDriver.trim() ||
             null,
 
-          profile_wallpaper:
-            wallpaperId,
+          profile_wallpaper: wallpaperId,
+          profile_wallpaper_light: lightWallpaperId,
+          profile_wallpaper_red: redWallpaperId,
 
           profile_accent:
             accentId,
@@ -773,19 +804,39 @@ export default function EditProfilePage() {
                   Profil Arka Planı
                 </h2>
 
-                <p>
-                  Steam profili gibi,
-                  profilin tamamında
-                  kullanılacak arka planı seç.
-                </p>
+                <p>Her tema için farklı bir arka plan seçebilir veya aynı görseli üçüne de uygulayabilirsin.</p>
+              </div>
+
+              <div className="wallpaper-theme-toolbar" aria-label="Arka planın uygulanacağı tema">
+                <div className="wallpaper-theme-tabs" role="group" aria-label="Tema seçimi">
+                  {(["dark", "red", "light"] as const).map((theme) => (
+                    <button
+                      key={theme}
+                      type="button"
+                      className={`wallpaper-theme-tab ${wallpaperTheme === theme ? "selected" : ""}`}
+                      aria-pressed={wallpaperTheme === theme}
+                      onClick={() => setWallpaperTheme(theme)}
+                    >
+                      <span className={`wallpaper-theme-dot ${theme}`} />
+                      {theme === "dark" ? "Koyu" : theme === "red" ? "Kırmızı" : "Açık"}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="wallpaper-apply-all" onClick={useWallpaperForEveryTheme}>
+                  Bu görseli tüm temalarda kullan ↗
+                </button>
+              </div>
+              <div className="wallpaper-theme-help">
+                Şu an <strong>{wallpaperTheme === "dark" ? "koyu" : wallpaperTheme === "red" ? "kırmızı" : "açık"}</strong> tema için seçim yapıyorsun.
+                Kaydedince profilin ziyaretçinin seçtiği temaya uygun görselle açılır.
               </div>
 
               <div className="wallpaper-grid">
-                {PROFILE_WALLPAPERS.map(
+                {allWallpapers.map(
                   (wallpaper) => {
                     const active =
                       wallpaper.id ===
-                      wallpaperId;
+                      currentThemeWallpaperId;
 
                     return (
                       <button
@@ -801,9 +852,7 @@ export default function EditProfilePage() {
                           .filter(Boolean)
                           .join(" ")}
                         onClick={() =>
-                          setWallpaperId(
-                            wallpaper.id
-                          )
+                          changeThemeWallpaper(wallpaper.id)
                         }
                         style={{
                           ["--wallpaper-accent" as string]:
@@ -2003,4 +2052,19 @@ const styles = `
         1;
     }
   }
+/* G6.17.4 – Independent wallpapers for dark / red / light themes */
+.wallpaper-theme-toolbar {display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 12px;}
+.wallpaper-theme-tabs {display:flex; flex-wrap:wrap; align-items:center; gap:7px;}
+.wallpaper-theme-tab {cursor:pointer; display:inline-flex; gap:8px; align-items:center; padding:11px 14px; border:1px solid rgba(255,255,255,.17); border-radius:10px; background:#141c28; color:#d8e1ed; font-weight:800; font-size:12px;}
+.wallpaper-theme-tab.selected {background:#fff0f2; border-color:#fa586b; color:#a31f36; box-shadow:0 0 0 1px rgba(250,88,107,.22);}
+.wallpaper-theme-dot {display:inline-block; width:12px; height:12px; flex:0 0 12px; border:1px solid rgba(0,0,0,.22); border-radius:50%;}
+.wallpaper-theme-dot.dark {background:#101721;border-color:#7e8897;}
+.wallpaper-theme-dot.red {background:#e10600;}
+.wallpaper-theme-dot.light {background:#fff;}
+.wallpaper-apply-all {cursor:pointer; padding:10px 12px; border:1px solid rgba(255,102,116,.35); color:#ffacb8; border-radius:10px; background:rgba(255,71,91,.09); font-size:11px; font-weight:850;}
+.wallpaper-apply-all:hover {background:rgba(255,71,91,.17);}
+.wallpaper-theme-help {margin:0 0 17px; padding:12px 14px; border:1px solid rgba(255,255,255,.10); border-radius:11px; color:#c5cfda; background:rgba(255,255,255,.04); font-size:11px; line-height:1.65;}
+.wallpaper-theme-help strong {color:#f35b72;}
+@media(max-width:660px){.wallpaper-theme-tabs {width:100%;}.wallpaper-theme-tab{flex:1;justify-content:center;}.wallpaper-apply-all{width:100%;}}
+
 `;

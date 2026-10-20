@@ -2539,3 +2539,332 @@ svg {
  .medipol-header-logo {min-width:105px !important;width:105px !important;max-width:105px !important;flex:0 0 105px !important;}
  .medipol-header-logo-art {width:105px !important;min-width:105px !important;max-width:105px !important;}
 }
+
+
+/* ===============================================================
+   F1 MEDIPOL G6.17.1 — LIGHT THEME READABILITY
+   These overrides are strictly light-theme-only. Dark/red unaffected.
+   =============================================================== */
+
+/* The header uses a CSS module. Data attributes scope this adjustment
+   to its real theme picker, without changing sizing or positioning. */
+:root[data-site-theme="light"] [data-f1-theme-picker] [data-f1-theme-panel] {
+  color: #17202b !important;
+  background: linear-gradient(155deg, #ffffff, #f5f7fa) !important;
+  border-color: rgba(25, 34, 46, .15) !important;
+  box-shadow: 0 20px 50px rgba(19, 31, 47, .16), 0 3px 12px rgba(19, 31, 47, .06) !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-title] {
+  color: #5d6876 !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-option] {
+  color: #1a2230 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-option]:hover,
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-option]:focus-visible {
+  background: #f0f2f6 !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-option][aria-pressed="true"] {
+  color: #252027 !important;
+  background: #fff0f1 !important;
+  border-color: rgba(225, 6, 0, .24) !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-name] {
+  color: #1b222b !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-description] {
+  color: #505d6b !important;
+  opacity: 1 !important;
+}
+:root[data-site-theme="light"] [data-f1-theme-panel] [data-f1-theme-check] {
+  color: #d3192a !important;
+}
+
+/* Light-theme Quick Intel was receiving a white surface while most of its
+   headlines were hardcoded #fff. Keep the left photographic hero dark,
+   and bring ONLY the right-hand information column to dark-on-light. */
+:root[data-site-theme="light"] .home .intel {
+  --hero-muted: #566272;
+  --hero-border: rgba(28, 39, 52, .13);
+  color: #18212b !important;
+  background: linear-gradient(155deg, #ffffff, #f1f4f8) !important;
+  border-color: rgba(28, 39, 52, .13) !important;
+}
+:root[data-site-theme="light"] .home .intel .intel-stage {
+  background: radial-gradient(circle at 95% 3%, rgba(225, 6, 0, .055), transparent 45%), #ffffff !important;
+  border-color: rgba(28, 39, 52, .13) !important;
+}
+:root[data-site-theme="light"] .home .intel :is(
+  h2,
+  .intel-slide h3,
+  .intel-circuit-copy strong,
+  .pilot-news-title,
+  .pilot-news-empty strong,
+  .intel-weekly-note strong,
+  .track-insight-text strong,
+  .intel-program-row strong,
+  .intel-weekend-program strong
+) {
+  color: #1c2530 !important;
+  text-shadow: none !important;
+}
+:root[data-site-theme="light"] .home .intel :is(
+  .intel-status,
+  .intel-slide p,
+  .intel-circuit-copy small,
+  .pilot-news-counter,
+  .pilot-news-meta,
+  .pilot-news-empty p,
+  .intel-weekly-note small,
+  .track-insight-text p,
+  .track-insight-count,
+  .intel-program-header small,
+  .intel-program-row time,
+  .intel-program-empty
+) {
+  color: #566272 !important;
+  opacity: 1 !important;
+}
+:root[data-site-theme="light"] .home .intel .pilot-news-card {
+  background: linear-gradient(135deg, #fff4f4, #f8fafc 78%) !important;
+  border-color: rgba(203, 42, 55, .22) !important;
+  color: #1c2530 !important;
+}
+:root[data-site-theme="light"] .home .intel .intel-weekly-note {
+  background: linear-gradient(130deg, #fff0f1, #fafbfc 85%) !important;
+  border-color: rgba(203, 42, 55, .22) !important;
+  color: #1c2530 !important;
+}
+:root[data-site-theme="light"] .home .intel .track-insight-card,
+:root[data-site-theme="light"] .home .intel .intel-weekend-program {
+  background: linear-gradient(130deg, #ffffff, #f3f6fa) !important;
+  border-color: rgba(28, 39, 52, .13) !important;
+  color: #1c2530 !important;
+}
+:root[data-site-theme="light"] .home .intel :is(
+  .pilot-news-controls button,
+  .track-insight-buttons button
+) {
+  color: #25303d !important;
+  background: #ffffff !important;
+  border-color: rgba(28, 39, 52, .18) !important;
+}
+:root[data-site-theme="light"] .home .intel :is(
+  .pilot-news-controls button,
+  .track-insight-buttons button
+):hover {
+  background: #ffe8eb !important;
+  border-color: rgba(225, 6, 0, .40) !important;
+}
+
+
+/* ===============================================================
+   F1 MEDIPOL G6.17.2 — LIGHT THEME CROSS-PAGE CONTRAST
+   Scoped to the light theme. Gray and red palettes are unchanged.
+   =============================================================== */
+
+/* LIVE: dark standalone championship component inside otherwise light Race Hub. */
+:root[data-site-theme="light"] .race-center .projected-card {
+  color:#18212b!important;
+  background:linear-gradient(145deg,#ffffff,#f2f5f8)!important;
+  border-color:rgba(20,30,43,.17)!important;
+  box-shadow:0 10px 30px rgba(25,34,44,.07)!important;
+}
+:root[data-site-theme="light"] .race-center .projected-header,
+:root[data-site-theme="light"] .race-center .projected-row,
+:root[data-site-theme="light"] .race-center .projected-footer {
+  border-color:rgba(25,35,48,.11)!important;
+}
+:root[data-site-theme="light"] .race-center .projected-header h3,
+:root[data-site-theme="light"] .race-center .projected-driver b,
+:root[data-site-theme="light"] .race-center .projected-position strong,
+:root[data-site-theme="light"] .race-center .projected-points strong,
+:root[data-site-theme="light"] .race-center .points-column strong,
+:root[data-site-theme="light"] .race-center .projected-driver > div:last-child strong {
+  color:#1b2532!important;
+}
+:root[data-site-theme="light"] .race-center .projected-top,
+:root[data-site-theme="light"] .race-center .projected-leader,
+:root[data-site-theme="light"] .race-center .projection-note {
+  background:rgba(208,38,55,.065)!important;
+}
+:root[data-site-theme="light"] .race-center .projected-header p,
+:root[data-site-theme="light"] .race-center .projected-driver small,
+:root[data-site-theme="light"] .race-center .projected-points small,
+:root[data-site-theme="light"] .race-center .projected-footer span,
+:root[data-site-theme="light"] .race-center .projected-points span {
+  color:#5d6877!important;
+}
+:root[data-site-theme="light"] .race-center .projected-footer {background:#f1f4f8!important;}
+
+/* PREDICT: white cards + readable driver selections (without touching team colors). */
+:root[data-site-theme="light"] .predict-page .predict-hero h1 {color:#131b27!important;}
+:root[data-site-theme="light"] .predict-page .mode-tab.active {color:#b71832!important;background:#ffebee!important;}
+:root[data-site-theme="light"] .predict-page .prediction-main,
+:root[data-site-theme="light"] .predict-page .side-card {
+  background:linear-gradient(150deg,#ffffff,#f7f9fc)!important;
+  border-color:rgba(20,31,46,.14)!important;color:#17212d!important;
+}
+:root[data-site-theme="light"] .predict-page .prediction-live-summary {background:linear-gradient(145deg,#fff2f3,#fff)!important;}
+:root[data-site-theme="light"] .predict-page .side-card .score-row > b[style] {color:#1a2330!important;}
+:root[data-site-theme="light"] .predict-page .score-row > b:first-child[style] {color:#c32438!important;}
+:root[data-site-theme="light"] .predict-page .prediction-system {color:#182333!important;}
+:root[data-site-theme="light"] .predict-page .prediction-wizard,
+:root[data-site-theme="light"] .predict-page .prediction-review {
+  background:linear-gradient(125deg,#f9fafc,#edf1f5)!important;
+  border-color:rgba(27,36,48,.16)!important;
+}
+:root[data-site-theme="light"] .predict-page .prediction-system .podium-card,
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-button,
+:root[data-site-theme="light"] .predict-page .prediction-system .bulletin-card,
+:root[data-site-theme="light"] .predict-page .prediction-system .special-card,
+:root[data-site-theme="light"] .predict-page .prediction-review-picks > div {
+  background:#ffffff!important;border-color:rgba(24,35,47,.15)!important;color:#1d2734!important;
+}
+:root[data-site-theme="light"] .predict-page .prediction-system .podium-card.active,
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-button:hover {background:#fff0f2!important;border-color:rgba(221,38,60,.50)!important;}
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-title,
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-button-name,
+:root[data-site-theme="light"] .predict-page .prediction-system .podium-position,
+:root[data-site-theme="light"] .predict-page .prediction-system .bulletin-card h4,
+:root[data-site-theme="light"] .predict-page .prediction-system .special-head strong,
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-button strong {
+  color:#192331!important;
+}
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-team,
+:root[data-site-theme="light"] .predict-page .prediction-system .driver-button-team,
+:root[data-site-theme="light"] .predict-page .prediction-wizard-top,
+:root[data-site-theme="light"] .predict-page .prediction-wizard-step {color:#526172!important;}
+:root[data-site-theme="light"] .predict-page .prediction-wizard-step.active {color:#ad2035!important;background:#fff0f2!important;}
+:root[data-site-theme="light"] .predict-page .prediction-wizard-controls button:not(.next) {color:#1b2530!important;background:#fff!important;border-color:#d6dde5!important;}
+
+/* PADDOCK: existing inline-dark cards need explicit scoped light surfaces. */
+:root[data-site-theme="light"] .paddock-theme-page {color:#18212d!important;background:linear-gradient(155deg,#f9fafc,#edf1f5)!important;}
+:root[data-site-theme="light"] .paddock-theme-page > div > header h1 {color:#161f2c!important;}
+:root[data-site-theme="light"] .paddock-theme-page > div > header p {color:#546375!important;}
+:root[data-site-theme="light"] .paddock-theme-page article,
+:root[data-site-theme="light"] .paddock-theme-page aside > div,
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer {
+  color:#192331!important;
+  background:#ffffff!important;
+  border-color:rgba(28,40,53,.14)!important;
+  box-shadow:0 12px 32px rgba(24,33,47,.05);
+}
+:root[data-site-theme="light"] .paddock-theme-page article :is(h2,h3,strong),
+:root[data-site-theme="light"] .paddock-theme-page aside > div :is(h2,h3,strong) {color:#192331!important;}
+:root[data-site-theme="light"] .paddock-theme-page article :is(p,small),
+:root[data-site-theme="light"] .paddock-theme-page aside > div :is(p,small) {color:#556273!important;}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer textarea,
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer input:not([type="file"]),
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer select {
+  color:#1c2530!important;background:#f8fafc!important;border-color:rgba(25,39,52,.18)!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer textarea::placeholder {color:#718093!important;opacity:1;}
+:root[data-site-theme="light"] .paddock-theme-page article [style*="color: rgb(221"],
+:root[data-site-theme="light"] .paddock-theme-page article [style*="color: #ddd"] {color:#253243!important;}
+
+/* NOTIFICATIONS: styles from the CSS-module route /bildirimler. */
+:root[data-site-theme="light"] [class*="notifications_panel"],
+:root[data-site-theme="light"] [class*="notifications_steps"],
+:root[data-site-theme="light"] [class*="notifications_card"] {
+  color:#182331!important;background:#ffffff!important;border-color:rgba(27,38,51,.14)!important;
+}
+:root[data-site-theme="light"] [class*="notifications_panel"] :is(h2,h3,strong),
+:root[data-site-theme="light"] [class*="notifications_steps"] :is(h2,h3,strong) {color:#182331!important;}
+:root[data-site-theme="light"] [class*="notifications_panel"] :is(p,small),
+:root[data-site-theme="light"] [class*="notifications_steps"] :is(p,small) {color:#556374!important;}
+:root[data-site-theme="light"] [class*="notifications_note"],
+:root[data-site-theme="light"] [class*="notifications_notice"] {background:#f5f7fa!important;color:#344053!important;border-color:rgba(27,38,51,.15)!important;}
+
+/* G6.17.3 — remaining light-theme contrast exceptions */
+/* Paddock composer, polls and voting widgets including inline dark backgrounds. */
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer,
+:root[data-site-theme="light"] .paddock-theme-page form:has(textarea),
+:root[data-site-theme="light"] .paddock-theme-page article :is([style*="background: rgb(0, 0, 0)"],[style*="background: #080808"],[style*="background: #0a0a0a"]) {
+ background:#fff!important;border-color:#dce3ea!important;color:#1b2735!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page form:has(textarea) :is(button,textarea,span,small,label) {color:#263242;}
+:root[data-site-theme="light"] .paddock-theme-page [class*="poll"] {color:#243142;}
+:root[data-site-theme="light"] .paddock-theme-page [class*="poll"] :is(h3,h4,strong) {color:#202a37!important;}
+:root[data-site-theme="light"] .paddock-theme-page [class*="poll"] button {background:#f7f9fc;color:#1b2735;border-color:#dbe2ec;}
+:root[data-site-theme="light"] .paddock-theme-page aside button {color:#b9233c!important;border-color:#d1dae4!important;background:#fff!important;}
+:root[data-site-theme="light"] .paddock-theme-page [class*="feed"] [class*="tab"] {color:#364758!important;}
+/* Prediction footer notices and their CTA controls */
+:root[data-site-theme="light"] .predict-page .prediction-system [class*="notice"],
+:root[data-site-theme="light"] .predict-page .prediction-system [class*="hint"],
+:root[data-site-theme="light"] .predict-page .prediction-system [class*="message"] {
+ background:#f3f6fa!important;color:#344355!important;border-color:#dae1e8!important;
+}
+:root[data-site-theme="light"] .predict-page .prediction-system [class*="notice"] :is(p,span,strong) {color:#344355!important;}
+:root[data-site-theme="light"] .predict-page .prediction-system button:disabled {color:#738094!important;}
+/* Arcade title/detail cards; leave their illustrated backgrounds and color accents intact */
+:root[data-site-theme="light"] .arcade-page .arcade-section-title,
+:root[data-site-theme="light"] .arcade-page .arcade-section-subtitle {color:#1e2937!important;}
+
+
+/* G6.17.4 – Direct-component colors left from the dark theme */
+:root[data-site-theme="light"] .paddock-theme-page .paddock-poll-card {
+  background:#f7f9fc!important;color:#223145!important;border-color:#d7e1e9!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-poll-choice {
+  color:#253449!important;background:#fff!important;border:1px solid #d9e1e9!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-poll-choice span {color:#41536a!important;}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer {
+  background:#fff!important;color:#1c2b3b!important;border-color:#dbe2eb!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer textarea,
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer input:not([type="file"]),
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer select {
+ background:#f7f9fc!important;color:#172737!important;border-color:#d5dee7!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer textarea::placeholder,
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer input::placeholder {color:#67788d!important;opacity:1;}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer > div:not([class]) {color:#263447;}
+:root[data-site-theme="light"] .paddock-theme-page .paddock-theme-composer > div:not([class]) strong {color:#243244!important;}
+:root[data-site-theme="light"] .paddock-theme-page [class*="feed"] [class*="tab"],
+:root[data-site-theme="light"] .paddock-theme-page a[aria-current="page"] {color:#27364b!important;}
+:root[data-site-theme="light"] .predict-page .community-footnote {
+ background:#f1f5f9!important;border-color:#d4dfe9!important;color:#34475b!important;
+}
+:root[data-site-theme="red"] .predict-page .community-footnote {
+ background:#fff1f4!important;border-color:#ebbfc8!important;color:#6e3545!important;
+}
+:root[data-site-theme="light"] .predict-page .prediction-system .prediction-feedback,
+:root[data-site-theme="light"] .predict-page .prediction-system [role="status"] {
+ color:#2d4055!important;background:#f2f6fa!important;border-color:#dbe2e9!important;
+}
+:root[data-site-theme="light"] .paddock-theme-page aside button:not([style*="background: rgb(220"]):not([style*="background: #e1"]) {
+ color:#a51b31!important;
+}
+
+/* Respect light/red profile wallpaper choices inside profile edit previews. */
+:root[data-site-theme="light"] .edit-profile .edit-card,
+:root[data-site-theme="light"] .edit-profile .save-bar {color:#1b2839;}
+
+/* G6.17.4 – Notifications module cards, including phone instructions. */
+:root[data-site-theme="light"] section[aria-label="Bildirim izinleri"],
+:root[data-site-theme="light"] section[aria-label="Gelen bildirimler"] {
+ background:#ffffff!important;color:#213047!important;border-color:#d8e1eb!important;
+}
+:root[data-site-theme="light"] section[aria-label="Bildirim izinleri"] :is(h2,h3,strong),
+:root[data-site-theme="light"] section[aria-label="Gelen bildirimler"] :is(h2,h3,strong) {color:#223049!important;}
+:root[data-site-theme="light"] section[aria-label="Bildirim izinleri"] :is(p,small),
+:root[data-site-theme="light"] section[aria-label="Gelen bildirimler"] :is(p,small) {color:#52637a!important;}
+:root[data-site-theme="light"] section[aria-label="Bildirim izinleri"] [class*="note"],
+:root[data-site-theme="light"] section[aria-label="Bildirim izinleri"] [class*="notice"] {
+ background:#f3f6fb!important;border-color:#d8e0e9!important;color:#2c4056!important;
+}
+:root[data-site-theme="light"] section[aria-label="Gelen bildirimler"] [class*="list"],
+:root[data-site-theme="light"] section[aria-label="Gelen bildirimler"] [class*="item"] {
+ background:#ffffff!important;color:#23354a!important;border-color:#dce3eb!important;
+}
+:root[data-site-theme="light"] section[aria-label="Gelen bildirimler"] [class*="new"] {background:#fff0f3!important;}
+:root[data-site-theme="light"] [class*="notifications_steps"],
+:root[data-site-theme="light"] [class*="notifications_guide"] {
+ background:#fff!important;color:#223149!important;border-color:#dbe2ec!important;
+}
+:root[data-site-theme="light"] [class*="notifications_steps"] :is(h2,h3,strong),
+:root[data-site-theme="light"] [class*="notifications_guide"] :is(h2,h3,strong) {color:#263750!important;}

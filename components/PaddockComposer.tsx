@@ -377,6 +377,7 @@ export default function PaddockComposer() {
 
   return (
     <form
+      className="paddock-theme-composer"
       onSubmit={handleSubmit}
       style={{
         padding: "18px",

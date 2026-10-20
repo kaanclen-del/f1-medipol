@@ -1,3 +1,4 @@
+import LegendaryTeamRadio from "@/components/LegendaryTeamRadio";
 import type {
   Metadata,
 } from "next";
@@ -94,7 +95,8 @@ export default function RootLayout({
         <SiteThemeSwitcher />
 
         {children}
-      </body>
+        <LegendaryTeamRadio />
+        </body>
     </html>
   );
 }

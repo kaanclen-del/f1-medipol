@@ -70,7 +70,7 @@ export default function HeaderThemeMenu({ compact = false }: { compact?: boolean
   }, [expanded]);
 
   return (
-    <div className={`${styles.root} ${compact ? styles.compact : ""}`} ref={rootRef}>
+    <div className={`${styles.root} ${compact ? styles.compact : ""}`} ref={rootRef} data-f1-theme-picker>
       <button
         type="button" className={styles.trigger}
         aria-label="Renk temasını değiştir" aria-haspopup="true" aria-expanded={expanded}
@@ -82,17 +82,18 @@ export default function HeaderThemeMenu({ compact = false }: { compact?: boolean
         </svg>
         <span className={styles.indicator} data-selected={selected}/>
       </button>
-      {expanded && <div className={styles.menu} role="group" aria-label="Renk temaları">
-        <div className={styles.menuTitle}>GÖRÜNÜM</div>
+      {expanded && <div className={styles.menu} role="group" aria-label="Renk temaları" data-f1-theme-panel>
+        <div className={styles.menuTitle} data-f1-theme-title>GÖRÜNÜM</div>
         {choices.map(choice => <button
           type="button" key={choice.key}
           className={`${styles.option} ${selected === choice.key ? styles.active : ""}`}
+          data-f1-theme-option
           aria-pressed={selected === choice.key}
           onClick={() => { setSelected(choice.key); saveTheme(choice.key); setExpanded(false); }}
         >
           <span className={styles.colorDot} data-color={choice.key}/>
-          <span className={styles.copy}><strong>{choice.label}</strong><small>{choice.description}</small></span>
-          {selected === choice.key && <span className={styles.check} aria-hidden="true">✓</span>}
+          <span className={styles.copy}><strong data-f1-theme-name>{choice.label}</strong><small data-f1-theme-description>{choice.description}</small></span>
+          {selected === choice.key && <span className={styles.check} data-f1-theme-check aria-hidden="true">✓</span>}
         </button>)}
       </div>}
     </div>

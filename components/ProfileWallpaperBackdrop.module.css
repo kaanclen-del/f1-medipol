@@ -143,3 +143,13 @@
 
 /* Optimization: expensive blur effects are toned down on small devices. */
 @media(max-width:800px){.glow{filter:blur(45px);opacity:.12}.beam{opacity:.24}.grain{opacity:.14}}
+
+/* G6.17.5 — Keep the selected wallpaper clear in all themes. */
+.root[data-has-image="true"] .glow,
+.root[data-has-image="true"] .beam,
+.root[data-has-image="true"] .grain {display:none!important;}
+.root[data-has-image="true"] .imageLayer img {
+  -webkit-mask-image:none!important;
+  mask-image:none!important;
+  filter:none!important;
+}

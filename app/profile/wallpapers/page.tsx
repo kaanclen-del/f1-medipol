@@ -14,8 +14,13 @@ export default function ProfileWallpapersPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [savedId, setSavedId] = useState(DEFAULT_PROFILE_WALLPAPER);
-  const [selectedId, setSelectedId] = useState(DEFAULT_PROFILE_WALLPAPER);
+  const [theme, setTheme] = useState<"dark" | "red" | "light">("dark");
+  const [savedByTheme, setSavedByTheme] = useState({dark:DEFAULT_PROFILE_WALLPAPER,red:DEFAULT_PROFILE_WALLPAPER,light:DEFAULT_PROFILE_WALLPAPER});
+  const [selectedByTheme, setSelectedByTheme] = useState({dark:DEFAULT_PROFILE_WALLPAPER,red:DEFAULT_PROFILE_WALLPAPER,light:DEFAULT_PROFILE_WALLPAPER});
+  const savedId = savedByTheme[theme];
+  const selectedId = selectedByTheme[theme];
+  const changed = (["dark","red","light"] as const).some(t=>savedByTheme[t]!==selectedByTheme[t]);
+  const setSelectedId = (id:string) => setSelectedByTheme(prev=>({...prev,[theme]:id}));
   const [managed, setManaged] = useState<ProfileWallpaper[]>([]);
   const [feedback, setFeedback] = useState("");
   const [success, setSuccess] = useState(false);
@@ -30,7 +35,7 @@ export default function ProfileWallpapersPage() {
         if (authError || !user) { window.location.assign("/login"); return; }
         setUserId(user.id);
         const [profileResult, managedResult] = await Promise.all([
-          supabase.from("profiles").select("profile_wallpaper").eq("id",user.id).maybeSingle(),
+          supabase.from("profiles").select("profile_wallpaper,profile_wallpaper_light,profile_wallpaper_red").eq("id",user.id).maybeSingle(),
           fetch("/api/profile/wallpapers",{ cache:"no-store" }).then(async r => {
             const obj = await r.json();
             if (!r.ok) throw new Error(obj.error ?? "Yönetici koleksiyonu yüklenemedi.");
@@ -44,7 +49,14 @@ export default function ProfileWallpapersPage() {
         setManaged(additions);
         const current = profileResult.data?.profile_wallpaper || DEFAULT_PROFILE_WALLPAPER;
         const valid = options.some(x=>x.id===current) ? current : DEFAULT_PROFILE_WALLPAPER;
-        setSelectedId(valid); setSavedId(valid);
+        const select = {
+          dark:valid,
+          light:options.some(x=>x.id===profileResult.data?.profile_wallpaper_light) ? profileResult.data!.profile_wallpaper_light! : valid,
+          red:options.some(x=>x.id===profileResult.data?.profile_wallpaper_red) ? profileResult.data!.profile_wallpaper_red! : valid,
+        };
+        setSelectedByTheme(select);setSavedByTheme(select);
+        const siteTheme=document.documentElement.getAttribute("data-site-theme");
+        if(siteTheme==="light"||siteTheme==="red") setTheme(siteTheme);
       } catch (error) {
         if (active) setFeedback(error instanceof Error ? error.message : "Arka planlar yüklenemedi.");
       } finally { if (active) setLoading(false); }
@@ -56,15 +68,19 @@ export default function ProfileWallpapersPage() {
   const selected = all.find(x=>x.id===selectedId) ?? all[0];
 
   async function save() {
-    if (!userId || saving || selectedId===savedId) return;
+    if (!userId || saving || !changed) return;
     setFeedback(""); setSuccess(false); setSaving(true);
     try {
       // Profile updates use the same existing Supabase RLS rules as before.
       const { data, error } = await supabase.from("profiles")
-        .update({profile_wallpaper:selectedId}).eq("id",userId).select("profile_wallpaper");
+        .update({
+          profile_wallpaper: selectedByTheme.dark,
+          profile_wallpaper_red: selectedByTheme.red,
+          profile_wallpaper_light: selectedByTheme.light,
+        }).eq("id",userId).select("profile_wallpaper");
       if (error) throw error;
       if (!data || data.length!==1) throw new Error("Profil arka planı kaydedilemedi.");
-      setSavedId(selectedId); setSuccess(true);
+      setSavedByTheme({...selectedByTheme}); setSuccess(true);
       setFeedback("Arka planın güncellendi. Profil sayfanda görüntüleyebilirsin.");
     } catch(error) { setFeedback(error instanceof Error?error.message:"Kayıt başarısız."); }
     finally {setSaving(false);}
@@ -75,7 +91,14 @@ export default function ProfileWallpapersPage() {
       <Link href="/profile" className={styles.back}>← PROFİLE DÖN</Link>
       <div className={styles.eyebrow}>F1 MEDİPOL / DRIVER CUSTOMIZATION</div>
       <h1>PROFİL ARKA PLANLARI</h1>
-      <p>Temel yarış temaları ve yönetimin eklediği özel tasarımlar. Ön izle, seç ve profiline kaydet.</p>
+      <p>Her tema için kendi arka planını seç. Koyu, kırmızı ve açık tema birbirinden bağımsızdır.</p>
+      <div style={{display:"flex",gap:9,flexWrap:"wrap",marginTop:16}}>
+        {(["dark","red","light"] as const).map(t=><button type="button" key={t} onClick={()=>setTheme(t)}
+          aria-pressed={theme===t}
+          style={{cursor:"pointer",padding:"10px 14px",borderRadius:10,fontWeight:800,border:theme===t?"1px solid #f35b72":"1px solid #536072",background:theme===t?"#ffe6ea":"#171d29",color:theme===t?"#94233a":"#fff"}}>
+          {t==="dark"?"Koyu Tema":t==="red"?"Kırmızı Tema":"Açık Tema"}
+        </button>)}
+      </div>
     </div><div className={styles.count}><strong>{all.length.toString().padStart(2,"0")}</strong><span>ARKA PLAN</span></div></div>
     {loading?<div className={styles.loading}>Koleksiyon yükleniyor...</div>:
     <div className={styles.layout}>
@@ -94,9 +117,10 @@ export default function ProfileWallpapersPage() {
             <div><h2>{selected.name}</h2><p>{selected.description}</p></div>
           </div>
           <div className={styles.actions}>
-            {savedId===selectedId&&<span className={styles.current}>✓ KULLANIMDA</span>}
-            <button type="button" className={styles.save} disabled={saving||selectedId===savedId} onClick={save}>
-              {saving?"KAYDEDİLİYOR...":savedId===selectedId?"KAYDEDİLDİ":"BU ARKA PLANI KAYDET ↗"}
+            {savedId===selectedId&&<span className={styles.current}>✓ BU TEMADA KULLANIMDA</span>}
+            <button type="button" className={styles.save} disabled={saving} onClick={()=>setSelectedByTheme({dark:selectedId,red:selectedId,light:selectedId})}>Üç temada da seç</button>
+            <button type="button" className={styles.save} disabled={saving||!changed} onClick={save}>
+              {saving?"KAYDEDİLİYOR...":!changed?"KAYDEDİLDİ":"SEÇİMLERİ KAYDET ↗"}
             </button>
           </div>
           {feedback&&<p role="status" className={success?styles.success:styles.error}>{feedback}</p>}

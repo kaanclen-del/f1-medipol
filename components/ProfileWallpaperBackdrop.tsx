@@ -37,6 +37,7 @@ export default function ProfileWallpaperBackdrop({
       aria-hidden="true"
       className={styles.root}
       data-motion={wallpaper.motion ?? motionById[wallpaper.id] ?? "drift"}
+      data-has-image={wallpaper.image ? "true" : "false"}
       style={style}
     >
       <div
@@ -48,7 +49,6 @@ export default function ProfileWallpaperBackdrop({
           <img src={wallpaper.image} alt="" decoding="async" />
         </div>
       ) : null}
-      {wallpaper.image ? <div className={styles.imageShade} /> : null}
       <div className={styles.glow} />
       <div className={styles.beam} />
       <div className={styles.grain} />

@@ -834,4 +834,36 @@ const styles = `
       max-height: 420px;
     }
   }
+/* G6.17.4 – Achievement Garage follows the chosen light/red skin. */
+:root[data-site-theme="light"] .profile-achievements-sidebar {
+ background:#ffffff!important;color:#202b39!important;border-color:#d9e0e8!important;
+}
+:root[data-site-theme="red"] .profile-achievements-sidebar {
+ background:#ffe8ec!important;color:#36202b!important;border-color:#eab6c0!important;
+}
+:root[data-site-theme="light"] .profile-ach-heading h2,
+:root[data-site-theme="red"] .profile-ach-heading h2 {color:#233043!important;}
+:root[data-site-theme="light"] .profile-ach-subtitle,
+:root[data-site-theme="red"] .profile-ach-subtitle {color:#546376!important;}
+:root[data-site-theme="light"] .profile-ach-group-heading strong,
+:root[data-site-theme="red"] .profile-ach-group-heading strong {color:#3c4a5c!important;}
+:root[data-site-theme="light"] .profile-ach-card {background:#f7f9fc!important;border-color:#dbe3ed!important;}
+:root[data-site-theme="red"] .profile-ach-card {background:#fff5f7!important;border-color:#e9bec7!important;}
+:root[data-site-theme="light"] .profile-ach-card-summary .profile-ach-info > strong,
+:root[data-site-theme="red"] .profile-ach-card-summary .profile-ach-info > strong {color:#223148!important;}
+:root[data-site-theme="light"] .profile-ach-card .profile-ach-status,
+:root[data-site-theme="red"] .profile-ach-card .profile-ach-status {color:#526477!important;}
+:root[data-site-theme="light"] .profile-ach-card.is-unlocked .profile-ach-status,
+:root[data-site-theme="red"] .profile-ach-card.is-unlocked .profile-ach-status {color:#146c45!important;}
+:root[data-site-theme="light"] .profile-ach-card .profile-ach-reward strong,
+:root[data-site-theme="red"] .profile-ach-card .profile-ach-reward strong {color:#a8253d!important;}
+:root[data-site-theme="light"] .profile-ach-card :is(.profile-ach-description,.profile-ach-condition strong,.profile-ach-details),
+:root[data-site-theme="red"] .profile-ach-card :is(.profile-ach-description,.profile-ach-condition strong,.profile-ach-details) {color:#49566a!important;}
+:root[data-site-theme="light"] .profile-ach-group-heading small,
+:root[data-site-theme="red"] .profile-ach-group-heading small,
+:root[data-site-theme="light"] .profile-ach-footer,
+:root[data-site-theme="red"] .profile-ach-footer {color:#667487!important;}
+:root[data-site-theme="light"] .profile-ach-counter {background:#f2f5f9!important;border-color:#d8e1eb!important;}
+:root[data-site-theme="red"] .profile-ach-counter {background:#ffe1e5!important;border-color:#e7b3bd!important;}
+
 `;

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import Header from "@/components/Header";
 import ProfileWallpaperBackdrop from "@/components/ProfileWallpaperBackdrop";
-import ProfileActions from "@/components/ProfileActions";
 import ProfileAchievements from "@/components/ProfileAchievements";
+import ProfileFriendManager from "@/components/ProfileFriendManager";
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
 import { getTeamBranding } from "@/lib/team-branding";
-import { getProfileWallpaper, getWallpaperBackground } from "@/lib/profile-wallpapers";
+import { getProfileWallpaper } from "@/lib/profile-wallpapers";
 import { managedToWallpaper, type ManagedWallpaper } from "@/lib/profile-wallpaper-catalog";
 import { getProfileAccent } from "@/lib/profile-accents";
 import { getLatestF1Drivers, type OpenF1Driver } from "@/lib/openf1";
@@ -162,7 +162,7 @@ export default async function ProfilePage() {
     </main>
   </>;
   const { data: profile } = await supabase.from("profiles")
-    .select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_accent,xp,level,is_admin")
+    .select("display_name,username,avatar_url,bio,favorite_team,favorite_driver,profile_wallpaper,profile_wallpaper_light,profile_wallpaper_red,profile_accent,xp,level,is_admin")
     .eq("id", user.id).maybeSingle();
   const { data: predictionData } = await supabase.from("predictions")
     .select("id,season,round,race_name,prediction_type,p1_driver_number,p2_driver_number,p3_driver_number,points,podium_points,bulletin_points,special_points,score_breakdown,created_at")
@@ -223,6 +223,29 @@ export default async function ProfilePage() {
   const levelXpProgress = Math.max(0, totalXp - currentLevelStartXp);
   const xpRemaining = Math.max(0, nextLevelTotalXp - totalXp);
   const levelProgressPercentage = levelXpNeeded > 0 ? Math.min(100, Math.max(0, levelXpProgress / levelXpNeeded * 100)) : 100;
+  // Only accepted friends returned by the authenticated DM RPC are read. Never
+  // query or expose other members' profiles through this panel.
+  type FriendEntry = { user_id: string; display_name: string; avatar_url: string | null };
+  type FriendProfile = { id: string; display_name: string | null; username: string | null; avatar_url: string | null; level: number | null; xp: number | null };
+  const { data: acceptedFriends, error: friendsError } = await supabase.rpc("dm_list_friends");
+  const friendRows = friendsError ? [] : (acceptedFriends ?? []) as FriendEntry[];
+  const friendIds = Array.from(new Set(friendRows.map((friend) => friend.user_id).filter(Boolean))).slice(0, 200);
+  const { data: friendProfiles } = friendIds.length
+    ? await admin.from("profiles").select("id,display_name,username,avatar_url,level,xp").in("id", friendIds)
+    : { data: [] };
+  const friendProfileById = new Map(((friendProfiles ?? []) as FriendProfile[]).map((friend) => [friend.id, friend]));
+  const friendsList = friendRows.filter((friend) => friendIds.includes(friend.user_id)).map((friend) => {
+    const member = friendProfileById.get(friend.user_id);
+    const xp = Math.max(0, Number(member?.xp ?? 0));
+    const storedLevel = Number(member?.level ?? 0);
+    return {
+      id: friend.user_id,
+      name: member?.display_name || friend.display_name || member?.username || "F1 Medipol Üyesi",
+      username: member?.username || null,
+      avatar: member?.avatar_url || friend.avatar_url || null,
+      level: storedLevel >= 1 ? storedLevel : calculateLevel(xp),
+    };
+  }).sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "tr"));
   const displayName = profile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "F1 Medipol Üyesi";
   const initial = displayName.charAt(0).toUpperCase();
   const teamBrand = getTeamBranding(profile?.favorite_team);
@@ -232,18 +255,24 @@ export default async function ProfilePage() {
   const favoriteDriverImage = favoriteDriverData?.headshot_url || null;
   const favoriteDriverTeamColor = favoriteDriverData?.team_colour
     ? `#${favoriteDriverData.team_colour.replace("#", "")}` : null;
-  const wallpaperId = profile?.profile_wallpaper;
-  const { data: customWallpaperData } =
-    typeof wallpaperId === "string" && wallpaperId.startsWith("custom-")
-      ? await supabase.from("profile_wallpaper_options")
-          .select("id,name,description,image_url,color_a,color_b,accent,motion,is_published,sort_order")
-          .eq("id", wallpaperId).eq("is_published", true).maybeSingle()
-      : { data: null };
-  const wallpaper = customWallpaperData
-    ? managedToWallpaper(customWallpaperData as ManagedWallpaper)
-    : getProfileWallpaper(wallpaperId);
+  const wallpaperIds = {
+    dark: profile?.profile_wallpaper,
+    light: profile?.profile_wallpaper_light || profile?.profile_wallpaper,
+    red: profile?.profile_wallpaper_red || profile?.profile_wallpaper,
+  };
+  const customIds = [...new Set(Object.values(wallpaperIds).filter((id): id is string => typeof id === "string" && id.startsWith("custom-")))];
+  const managed = customIds.length > 0
+    ? await supabase.from("profile_wallpaper_options")
+        .select("id,name,description,image_url,color_a,color_b,accent,motion,is_published,sort_order")
+        .in("id", customIds).eq("is_published", true)
+    : { data: [] as ManagedWallpaper[] };
+  const managedById = new Map((managed.data ?? []).map((w) => [w.id, managedToWallpaper(w as ManagedWallpaper)] as const));
+  const wallpapers = {
+    dark: managedById.get(wallpaperIds.dark ?? "") ?? getProfileWallpaper(wallpaperIds.dark),
+    light: managedById.get(wallpaperIds.light ?? "") ?? getProfileWallpaper(wallpaperIds.light),
+    red: managedById.get(wallpaperIds.red ?? "") ?? getProfileWallpaper(wallpaperIds.red),
+  };
   const profileAccent = getProfileAccent(profile?.profile_accent);
-  const background = getWallpaperBackground(wallpaper);
   return <>
     <Header />
     <main className="steam-profile" style={{
@@ -253,8 +282,9 @@ export default async function ProfilePage() {
       ["--profile-accent-glow" as string]: profileAccent.glow,
     }}>
       <style>{styles}</style>
-      <ProfileWallpaperBackdrop wallpaper={wallpaper} />
-      <div className="profile-page-shade" />
+      <div className="profile-theme-wallpaper profile-theme-wallpaper-dark"><ProfileWallpaperBackdrop wallpaper={wallpapers.dark} /></div>
+      <div className="profile-theme-wallpaper profile-theme-wallpaper-light"><ProfileWallpaperBackdrop wallpaper={wallpapers.light} /></div>
+      <div className="profile-theme-wallpaper profile-theme-wallpaper-red"><ProfileWallpaperBackdrop wallpaper={wallpapers.red} /></div>
       <div className="profile-container">
         <div className="profile-top-strip">
           <div><span>F1 MEDİPOL</span><strong>DRIVER PROFILE</strong></div>
@@ -515,24 +545,39 @@ export default async function ProfilePage() {
           <aside className="profile-sidebar">
             <ProfileAchievements achievements={achievements} userAchievements={userAchievements}
               stats={{ paddockPostCount, predictionCount, totalPoints, bestScore }} />
-            <section className="glass-panel">
-              <PanelHeader kicker="DRIVER INFO" title="Profil" />
-              <InfoRow label="Görünen Ad" value={displayName} />
-              <InfoRow label="Kullanıcı Adı" value={profile?.username ? `@${profile.username}` : "Belirlenmedi"} />
-              <InfoRow label="Seviye" value={`LEVEL ${currentLevel}`} />
-              <InfoRow label="Toplam XP" value={`${totalXp} XP`} />
-              <InfoRow label="Sonraki Level" value={`${xpRemaining} XP`} />
-              <InfoRow label="Başarımlar" value={`${unlockedAchievementCount}/${totalAchievementCount}`} />
-              <Link href="/profile/edit" className="side-button">Profili Düzenle</Link>
-              <Link href="/predict" className="side-button accent">Tahmin Merkezine Git →</Link>
-              <ProfileActions />
-            </section>
-            <section className="glass-panel wallpaper-info">
-              <span className="profile-kicker">PROFILE BACKGROUND</span>
-              <div className="wallpaper-thumb" style={{ backgroundImage: background }} />
-              <strong>{wallpaper.name}</strong>
-              <p>{wallpaper.description}</p>
-              <Link href="/profile/wallpapers">ARKA PLANI DEĞİŞTİR →</Link>
+            <section className="glass-panel friends-panel" aria-label="Arkadaşlarım">
+              <div className="friends-panel-top">
+                <div>
+                  <span className="profile-kicker">F1 MEDİPOL · SOSYAL</span>
+                  <h2>Arkadaşlar <span className="friends-count">{friendsList.length} kişi</span></h2><p className="friends-panel-intro">Pilot arkadaşların · yüksek seviyeden düşüğe</p>
+                </div>
+                <ProfileFriendManager variant="icon" />
+              </div>
+              {friendsError ? (
+                <p className="friends-panel-empty">Arkadaşlar şu an yüklenemedi. Mesajlaşma bağlantını kontrol et.</p>
+              ) : friendsList.length === 0 ? (
+                <div className="friends-panel-empty">
+                  <p>Henüz arkadaşın yok.</p>
+                  <ProfileFriendManager variant="inline" />
+                </div>
+              ) : (
+                <div className="friends-list">
+                  {friendsList.map((friend, index) => (
+                    <Link href={`/members/${friend.id}`} key={friend.id} className="friend-row">
+                      <span className="friend-rank">{String(index + 1).padStart(2, "0")}</span><div className="friend-avatar">
+                        {friend.avatar ? <img src={friend.avatar} alt="" loading="lazy" /> : <span>{friend.name.slice(0, 1).toLocaleUpperCase("tr-TR")}</span>}
+                      </div>
+                      <div className="friend-identity">
+                        <strong>{friend.name}</strong>
+                        <span>{friend.username ? `@${friend.username}` : "F1 Medipol Üyesi"}</span>
+                      </div>
+                      <div className="friend-level"><span>LEVEL</span><strong>{friend.level}</strong></div>
+                      <span className="friend-open" aria-hidden="true">↗</span>
+                    </Link>
+                  ))}
+                </div>
+              )}
+              <ProfileFriendManager variant="footer" />
             </section>
           </aside>
         </section>
@@ -800,4 +845,300 @@ const styles = `
 @media (max-width:1150px) { .profile-summary-favorites { grid-column:1 / -1; grid-template-columns:repeat(2,minmax(0,1fr)); } .profile-summary-favorites .summary-title { grid-column:1 / -1; } }
 @media (max-width:650px) { .profile-summary-favorites { grid-template-columns:1fr; text-align:left; } .profile-summary-favorites .summary-title { grid-column:auto; } .summary-favorite { min-height:75px; } }
 
+/* G6.17.2: Friends — replaces the redundant profile info/wallpaper sidebar cards */
+.friends-panel { padding:22px 19px; min-height:420px; }
+.friends-panel-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:19px; }
+.friends-panel-top h2 { margin:8px 0 0; display:flex; align-items:center; gap:9px; font-size:26px; line-height:1.05; }
+.friends-count { font-size:11px; font-weight:900; padding:5px 9px; border:1px solid rgba(255,255,255,.13); border-radius:999px; color:#a4b0bf; }
+.friends-add-button { flex:0 0 42px; width:42px; height:42px; display:grid; place-items:center; border-radius:11px; background:linear-gradient(140deg,var(--profile-accent-2),var(--profile-accent)); border:1px solid rgba(255,255,255,.2); color:#fff !important; box-shadow:0 6px 22px var(--profile-accent-glow); transition:transform .17s ease; }
+.friends-add-button:hover { transform:translateY(-2px); }
+.friends-add-button svg { width:23px; height:23px; }
+.friends-list { display:grid; gap:8px; max-height:690px; overflow-y:auto; scrollbar-width:thin; scrollbar-color:rgba(155,166,182,.3) transparent; }
+.friend-row { display:flex; min-width:0; align-items:center; gap:9px; text-decoration:none; padding:10px 8px; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.028); border-radius:11px; transition:background .18s ease,border-color .18s ease; }
+.friend-row:hover { background:rgba(255,255,255,.07); border-color:color-mix(in srgb,var(--profile-accent),transparent 52%); }
+.friend-avatar { width:42px; height:42px; flex:0 0 42px; display:grid; place-items:center; overflow:hidden; border:1px solid rgba(255,255,255,.15); border-radius:12px; background:linear-gradient(145deg,#303a49,#161c24); color:#fff; font-size:16px; font-weight:900; }
+.friend-avatar img { width:100%; height:100%; display:block; object-fit:cover; }
+.friend-identity { flex:1; min-width:0; display:grid; gap:5px; }
+.friend-identity strong { display:block; color:#f5f7fa; font-size:11px; line-height:1.2; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.friend-identity span { color:#8b99aa; font-size:9px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.friend-level { min-width:42px; display:grid; gap:4px; justify-items:center; border-radius:8px; padding:5px; background:rgba(255,255,255,.045); }
+.friend-level span { color:#8f9bad; font-size:7px; font-weight:900; letter-spacing:.1em; }
+.friend-level strong { color:var(--profile-accent) !important; font-size:16px; }
+.friend-open { color:var(--profile-accent); font-size:18px; }
+.friends-panel-empty { margin:18px 0; padding:22px 12px; color:#9ca8b5; font-size:12px; line-height:1.6; text-align:center; border:1px dashed rgba(255,255,255,.18); border-radius:11px; }
+.friends-panel-empty a { color:var(--profile-accent); text-decoration:none; font-weight:900; }
+.friends-footer { display:flex; align-items:center; justify-content:space-between; padding-top:16px; margin-top:15px; border-top:1px solid rgba(255,255,255,.1); color:var(--profile-accent); font-size:9px; font-weight:1000; letter-spacing:.075em; text-decoration:none; }
+@media(max-width:650px) { .friends-panel { padding:20px 15px; } .friends-list { max-height:480px; } }
+
+
+/* G6.17.3: friends leaderboard presentation */
+.friends-panel {min-height:480px; padding:23px 20px;}
+.friends-panel-intro {margin:9px 0 0; font-size:10px; color:#8d9baa; line-height:1.5;}
+.friends-list {gap:9px;}
+.friend-row {padding:12px 10px; gap:10px; border-radius:13px;}
+.friend-rank {flex:0 0 21px; text-align:center; font-size:9px; font-weight:1000; color:var(--profile-accent); letter-spacing:.03em;}
+.friend-level {min-width:53px; padding:7px 6px;}
+.friend-level strong {font-size:19px;}
+.friend-open {font-size:20px;}
+.friend-row:first-child {border-color:color-mix(in srgb,var(--profile-accent),transparent 55%);background:color-mix(in srgb,var(--profile-accent),transparent 92%);}
+.friend-row:first-child .friend-rank {font-size:13px;}
+
+/* Light profile: wallpaper remains stored, while legibility uses bright surfaces. */
+:root[data-site-theme="light"] .steam-profile {color:#1a2431!important;background-color:#f6f8fb!important;}
+:root[data-site-theme="light"] .profile-page-shade {background:rgba(248,250,253,.90)!important;}
+:root[data-site-theme="light"] .steam-profile :is(h1,h2,h3,strong) {color:#192431!important;}
+:root[data-site-theme="light"] .profile-top-strip,
+:root[data-site-theme="light"] .profile-shell,
+:root[data-site-theme="light"] .level-panel,
+:root[data-site-theme="light"] .glass-panel,
+:root[data-site-theme="light"] .profile-summary {
+ background:rgba(255,255,255,.93)!important;color:#202a37!important;
+ border-color:rgba(33,46,62,.14)!important;box-shadow:0 12px 36px rgba(26,38,51,.07)!important;
+}
+:root[data-site-theme="light"] .level-ring {background:radial-gradient(circle,#fff4e5,#fff)!important;}
+:root[data-site-theme="light"] .level-big-track {background:#e8edf3!important;border-color:#dae1e9!important;}
+:root[data-site-theme="light"] .profile-summary :is(span,small),
+:root[data-site-theme="light"] .identity-meta,
+:root[data-site-theme="light"] .profile-bio,
+:root[data-site-theme="light"] .friends-panel-intro,
+:root[data-site-theme="light"] .friend-identity span {color:#57687a!important;}
+:root[data-site-theme="light"] .friend-row {background:#f8fafc!important;border-color:#e2e7ee!important;}
+:root[data-site-theme="light"] .friend-row:hover {background:#fff0f2!important;border-color:#e59ca7!important;}
+:root[data-site-theme="light"] .friend-identity strong {color:#202a37!important;}
+:root[data-site-theme="light"] .friend-level {background:#edf1f6!important;}
+:root[data-site-theme="light"] .profile-top-strip strong,
+:root[data-site-theme="light"] .edit-profile-button {color:#344252!important;}
+:root[data-site-theme="light"] .steam-profile .profile-kicker {color:#bd293d!important;}
+:root[data-site-theme="light"] .steam-profile .level-threshold-info strong {color:#223040!important;}
+
+/* Red theme profile: F1-red blush + white cards, not the dark theme. */
+:root[data-site-theme="red"] .steam-profile {color:#20191c!important;background-color:#fff4f4!important;}
+:root[data-site-theme="red"] .profile-page-shade {background:rgba(255,243,243,.87)!important;}
+:root[data-site-theme="red"] .steam-profile :is(h1,h2,h3,strong) {color:#261c22!important;}
+:root[data-site-theme="red"] .profile-top-strip,
+:root[data-site-theme="red"] .profile-shell,
+:root[data-site-theme="red"] .level-panel,
+:root[data-site-theme="red"] .glass-panel,
+:root[data-site-theme="red"] .profile-summary {background:rgba(255,250,250,.94)!important;color:#261c22!important;border-color:rgba(183,28,48,.22)!important;box-shadow:0 12px 35px rgba(149,21,37,.09)!important;}
+:root[data-site-theme="red"] .friend-row {background:#fff5f5!important;border-color:#f0dadd!important;}
+:root[data-site-theme="red"] .friend-identity strong {color:#32232a!important;}
+:root[data-site-theme="red"] .friend-level {background:#ffe9eb!important;}
+:root[data-site-theme="red"] .profile-bio,
+:root[data-site-theme="red"] .identity-meta,
+:root[data-site-theme="red"] .friends-panel-intro {color:#705c64!important;}
+:root[data-site-theme="red"] .level-ring {background:#fff2f2!important;}
+:root[data-site-theme="red"] .level-big-track {background:#f8dde2!important;}
+:root[data-site-theme="red"] .edit-profile-button {color:#ae2437!important;}
+/* G6.17.4 – Per-theme profile backgrounds + contrast polish */
+.profile-theme-wallpaper {position:absolute; inset:0; z-index:0; display:none; overflow:hidden; pointer-events:none;}
+.profile-theme-wallpaper-dark {display:block;}
+:root[data-site-theme="light"] .profile-theme-wallpaper-dark,
+:root[data-site-theme="red"] .profile-theme-wallpaper-dark {display:none;}
+:root[data-site-theme="light"] .profile-theme-wallpaper-light {display:block;}
+:root[data-site-theme="red"] .profile-theme-wallpaper-red {display:block;}
+
+/* Keep selected wallpaper visible while retaining readable cards. */
+:root[data-site-theme="light"] .steam-profile {background:#f8fafc!important; color:#1e2733!important;}
+:root[data-site-theme="light"] .profile-page-shade {background:linear-gradient(90deg,rgba(252,253,255,.78),rgba(251,252,255,.64),rgba(252,253,255,.78))!important;}
+:root[data-site-theme="red"] .steam-profile {background:#ffe4e9!important; color:#2e1820!important;}
+:root[data-site-theme="red"] .profile-page-shade {background:linear-gradient(90deg,rgba(255,225,232,.80),rgba(255,234,239,.62),rgba(255,225,232,.80))!important;}
+:root[data-site-theme="red"] .profile-top-strip,
+:root[data-site-theme="red"] .profile-shell,
+:root[data-site-theme="red"] .level-panel,
+:root[data-site-theme="red"] .glass-panel,
+:root[data-site-theme="red"] .profile-summary {background:rgba(255,232,236,.95)!important;border-color:rgba(180,41,59,.20)!important;}
+:root[data-site-theme="light"] .profile-shell,
+:root[data-site-theme="light"] .level-panel,
+:root[data-site-theme="light"] .glass-panel {background:rgba(255,255,255,.96)!important;}
+
+/* Profile Paddock cards: text must not inherit dark-mode whites on white. */
+:root[data-site-theme="light"] .steam-profile .paddock-profile-post,
+:root[data-site-theme="red"] .steam-profile .paddock-profile-post {background:#fff!important; border:1px solid #d9dfe8!important;}
+:root[data-site-theme="red"] .steam-profile .paddock-profile-post {background:#fff6f7!important;border-color:#edc5cc!important;}
+:root[data-site-theme="light"] .steam-profile .paddock-profile-copy p,
+:root[data-site-theme="red"] .steam-profile .paddock-profile-copy p {color:#2a3646!important;}
+:root[data-site-theme="light"] .steam-profile .paddock-post-meta,
+:root[data-site-theme="red"] .steam-profile .paddock-post-meta {color:#566579!important;}
+:root[data-site-theme="light"] .steam-profile .paddock-post-meta strong,
+:root[data-site-theme="red"] .steam-profile .paddock-post-meta strong {color:#b42a41!important;}
+:root[data-site-theme="light"] .steam-profile .paddock-open,
+:root[data-site-theme="red"] .steam-profile .paddock-open {color:#ac2139!important;}
+:root[data-site-theme="light"] .steam-profile :is(.prediction-info span,.prediction-info small,.prediction-summary-meta,.prediction-xp-note p,.prediction-awaiting span),
+:root[data-site-theme="red"] .steam-profile :is(.prediction-info span,.prediction-info small,.prediction-summary-meta,.prediction-xp-note p,.prediction-awaiting span) {color:#586678!important;}
+:root[data-site-theme="light"] .steam-profile :is(.prediction-history-card,.prediction-row,.prediction-podium-item,.prediction-answer),
+:root[data-site-theme="red"] .steam-profile :is(.prediction-history-card,.prediction-row,.prediction-podium-item,.prediction-answer) {background:rgba(246,248,251,.95)!important;border-color:#dae0e7!important;}
+:root[data-site-theme="red"] .steam-profile :is(.prediction-history-card,.prediction-row,.prediction-podium-item,.prediction-answer) {background:#fff4f6!important;border-color:#f0cdd3!important;}
+:root[data-site-theme="light"] .steam-profile .prediction-breakdown summary,
+:root[data-site-theme="red"] .steam-profile .prediction-breakdown summary {color:#344153!important; background:rgba(239,243,248,.82)!important;}
+
+/* G6.17.6 – Racing red profile cards; scoped to the red theme only.
+   Keeps the per-theme wallpaper visible and leaves dark/light modes alone. */
+:root[data-site-theme="red"] .steam-profile {
+  color:#fff4f5!important;
+  background-color:#53000d!important;
+}
+:root[data-site-theme="red"] .profile-page-shade {
+  background:linear-gradient(90deg,rgba(44,0,9,.16),transparent 45%,rgba(44,0,9,.16))!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-top-strip {
+  background:rgba(119,5,19,.95)!important;
+  border-color:rgba(255,210,218,.24)!important;
+  box-shadow:0 8px 24px rgba(27,0,7,.14)!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-shell {
+  background:linear-gradient(115deg,rgba(160,11,30,.95),rgba(121,5,22,.96))!important;
+  border-color:rgba(255,205,214,.27)!important;
+  box-shadow:0 22px 66px rgba(41,0,12,.25)!important;
+}
+:root[data-site-theme="red"] .steam-profile .level-panel {
+  background:linear-gradient(115deg,rgba(171,12,32,.95),rgba(125,5,22,.96))!important;
+  border-color:rgba(255,210,218,.25)!important;
+  box-shadow:0 14px 38px rgba(41,0,12,.19)!important;
+}
+:root[data-site-theme="red"] .steam-profile .glass-panel {
+  background:linear-gradient(130deg,rgba(158,9,29,.96),rgba(114,6,22,.97))!important;
+  border-color:rgba(255,212,219,.26)!important;
+  box-shadow:0 14px 42px rgba(43,0,12,.20)!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-summary {
+  background:rgba(69,2,12,.44)!important;
+  color:#fff4f5!important;
+  border-color:rgba(255,218,225,.24)!important;
+  box-shadow:none!important;
+}
+:root[data-site-theme="red"] .steam-profile :is(h1,h2,h3) {
+  color:#fff9fa!important;
+}
+:root[data-site-theme="red"] .steam-profile :is(
+  .profile-identity h1, .level-total-xp strong,.level-progress-title strong,
+  .level-progress-info strong,.level-remaining strong,.prediction-info strong,
+  .prediction-score strong,.prediction-detail-heading strong,
+  .prediction-podium-item strong,.prediction-answer strong,
+  .friend-identity strong,.panel-header h2,.summary-favorite-content strong
+) { color:#fff9fa!important; }
+:root[data-site-theme="red"] .steam-profile :is(
+  .profile-bio,.identity-meta,.identity-accent small,.summary-favorite-content > span,
+  .level-ring span,.level-total-xp span,.level-progress-title span,.level-progress-info span,
+  .level-threshold-info,.xp-source-title,.xp-source-card span,.friends-panel-intro,
+  .friend-identity span,.friends-count,.friend-level span,.friends-panel-empty,
+  .paddock-profile-copy p,.paddock-post-meta,.prediction-info span,.prediction-info small,
+  .prediction-score span,.prediction-summary-meta,.prediction-xp-note p,
+  .prediction-awaiting span,.prediction-detail-footnote,.prediction-answer small,
+  .prediction-podium-item small,.summary-favorite-content > small,.panel-link,
+  .profile-top-strip strong,.level-remaining span,.next-level-label
+) { color:#ffe0e6!important; }
+:root[data-site-theme="red"] .steam-profile :is(.profile-kicker,.panel-header span,.summary-title,.profile-top-strip span) {
+  color:#ffd2ba!important;
+}
+:root[data-site-theme="red"] .steam-profile :is(.edit-profile-button,.panel-link) {
+  color:#fff6f7!important;
+}
+:root[data-site-theme="red"] .steam-profile .member-badge {
+  color:#fff4dd!important;
+  background:rgba(255,228,199,.15)!important;
+  border-color:rgba(255,231,205,.38)!important;
+}
+:root[data-site-theme="red"] .steam-profile :is(.summary-favorite,.xp-source-card,.friend-row,.favorite-pick,.showcase-item) {
+  background:rgba(71,2,14,.35)!important;
+  border-color:rgba(255,217,224,.22)!important;
+}
+:root[data-site-theme="red"] .steam-profile .friend-row:first-child {
+  background:rgba(255,213,220,.17)!important;
+  border-color:rgba(255,221,227,.44)!important;
+}
+:root[data-site-theme="red"] .steam-profile .friend-row:hover,
+:root[data-site-theme="red"] .steam-profile .paddock-profile-post:hover {
+  background:rgba(255,222,228,.17)!important;
+  border-color:rgba(255,226,232,.54)!important;
+}
+:root[data-site-theme="red"] .steam-profile .friend-level {
+  background:rgba(255,225,231,.16)!important;
+}
+:root[data-site-theme="red"] .steam-profile .friend-level strong {
+  color:#ffdf9c!important;
+}
+:root[data-site-theme="red"] .steam-profile .level-ring {
+  background:radial-gradient(circle,rgba(255,221,229,.18),rgba(76,1,16,.82))!important;
+}
+:root[data-site-theme="red"] .steam-profile .level-ring strong,
+:root[data-site-theme="red"] .steam-profile .xp-source-card strong {
+  color:#ffe4a9!important;
+}
+:root[data-site-theme="red"] .steam-profile .level-big-track {
+  background:rgba(67,0,13,.55)!important;
+  border-color:rgba(255,231,234,.22)!important;
+}
+:root[data-site-theme="red"] .steam-profile .summary-favorite-driver,
+:root[data-site-theme="red"] .steam-profile .summary-favorite-visual:not(.summary-favorite-logo) {
+  background:rgba(255,255,255,.12)!important;
+}
+/* Give text-only and image Paddock posts the same coherent red surface. */
+:root[data-site-theme="red"] .steam-profile .paddock-profile-post {
+  background:rgba(84,3,19,.53)!important;
+  border-color:rgba(255,218,225,.26)!important;
+}
+:root[data-site-theme="red"] .steam-profile .paddock-profile-copy p {
+  color:#fff4f6!important;
+}
+:root[data-site-theme="red"] .steam-profile .paddock-post-meta,
+:root[data-site-theme="red"] .steam-profile .paddock-post-meta strong {
+  color:#ffdee4!important;
+}
+:root[data-site-theme="red"] .steam-profile .paddock-open {
+  color:#ffe3a1!important;
+}
+/* Predictons: darker, legible inner cards while retaining status green/gold. */
+:root[data-site-theme="red"] .steam-profile :is(
+ .prediction-history-card,.prediction-row,.prediction-podium-item,.prediction-answer
+) {
+  background:rgba(70,2,17,.36)!important;
+  border-color:rgba(255,219,225,.22)!important;
+}
+:root[data-site-theme="red"] .steam-profile .prediction-history-card .prediction-row {
+  background:transparent!important;
+}
+:root[data-site-theme="red"] .steam-profile .prediction-breakdown summary {
+  background:rgba(52,0,12,.29)!important;
+  color:#fff3f6!important;
+}
+:root[data-site-theme="red"] .steam-profile .prediction-xp-note {
+  background:rgba(255,204,120,.13)!important;
+  border-color:rgba(255,227,177,.26)!important;
+}
+/* Achievement garage had its own independent dark palette. */
+:root[data-site-theme="red"] .steam-profile .profile-achievements-sidebar {
+  color:#fff5f7!important;
+  background:linear-gradient(135deg,rgba(137,7,27,.97),rgba(99,4,20,.97))!important;
+  border-color:rgba(255,220,225,.28)!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-ach-heading h2,
+:root[data-site-theme="red"] .steam-profile .profile-ach-info > strong,
+:root[data-site-theme="red"] .steam-profile .profile-ach-group-heading strong {
+  color:#fff5f7!important;
+}
+:root[data-site-theme="red"] .steam-profile :is(
+  .profile-ach-subtitle,.profile-ach-counter span,.profile-ach-status,
+  .profile-ach-group-heading small,.profile-ach-description,
+  .profile-ach-condition > span,.profile-ach-progress-label
+) { color:#ffdde3!important; }
+:root[data-site-theme="red"] .steam-profile .profile-ach-card {
+  background:rgba(65,2,17,.42)!important;
+  border-color:rgba(255,219,225,.23)!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-ach-card:hover {
+  background:rgba(255,211,221,.13)!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-ach-counter,
+:root[data-site-theme="red"] .steam-profile .profile-ach-footer {
+  background:rgba(64,2,16,.32)!important;
+  border-color:rgba(255,224,229,.24)!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-ach-reward strong {
+  color:#ffde9f!important;
+}
+:root[data-site-theme="red"] .steam-profile .profile-ach-condition > strong {
+  color:#fff3f5!important;
+}
+
 `;
+

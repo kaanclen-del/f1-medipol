@@ -13,3 +13,18 @@
 .item div span { font-size: 9px; color: #ff6060; font-weight: 900; }
 .item p { color: #b8bcc9; font-size: 13px; line-height: 1.6; margin: 6px 0; }
 .item small { color: #878b98; }
+
+/* G6.17.2: light-mode inbox */
+:global(:root[data-site-theme="light"]) .panel {background:#fff;color:#192431;border-color:rgba(26,38,52,.14);}
+:global(:root[data-site-theme="light"]) .head h2 {color:#192431;}
+:global(:root[data-site-theme="light"]) .head button {color:#ac2336;border-color:rgba(192,41,60,.25);}
+:global(:root[data-site-theme="light"]) .item {color:#1b2733;border-color:rgba(29,40,52,.12);}
+:global(:root[data-site-theme="light"]) .item.new {background:#fff0f2;}
+:global(:root[data-site-theme="light"]) .item p {color:#536273;}
+:global(:root[data-site-theme="light"]) .item small,
+:global(:root[data-site-theme="light"]) .empty {color:#667386;}
+
+:global(:root[data-site-theme="light"]) .panel .list {background:#fff!important;}
+:global(:root[data-site-theme="light"]) .panel .item {background:#fff;color:#1d2936;}
+:global(:root[data-site-theme="light"]) .panel .item.new {background:#fff1f3;}
+:global(:root[data-site-theme="light"]) .head button:hover {background:#fff0f3;}
