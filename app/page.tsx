@@ -3690,7 +3690,7 @@ export default async function HomePage() {
                 <div className="eyebrow">
                   {race
                     ? `ROUND ${race.round} · ${race.circuitName}`
-                    : "SOCIAL"}
+                    : "F1 SOCIAL"}
                 </div>
 
                 <div className="pills">

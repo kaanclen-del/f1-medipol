@@ -476,17 +476,17 @@ export default function Header() {
      LOGO
      ======================================================= */
 
-  const logoSrc = "/f1-social-logo.png";
-
-  /* =======================================================
-     COLORS
-     ======================================================= */
-
   const isLight =
     theme === "light";
 
   const isRed =
     theme === "red";
+
+  const logoSrc = isLight ? "/logo-siyah.png" : "/logo-beyaz.png";
+
+  /* =======================================================
+     COLORS
+     ======================================================= */
 
   const headerBackground =
     isRed
