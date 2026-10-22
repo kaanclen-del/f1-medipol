@@ -27,14 +27,14 @@ type Props={
  supabase:SupabaseClient;roomId:string|null;userId:string;displayName:string;color:string;startAt:number;members:Racer[];
  onExit:()=>void;onReload:()=>void;onSoloFinish?:(rank:number,rivals:{id:string;name:string;progress:number}[])=>void;onReset?:()=>void;onRetry?:()=>void;isHost?:boolean;difficulty?:KartDifficulty;laps?:number;pace?:KartPace;weather?:KartWeather;graphics?:KartGraphics;onGraphicsChange?:(g:KartGraphics)=>void;volume?:number;onVolumeChange?:(v:number)=>void;championshipEnabled?:boolean;pointsTarget?:number;roundNo?:number;roundScored?:boolean;championId?:string|null;onFinalize?:()=>void;onNextRound?:()=>void;
 };
-const LABEL:Record<KartPower,string>={turbo:'TURBO',shield:'KALKAN',emp:'EMP DARBESÄ°',repair:'ONARIM',pulse:'ÅOK DALGASI',magnet:'MIKNATIS'};
-const POWER_ICON:Record<KartPower,string>={turbo:'âš¡',shield:'â¬¡',emp:'âœº',repair:'âœš',pulse:'â—‰',magnet:'âŠ•'};
+const LABEL:Record<KartPower,string>={turbo:'TURBO',shield:'KALKAN',emp:'EMP DARBESİ',repair:'ONARIM',pulse:'ŞOK DALGASI',magnet:'MIKNATIS'};
+const POWER_ICON:Record<KartPower,string>={turbo:'⚡',shield:'⬡',emp:'✺',repair:'✚',pulse:'◉',magnet:'⊕'};
 type PadAction='throttle'|'brake'|'power'|'camera'|'lookBack'|'horn';
 type PadProfile='auto'|'xbox'|'ps5'|'custom'|'off';
 type PadBindings=Record<PadAction,number>;
 const DEFAULT_PAD:PadBindings={throttle:7,brake:6,power:0,camera:3,lookBack:4,horn:2};
 const PS5_PAD:PadBindings={throttle:7,brake:6,power:0,camera:3,lookBack:4,horn:2};
-const PAD_ACTIONS:[PadAction,string][]=[['throttle','GAZ'],['brake','FREN'],['power','Ã–ZEL GÃœÃ‡'],['camera','KAMERA'],['lookBack','ARKAYA BAK'],['horn','KORNA']];
+const PAD_ACTIONS:[PadAction,string][]=[['throttle','GAZ'],['brake','FREN'],['power','ÖZEL GÜÇ'],['camera','KAMERA'],['lookBack','ARKAYA BAK'],['horn','KORNA']];
 const POWER_COLORS:Record<KartPower,string>={turbo:'#ffbc4e',shield:'#52e4ff',emp:'#cc8fff',repair:'#6ed5a1',pulse:'#e78bff',magnet:'#e0cf8d'};
 const gridHash=(text:string)=>{let n=2166136261;for(let i=0;i<text.length;i++)n=Math.imul(n^text.charCodeAt(i),16777619);return n>>>0;};
 export default function KartRushTrack({supabase,roomId,userId,displayName,color,startAt,members,onExit,onReload,onSoloFinish,onReset,onRetry,isHost=false,difficulty='normal',laps=3,pace='standard',weather='clear',graphics='balanced',onGraphicsChange,volume=.45,onVolumeChange,championshipEnabled=false,pointsTarget=50,roundNo=1,roundScored=false,championId=null,onFinalize,onNextRound}:Props){
@@ -59,7 +59,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const [powerSpinIndex,setPowerSpinIndex]=useState(0);
  const powerSpinUntil=useRef<number>(0);
  const [showLeaderboard,setShowLeaderboard]=useState(false);
- const [cameraName,setCameraName]=useState('TAKÄ°P');
+ const [cameraName,setCameraName]=useState('TAKİP');
  const lastCameraTouch=useRef(0);
  const [gamepadProfile,setGamepadProfile]=useState<PadProfile>('auto');
  const [gamepadBindings,setGamepadBindings]=useState<PadBindings>({...DEFAULT_PAD});
@@ -305,7 +305,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
        if(payload?.id!==userId&&ids.has(payload?.id)&&Array.isArray(payload?.targets)&&payload.targets.includes(userId)&&(payload?.power==='emp'||payload?.power==='pulse'))inst?.receiveAttack(payload.power);
       }).subscribe();channel.current=currentChannel;
     }
-   }catch(e){if(!cancelled)setError(e instanceof Error?e.message:'3D motor yÃ¼klenemedi.');}
+   }catch(e){if(!cancelled)setError(e instanceof Error?e.message:'3D motor yüklenemedi.');}
   };
   void activate();
   return()=>{cancelled=true;window.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);document.removeEventListener('visibilitychange',hidden);inst?.dispose();engine.current=null;if(currentChannel)void supabase.removeChannel(currentChannel);channel.current=null;};
@@ -411,144 +411,143 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
  const everyoneFinished=members.length>=2&&members.every(x=>x.finish_ms!==null);
  const raceView=<section className={`${s.raceScreen} ${ended!==null?s.paradeMode:''}`} data-kr-fullscreen={isFullscreen?"true":"false"} ref={raceRoot}
   onPointerDownCapture={()=>{sound.current?.activate();ambience.current?.activate();venueAudio.current?.activate();}}>
-  <canvas ref={canvas} className={s.canvas} aria-label="Kart Rush 3D yarÄ±ÅŸ pisti" />
+  <canvas ref={canvas} className={s.canvas} aria-label="Kart Rush 3D yarış pisti" />
   <div className={s.racingVignette} aria-hidden="true" />
   <div className={s.topHud}>
    <div className={`${s.hudBlock} ${s.hudPosition}`}><span>SIRA</span><strong>{hud.rank}<small> / {hud.total}</small></strong></div>
    <div className={`${s.hudBlock} ${s.hudLap}`}><span>TUR</span><strong>{hud.lap}<small> / {hud.totalLaps}</small></strong></div>
-   <div className={`${s.hudBlock} ${s.hudTime}`}><span>SÃœRE</span><strong>{Math.floor(elapsed/60).toString().padStart(2,'0')}:{Math.floor(elapsed%60).toString().padStart(2,'0')}<small>.{Math.floor(elapsed*10)%10}</small></strong></div>
-   <div className={`${s.hudBlock} ${s.bestBlock}`}><span>EN Ä°YÄ°</span><strong>{hud.bestLapMs?((hud.bestLapMs)/1000).toFixed(2):'â€”'}<small> s</small></strong></div>
+   <div className={`${s.hudBlock} ${s.hudTime}`}><span>SÜRE</span><strong>{Math.floor(elapsed/60).toString().padStart(2,'0')}:{Math.floor(elapsed%60).toString().padStart(2,'0')}<small>.{Math.floor(elapsed*10)%10}</small></strong></div>
+   <div className={`${s.hudBlock} ${s.bestBlock}`}><span>EN İYİ</span><strong>{hud.bestLapMs?((hud.bestLapMs)/1000).toFixed(2):'—'}<small> s</small></strong></div>
   </div>
-  <div className={s.krHealthPower} aria-label="AraÃ§ saÄŸlÄ±ÄŸÄ± ve mevcut Ã¶zel gÃ¼Ã§">
-   <div className={s.krHealth}><span>â™¥ ARAÃ‡ SAÄLIÄI <b>%{hud.health}</b></span><div className={s.krHealthBar}><i style={{width:`${hud.health}%`,background:hud.health>55?'#28d69c':hud.health>25?'#f9bd4f':'#fc465c'}}/></div></div>
-   <button type="button" disabled={!ability} onClick={fire} className={s.krPowerUse}><strong>{ability?`${POWER_ICON[ability]} ${LABEL[ability]}`:'âœ¦ GÃœÃ‡ YOK'}</strong><small>{ability?'GÃœCÃœ KULLAN Â· E':'KAPSÃœL TOPLA'}</small></button>
-  </div>
-  {rearThreat&&hud.started&&ended===null&&<div className={`${s.krRearAlert} ${rearThreat.meters<20?s.krRearDanger:''}`} role="status"><strong>{threatSide==='left'?'â†™':threatSide==='right'?'â†˜':'â†“'}</strong><span>{rearThreat.meters<20?'DÄ°KKAT Â· YAKIN ARAÃ‡':'ARKADAN YAKLAÅIYOR'}<small>{rearThreat.name} Â· {Math.round(rearThreat.meters)} m</small></span></div>}
-  <div className={s.krNearbyStandings}><strong>YAKIN SIRALAMA</strong>{neighbors.map(p=><div key={p.id} className={p.id===userId?s.krNearbySelf:''}><b>P{p.pos}</b><span>{p.id===userId?'SEN':p.name.split(' ').slice(-1)[0]}</span><small>{p.id===userId?'â€”':`${Math.round(Math.abs((p.progress-(hud.progress||0))*TRACK_METERS))} m`}</small></div>)}</div>
+   <div className={s.krHealthPower} aria-label="Araç sağlığı ve mevcut özel güç">
+    <div className={s.krHealth}><span>♥ ARAÇ SAĞLIĞI <b>%{hud.health}</b></span><div className={s.krHealthBar}><i style={{width:`${hud.health}%`,background:hud.health>55?'#28d69c':hud.health>25?'#f9bd4f':'#fc465c'}}/></div></div>
+    <button type="button" disabled={!ability} onClick={fire} className={s.krPowerUse}><strong>{ability?`${POWER_ICON[ability]} ${LABEL[ability]}`:'✦ GÜÇ YOK'}</strong><small>{ability?'GÜCÜ KULLAN · E':'KAPSÜL TOPLA'}</small></button>
+   </div>
+   {rearThreat&&hud.started&&ended===null&&<div className={`${s.krRearAlert} ${rearThreat.meters<20?s.krRearDanger:''}`} role="status"><strong>{threatSide==='left'?'↙':threatSide==='right'?'↘':'↓'}</strong><span>{rearThreat.meters<20?'DİKKAT · YAKIN ARAÇ':'ARKADAN YAKLAŞIYOR'}<small>{rearThreat.name} · {Math.round(rearThreat.meters)} m</small></span></div>}
+  <div className={s.krNearbyStandings}><strong>YAKIN SIRALAMA</strong>{neighbors.map(p=><div key={p.id} className={p.id===userId?s.krNearbySelf:''}><b>P{p.pos}</b><span>{p.id===userId?'SEN':p.name.split(' ').slice(-1)[0]}</span><small>{p.id===userId?'—':`${Math.round(Math.abs((p.progress-(hud.progress||0))*TRACK_METERS))} m`}</small></div>)}</div>
   <div className={s.raceActions}>
    <button type="button" className={s.mobilePauseBtn} onClick={()=>{
      const opening=!mobileMenuOpen;
      if(opening){down('left',false);down('right',false);down('throttle',false);down('brake',false);}
      if(!roomId&&opening!==pausedRef.current)togglePause();
      setShowGraphics(false);setShowLeaderboard(false);setMobileMenuOpen(opening);
-   }}>{mobileMenuOpen?'âœ• KAPAT':roomId?'â…¡ MENÃœ':'â…¡ DURAKLAT'}</button>
+   }}>{mobileMenuOpen?'✕ KAPAT':roomId?'☰ MENÜ':'Ⅱ DURAKLAT'}</button>
    <button type="button" className={s.hudCameraBtn}
     onTouchEnd={(e)=>{e.preventDefault();e.stopPropagation();lastCameraTouch.current=Date.now();cycleCamera();}}
     onClick={()=>{if(Date.now()-lastCameraTouch.current>550)cycleCamera();}}
-    aria-label="KamerayÄ± deÄŸiÅŸtir">â–£ KAMERA<small>{cameraName}</small></button>
-   <button type="button" onClick={()=>setShowGraphics(v=>!v)} className={s.graphicsToggle} aria-label="Grafik ve ses ayarlarÄ±" aria-expanded={showGraphics}>âš™ AYARLAR <span>{graphics==='ultra'?'ULTRA':graphics==='high'?'YÃœKSEK':graphics==='low'?'DÃœÅÃœK':'DENGELÄ°'}</span></button>
-   <button type="button" onClick={()=>void toggleFullscreen()} className={s.fullscreenBtn}>{isFullscreen?'ğŸ¡¼ Ã‡IK':'â›¶ TAM'}</button>
-   {!roomId&&<button type="button" className={s.fullscreenBtn} onClick={togglePause}>{paused?'â–¶ DEVAM':'â…¡ DURAKLAT'}</button>}
-   <button className={s.exitBtn} onClick={onExit}>â† Ã‡Ä±kÄ±ÅŸ</button>
+    aria-label="Kamerayı değiştir">▣ KAMERA<small>{cameraName}</small></button>
+   <button type="button" onClick={()=>setShowGraphics(v=>!v)} className={s.graphicsToggle} aria-label="Grafik ve ses ayarları" aria-expanded={showGraphics}>⚙ AYARLAR <span>{graphics==='ultra'?'ULTRA':graphics==='high'?'YÜKSEK':graphics==='low'?'DÜÅÜK':'DENGELİ'}</span></button>
+   <button type="button" onClick={()=>void toggleFullscreen()} className={s.fullscreenBtn}>{isFullscreen?'✕ ÇIK':'⛶ TAM'}</button>
+   {!roomId&&<button type="button" className={s.fullscreenBtn} onClick={togglePause}>{paused?'▶ DEVAM':'Ⅱ DURAKLAT'}</button>}
+   <button className={s.exitBtn} onClick={onExit}>← Çıkış</button>
   </div>
   {showGraphics&&<div className={s.graphicsOverlay}>
-   <div className={s.graphicsOverlayTitle}><strong>GÃ–RÃœNTÃœ + SES</strong><span>{hud.fps||'--'} FPS</span></div>
-   <div className={s.overlayIntro}>F1 SOCIAL KART RUSH Â· 22 ARAÃ‡LIK GRID Â· GECE GRAND PRIX</div>
-   <div className={s.graphicsOptions}>{([{id:'low',name:'DÃœÅÃœK',desc:'Performans'},{id:'balanced',name:'DENGELÄ°',desc:'Normal'},{id:'high',name:'YÃœKSEK',desc:'GÃ¼Ã§lÃ¼ detay'},{id:'ultra',name:'ULTRA',desc:'TribÃ¼n / gÃ¶kyÃ¼zÃ¼ / maksimum detay'}] as const).map(q=><button type="button" key={q.id} className={graphics===q.id?s.selectedGraphics:''} onClick={()=>onGraphicsChange?.(q.id)}><strong>{q.name}</strong><small>{q.desc}</small></button>)}</div>
-   <label className={s.volumeLabel}>SES DÃœZEYÄ° <strong>{Math.round(volume*100)}%</strong><input type="range" min="0" max="100" value={Math.round(volume*100)} onChange={e=>{const v=Number(e.target.value)/100;onVolumeChange?.(v);sound.current?.activate();}}/></label>
-   <button type="button" className={s.muteBtn} onClick={()=>onVolumeChange?.(volume>0?0:.45)}>{volume>0?'â™¬ SESÄ° KAPAT':'â™¬ SESÄ° AÃ‡'}</button>
-   <div style={{display:'grid',gap:8,margin:'12px 0',padding:12,border:'1px solid rgba(226,237,245,.22)',borderRadius:11,background:'rgba(9,20,33,.85)',color:'#fff'}}>
-    <strong style={{fontSize:13}}>ğŸ® OYUN KOLU / TUÅ ATAMASI</strong>
-    <small style={{fontSize:11,opacity:.8}}>{gamepadName?`BAÄLI Â· ${gamepadName}`:'Kol baÄŸlÄ± deÄŸil Â· USB/Bluetooth ile baÄŸlayÄ±p herhangi bir dÃ¼ÄŸmeye bas'}</small>
-    <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
-     {([['auto','OTOMATÄ°K'],['xbox','XBOX'],['ps5','PS5'],['custom','Ã–ZEL'],['off','KAPALI']] as const).map(([id,label])=><button key={id} type="button" onClick={()=>setGamepadProfile(id)} style={{padding:'7px 10px',fontSize:10,borderRadius:7,border:'1px solid '+(gamepadProfile===id?'#ffb3bf':'#8491a3'),background:gamepadProfile===id?'#913144':'#182738',color:'#fff',fontWeight:800}}>{label}</button>)}
-    </div>
-    <small style={{opacity:.82}}>Sol analog: direksiyon Â· RT/R2: gaz Â· LT/L2: fren Â· A/âœ•: gÃ¼Ã§ Â· Y/â–³: kamera Â· LB/L1: arka bakÄ±ÅŸ Â· X/â–¡: korna</small>
-    {gamepadProfile==='custom'&&<div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:6}}>
-     {PAD_ACTIONS.map(([action,label])=><label key={action} style={{display:'grid',gap:4,fontSize:10,fontWeight:800}}>{label}<select value={gamepadBindings[action]} onChange={ev=>setGamepadBindings(prev=>({...prev,[action]:Number(ev.target.value)}))} style={{background:'#14253a',color:'#fff',padding:6,border:'1px solid #758da3',borderRadius:6}}>
-       {Array.from({length:18},(_,i)=><option key={i} value={i}>{i===0?'A / âœ•':i===1?'B / â—‹':i===2?'X / â–¡':i===3?'Y / â–³':i===4?'LB / L1':i===5?'RB / R1':i===6?'LT / L2':i===7?'RT / R2':`DÃœÄME ${i}`}</option>)}
+   <div className={s.graphicsOverlayTitle}><strong>GÖRÜNTÜ + SES</strong><span>{hud.fps||'--'} FPS</span></div>
+   <div className={s.overlayIntro}>F1 SOCIAL KART RUSH · 22 ARAÇLIK GRID · GECE GRAND PRIX</div>
+   <div className={s.graphicsOptions}>{([{id:'low',name:'DÜÅÜK',desc:'Performans'},{id:'balanced',name:'DENGELİ',desc:'Normal'},{id:'high',name:'YÜKSEK',desc:'Güçlü detay'},{id:'ultra',name:'ULTRA',desc:'Tribün / gökyüzü / maksimum detay'}] as const).map(q=><button type="button" key={q.id} className={graphics===q.id?s.selectedGraphics:''} onClick={()=>onGraphicsChange?.(q.id)}><strong>{q.name}</strong><small>{q.desc}</small></button>)}</div>
+   <label className={s.volumeLabel}>SES DÜZEYİ <strong>{Math.round(volume*100)}%</strong><input type="range" min="0" max="100" value={Math.round(volume*100)} onChange={e=>{const v=Number(e.target.value)/100;onVolumeChange?.(v);sound.current?.activate();}}/></label>
+   <button type="button" className={s.muteBtn} onClick={()=>onVolumeChange?.(volume>0?0:.45)}>{volume>0?'♫ SESİ KAPAT':'♫ SESİ AÇ'}</button>
+    <div style={{display:'grid',gap:8,margin:'12px 0',padding:12,border:'1px solid rgba(226,237,245,.22)',borderRadius:11,background:'rgba(9,20,33,.85)',color:'#fff'}}>
+     <strong style={{fontSize:13}}>🎮 OYUN KOLU</strong>
+     <small style={{opacity:.82}}>{gamepadName ? `Bağlı: ${gamepadName}` : 'Kol bağlı değil · USB/Bluetooth ile bağlayıp herhangi bir düğmeye bas'}</small>
+     <div style={{display:'flex',gap:5,flexWrap:'wrap'}}>
+      {([['auto','OTOMATİK'],['xbox','XBOX'],['ps5','PS5'],['custom','ÖZEL'],['off','KAPALI']] as const).map(([id,label])=><button key={id} type="button" onClick={()=>setGamepadProfile(id)} style={{padding:'7px 10px',fontSize:10,borderRadius:7,border:'1px solid '+(gamepadProfile===id?'#ffb3bf':'#8491a3'),background:gamepadProfile===id?'#913144':'#182738',color:'#fff',fontWeight:800}}>{label}</button>)}
+     </div>
+     <small style={{opacity:.82}}>Sol analog: direksiyon · RT/R2: gaz · LT/L2: fren · A/✕: güç · Y/△: kamera · LB/L1: arka bakış · X/□: korna</small>
+     {gamepadProfile==='custom'&&<div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:6}}>
+      {PAD_ACTIONS.map(([action,label])=><label key={action} style={{display:'grid',gap:4,fontSize:10,fontWeight:800}}>{label}<select value={gamepadBindings[action]} onChange={ev=>setGamepadBindings(prev=>({...prev,[action]:Number(ev.target.value)}))} style={{background:'#14253a',color:'#fff',padding:6,border:'1px solid #758da3',borderRadius:6}}>
+       {Array.from({length:18},(_,i)=><option key={i} value={i}>{i===0?'A / ✕':i===1?'B / ○':i===2?'X / □':i===3?'Y / △':i===4?'LB / L1':i===5?'RB / R1':i===6?'LT / L2':i===7?'RT / R2':`Düğme ${i}`}</option>)}
       </select></label>)}
-    </div>}
-   </div>
-   <button type="button" className={s.muteBtn} onClick={toggleStartSounds}>{startSoundsEnabled?'ğŸ”Š START IÅIKLARININ SESÄ°NÄ° KAPAT':'ğŸ”‡ START IÅIKLARININ SESÄ°NÄ° AÃ‡'}</button>
-   <p>ğŸ® Gamepad ayarlarÄ± ve tuÅŸ atamalarÄ± Ã¼stte Â· W gaz Â· S fren Â· A/D GERÃ‡EK DÄ°REKSÄ°YON (otomatik dÃ¶nÃ¼ÅŸ kapalÄ±) Â· V kamera deÄŸiÅŸtir Â· C basÄ±lÄ± tut: arkaya bak Â· E gÃ¼Ã§ Â· H korna Â· F tam ekran.</p>
+     </div>}
+    </div>
+   <p>🏁® Gamepad ayarları ve tuş atamaları üstte · W gaz · S fren · A/D GERÇEK DİREKSİYON (otomatik dönüş kapalı) · V kamera değiştir · C basılı tut: arkaya bak · E güç · H korna · F tam ekran.</p>
   </div>}
-  {mobileMenuOpen&&ended===null&&<div className={s.mobileMenuOverlay} role="dialog" aria-modal="true" aria-label="YarÄ±ÅŸ ayarlarÄ±">
+  {mobileMenuOpen&&ended===null&&<div className={s.mobileMenuOverlay} role="dialog" aria-modal="true" aria-label="Yarış ayarları">
    <div className={s.mobileMenuCard}>
-    <div className={s.mobileMenuHeader}><span>F1 SOCIAL Â· KART RUSH</span><h2>{roomId?'YARIÅ MENÃœSÃœ':'YARIÅ DURAKLATILDI'}</h2><p>{roomId?'Ã‡evrimiÃ§i yarÄ±ÅŸ bu menÃ¼de de devam eder.':'YarÄ±ÅŸ durdu. AyarlarÄ±nÄ± deÄŸiÅŸtirdikten sonra devam edebilirsin.'}</p></div>
-    <div className={s.mobileMenuSection}><strong>GRAFÄ°K KALÄ°TESÄ°</strong>
-     <div className={s.mobileGraphicsGrid}>{([{id:'low',label:'EKO'},{id:'balanced',label:'DENGELÄ°'},{id:'high',label:'YÃœKSEK'},{id:'ultra',label:'ULTRA'}] as const).map(q=><button type="button" key={q.id} className={graphics===q.id?s.mobileSelected:''} onClick={()=>onGraphicsChange?.(q.id)}>{q.label}</button>)}</div>
-     <small>Mobilde Ã§Ã¶zÃ¼nÃ¼rlÃ¼k ve Ã§izim yoÄŸunluÄŸu otomatik dengelenir.</small>
+    <div className={s.mobileMenuHeader}><span>F1 SOCIAL · KART RUSH</span><h2>{roomId?'YARIŞ MENÜSÜ':'YARIŞ DURAKLATILDI'}</h2><p>{roomId?'Çevrimiçi yarış bu menüde de devam eder.':'Yarış durdu. Ayarlarını değiştirdikten sonra devam edebilirsin.'}</p></div>
+    <div className={s.mobileMenuSection}><strong>GRAFİK KALİTESİ</strong>
+     <div className={s.mobileGraphicsGrid}>{([{id:'low',label:'EKO'},{id:'balanced',label:'DENGELİ'},{id:'high',label:'YÜKSEK'},{id:'ultra',label:'ULTRA'}] as const).map(q=><button type="button" key={q.id} className={graphics===q.id?s.mobileSelected:''} onClick={()=>onGraphicsChange?.(q.id)}>{q.label}</button>)}</div>
+     <small>Mobilde çözünürlük ve çizim yoğunluğu otomatik dengelenir.</small>
     </div>
     <div className={s.mobileMenuSection}><strong>SES</strong>
      <button type="button" className={s.mobileAudioButton} onClick={()=>{
       enableAudio();if(volume<=.01)onVolumeChange?.(.62);
       sound.current?.effect('horn');
-     }}>â™« SESÄ° ETKÄ°NLEÅTÄ°R / TEST ET</button>
-     <label className={s.mobileVolume}>SES DÃœZEYÄ° Â· {Math.round(volume*100)}%
+     }}>♫ SESİ ETKİNLEÅTİR / TEST ET</button>
+     <label className={s.mobileVolume}>SES DÜZEYİ · {Math.round(volume*100)}%
       <input type="range" min="0" max="100" value={Math.round(volume*100)} onChange={e=>{
        const v=Number(e.target.value)/100;onVolumeChange?.(v);enableAudio();
       }}/>
      </label>
     </div>
-    <div className={s.mobileMenuSection}><strong>YARIÅ SEÃ‡ENEKLERÄ°</strong>
+    <div className={s.mobileMenuSection}><strong>YARIŞ SEÇENEKLERİ</strong>
      <div className={s.mobileMenuChoices}>
-      <button type="button" onClick={()=>{setShowLeaderboard(v=>!v);setMobileMenuOpen(false);if(!roomId&&pausedRef.current)togglePause();}}>â˜° SIRALAMA</button>
-      <button type="button" onClick={()=>{void toggleFullscreen();}}>â›¶ TAM EKRAN</button>
-      <button type="button" onClick={onExit}>â† ANA MENÃœ</button>
+      <button type="button" onClick={()=>{setShowLeaderboard(v=>!v);setMobileMenuOpen(false);if(!roomId&&pausedRef.current)togglePause();}}>☷ SIRALAMA</button>
+      <button type="button" onClick={()=>{void toggleFullscreen();}}>⛶ TAM EKRAN</button>
+      <button type="button" onClick={onExit}>← ANA MENÜ</button>
      </div>
     </div>
     <button type="button" className={s.mobileResumeBtn} onClick={()=>{
       if(!roomId&&pausedRef.current)togglePause();setMobileMenuOpen(false);
-     }}>â–¶ YARIÅA DEVAM ET</button>
+     }}>▶ YARIŞA DEVAM ET</button>
    </div>
   </div>}
-  {paused&&!mobileMenuOpen&&!roomId&&ended===null&&<div className={s.pauseOverlay}><div className={s.pauseCard}><small>F1 MEDÄ°POL</small><h2>YARIÅ DURAKLATILDI</h2><p>AyarlarÄ± deÄŸiÅŸtirebilir veya ana menÃ¼ye dÃ¶nebilirsin.</p><button onClick={togglePause}>â–¶ YarÄ±ÅŸa devam</button><button onClick={onExit}>â† Ana menÃ¼</button></div></div>}
+  {paused&&!mobileMenuOpen&&!roomId&&ended===null&&<div className={s.pauseOverlay}><div className={s.pauseCard}><small>F1 MEDİPOL</small><h2>YARIŞ DURAKLATILDI</h2><p>Ayarları değiştirebilir veya ana menüye dönebilirsin.</p><button onClick={togglePause}>▶ Yarışa devam</button><button onClick={onExit}>← Ana menü</button></div></div>}
   <div className={s.sideHud}>
    <div className={s.cameraControls}>
-    <span>KAMERA <strong>{rearHeld?'ARKA BAKIÅ':cameraName}</strong></span>
+     <span>KAMERA <strong>{rearHeld?'ARKA BAKIŞ AKTİF':'ÖN KAMERA'}</strong></span>
     <div>
-     <button type="button" onClick={cycleCamera} title="V: Kamera deÄŸiÅŸtir">V Â· KAMERA</button>
+     <button type="button" onClick={cycleCamera} title="V: Kamera değiştir">V · KAMERA</button>
      <button type="button" className={rearHeld?s.cameraRearActive:''}
       onPointerDown={e=>{e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);setRearCamera(true);}}
       onPointerUp={()=>setRearCamera(false)} onPointerCancel={()=>setRearCamera(false)}
-      onLostPointerCapture={()=>setRearCamera(false)} title="C: Arkaya bak">C Â· ARKA</button>
+      onLostPointerCapture={()=>setRearCamera(false)} title="C: Arkaya bak">C · ARKA</button>
     </div>
    </div>
  
   </div>
-  <button type="button" className={s.leaderboardToggle} onClick={()=>setShowLeaderboard(v=>!v)} aria-expanded={showLeaderboard}>{showLeaderboard?'âœ• KAPAT':'â˜° SIRALAMA'} <span>{hud.rank}/{hud.total}</span></button>
-  <div className={`${s.standings} ${showLeaderboard?s.boardOpen:''}`} aria-label="CanlÄ± yarÄ±ÅŸ sÄ±ralamasÄ±">
+  <button type="button" className={s.leaderboardToggle} onClick={()=>setShowLeaderboard(v=>!v)} aria-expanded={showLeaderboard}>{showLeaderboard?'✕ KAPAT':'☷ SIRALAMA'} <span>{hud.rank}/{hud.total}</span></button>
+  <div className={`${s.standings} ${showLeaderboard?s.boardOpen:''}`} aria-label="Canlı yarış sıralaması">
    <div className={s.standingsTitle}><strong>LIVE CLASSIFICATION</strong><small>GAP TO LEADER</small></div>
    {classification.map((p)=><p key={p.id} className={p.id===userId?s.isMe:''}><i>{p.pos}</i><span style={{background:p.color}}/><b>{p.id===userId?'SEN':p.name}</b><small>{p.gapLabel}</small></p>)}
   </div>
-  {hud.pit&&<div className={s.pitIndicator}>PIT ALANI Â· {hud.pitProgress>0?`SERVÄ°S %${Math.round(hud.pitProgress*100)}`:'GAZI BIRAK VE DUR'}<div><i style={{width:`${hud.pitProgress*100}%`}}/></div></div>}
-  {hud.magnet&&<div className={s.magnetIndicator}>âŠ• MIKNATIS AKTÄ°F</div>}
-  {hud.cornerSpeed&&hud.speed>hud.cornerSpeed+18&&<div className={s.cornerAlert}>âš  SERT VÄ°RAJ Â· FREN Â· {hud.cornerSpeed} KM/SA</div>}
-  {hud.offroad&&<div className={s.offroad}>âš  PÄ°ST DIÅINDASIN Â· FRENLE, DÄ°REKSÄ°YONLA GERÄ° DÃ–N</div>}
-  {hud.shield&&<span className={s.activeShield}>â¬¡ KALKAN AKTÄ°F</span>}
-  {hud.turbo&&<span className={s.activeTurbo}>âš¡ TURBO AKTÄ°F</span>}
+  {hud.pit&&<div className={s.pitIndicator}>PIT ALANI · {hud.pitProgress>0?`SERVİS %${Math.round(hud.pitProgress*100)}`:'GAZI BIRAK VE DUR'}<div><i style={{width:`${hud.pitProgress*100}%`}}/></div></div>}
+  {hud.magnet&&<div className={s.magnetIndicator}>⊕ MIKNATIS AKTİF</div>}
+  {hud.cornerSpeed&&hud.speed>hud.cornerSpeed+18&&<div className={s.cornerAlert}>â⚠ SERT VİRAJ · FREN · {hud.cornerSpeed} KM/SA</div>}
+  {hud.offroad&&<div className={s.offroad}>âš  PİST DIŞINDASIN · FRENLE, DİREKSİYONLA GERİ DÖN</div>}
+  {hud.shield&&<span className={s.activeShield}>⬡ KALKAN AKTİF</span>}
+  {hud.turbo&&<span className={s.activeTurbo}>⚡ TURBO AKTİF</span>}
   {/* Start lights are rendered by the 3D circuit; no blocking overlay or risk-card popup. */}
   {error&&<p role="alert" className={s.raceError}>{error}</p>}
   <div className={s.raceBottom}>
-   {showTouchControls&&<div className={s.steerControls}><button {...pressProps('left')} aria-label="Sola dÃ¶n">â—€</button><button {...pressProps('right')} aria-label="SaÄŸa dÃ¶n">â–¶</button></div>}
-   <div className={s.controlsCenter} style={!showTouchControls?{maxWidth:'min(760px,calc(100vw - 28px))',margin:'0 auto'}:undefined}><span>W Â· GAZ &nbsp; S Â· FREN &nbsp; A/D Â· MANUEL DÄ°REKSÄ°YON &nbsp; V Â· KAMERA &nbsp; C Â· ARKA BAKIÅ &nbsp; E Â· GÃœÃ‡</span><small>{roomId?'Ã‡EVRÄ°M Ä°Ã‡Ä° GRAND PRIX':`ANTRENMAN Â· ${difficulty==='easy'?'KOLAY':difficulty==='hard'?'UZMAN':'ORTA'}`}</small></div>
-   {showTouchControls&&<div className={s.abilityControls}><button type="button" className={s.hornBtn} onPointerDown={e=>{e.preventDefault();lastInputMode.current='touch';setShowTouchControls(true);horn();}}>â™« KORNA</button><button {...pressProps('throttle')} className={s.gas}>GAZ</button><button {...pressProps('brake')} className={s.brake}>FREN</button>
+   {showTouchControls&&<div className={s.steerControls}><button {...pressProps('left')} aria-label="Sola dön">◀</button><button {...pressProps('right')} aria-label="Sağa dön">▶</button></div>}
+   <div className={s.controlsCenter} style={!showTouchControls?{maxWidth:'min(760px,calc(100vw - 28px))',margin:'0 auto'}:undefined}><span>W · GAZ &nbsp; S · FREN &nbsp; A/D · MANUEL DİREKSİYON &nbsp; V · KAMERA &nbsp; C · ARKA BAKIÅ &nbsp; E · GÜÇ</span><small>{roomId?'ÇEVRİM İÇİ GRAND PRIX':`ANTRENMAN · ${difficulty==='easy'?'KOLAY':difficulty==='hard'?'UZMAN':'ORTA'}`}</small></div>
+   {showTouchControls&&<div className={s.abilityControls}><button type="button" className={s.hornBtn} onPointerDown={e=>{e.preventDefault();lastInputMode.current='touch';setShowTouchControls(true);horn();}}>♫ KORNA</button><button {...pressProps('throttle')} className={s.gas}>GAZ</button><button {...pressProps('brake')} className={s.brake}>FREN</button>
     <button onPointerDown={e=>{e.preventDefault();lastInputMode.current='touch';setShowTouchControls(true);fire();}} onClick={e=>{if(e.detail===0)fire();}} disabled={!ability} className={`${s.powerBtn} ${ability? s.powerReady:''}`} style={ability?{'--ability-color':POWER_COLORS[ability]} as CSSProperties:undefined}>
-      <span>{ability?POWER_ICON[ability]:'âœ¦'}</span><small>{ability?LABEL[ability]:'GÃœÃ‡ TOPLA'}</small>
+      <span>{ability?POWER_ICON[ability]:'✦'}</span><small>{ability?LABEL[ability]:'GÜÇ TOPLA'}</small>
      </button>
    </div>}
   </div>
   {(powerRolling||powerRevealed)&&<div className={s.mobilePowerReveal} aria-live="polite" style={{position:'absolute',top:'40%',left:'50%',transform:'translate(-50%,-50%)',zIndex:11,background:'rgba(6,13,26,.90)',border:'2px solid #f0ad57',borderRadius:18,padding:'15px 27px',minWidth:230,textAlign:'center',pointerEvents:'none',boxShadow:'0 10px 70px #050a17ca'}}>
-   <div style={{color:'#eebf7b',fontSize:11,letterSpacing:3,fontWeight:900}}>âœ¦ GÃœÃ‡ KAZANILDI âœ¦</div>
-   <div style={{fontSize:43,margin:'6px 0',animation:'krPowerPop .16s ease-out infinite alternate'}}>{powerRolling?POWER_ICON[(Object.keys(LABEL) as KartPower[])[powerSpinIndex]]:ability?POWER_ICON[ability]:'âœ¦'}</div>
-   <strong style={{fontSize:18}}>{powerRolling?LABEL[(Object.keys(LABEL) as KartPower[])[powerSpinIndex]]:ability?LABEL[ability]:'GÃœÃ‡ HAZIR'}</strong>
+   <div style={{color:'#eebf7b',fontSize:11,letterSpacing:3,fontWeight:900}}>✦ GÜÇ KAZANILDI ✦</div>
+   <div style={{fontSize:43,margin:'6px 0',animation:'krPowerPop .16s ease-out infinite alternate'}}>{powerRolling?POWER_ICON[(Object.keys(LABEL) as KartPower[])[powerSpinIndex]]:ability?POWER_ICON[ability]:'✦'}</div>
+   <strong style={{fontSize:18}}>{powerRolling?LABEL[(Object.keys(LABEL) as KartPower[])[powerSpinIndex]]:ability?LABEL[ability]:'GÜÇ HAZIR'}</strong>
    <div style={{display:'flex',gap:3,marginTop:10}}>{(Object.keys(LABEL) as KartPower[]).map(p=><i key={p} style={{height:3,flex:1,background:POWER_COLORS[p],opacity:powerSpinIndex===(Object.keys(LABEL) as KartPower[]).indexOf(p)?1:.24}}/>)}</div>
    <style>{`@keyframes krPowerPop{from{transform:scale(.90);filter:brightness(.9)}to{transform:scale(1.06);filter:brightness(1.2)}}`}</style>
   </div>}
   {ended!==null&&<div className={s.finishNotice} role="status">
-   <span>ğŸ FÄ°NÄ°Å Â· {(ended/1000).toFixed(2)} sn</span>
-   <button type="button" onClick={()=>setShowResults(v=>!v)}>{showResults?'âœ• KAPAT':'ğŸ† SONUÃ‡LARI GÃ–R'}</button>
+   <span>🏁 FİNİŞ · {(ended/1000).toFixed(2)} sn</span>
+   <button type="button" onClick={()=>setShowResults(v=>!v)}>{showResults?'✕ KAPAT':'🏁† SONUÇLARI GÖR'}</button>
   </div>}
   {ended!==null&&showResults&&<div className={s.endOverlay}><div className={s.endCard} style={{width:"min(780px,96vw)",maxWidth:"780px",maxHeight:"90%",overflowY:"auto",padding:"clamp(16px,3vw,30px)"}}>
-   <span>ğŸ DAMALI BAYRAK</span><h2>{roomId?'YarÄ±ÅŸ tamamlandÄ±!':`P${hud.rank} Â· FÄ°NÄ°Å!`}</h2>
+    <span>🏁 DAMALI BAYRAK</span><h2>{roomId ? 'Yarış tamamlandı!' : `P${hud.rank} · FİNİŞ ${roundNo} · ${roundScored ? 'Puanlar hesaplandı.' : 'Diğer oyuncuların bitirmesi bekleniyor.'}`}</h2>
    <div className={s.finalTime}>{(ended/1000).toFixed(2)} <small>sn</small></div>
-   <p>{roomId?(championshipEnabled?`Åampiyona yarÄ±ÅŸÄ± ${roundNo} Â· ${roundScored?'Puanlar hesaplandÄ±.':'DiÄŸer oyuncularÄ±n bitirmesi bekleniyor.'}`:'Sonucun lobiye kaydedildi. DiÄŸer yarÄ±ÅŸÃ§Ä±larÄ± bekleyebilirsin.'):`Zorluk: ${difficulty==='easy'?'Kolay':difficulty==='hard'?'Uzman':'Orta'} Â· En iyi tur: ${(hud.bestLapMs||ended)/1000} sn`}</p>
+   <p>{roomId?(championshipEnabled?`Åampiyona yarışı ${roundNo} · ${roundScored?'Puanlar hesaplandı.':'Diğer oyuncuların bitirmesi bekleniyor.'}`:'Sonucun lobiye kaydedildi. Diğer yarışçıları bekleyebilirsin.'):`Zorluk: ${difficulty==='easy'?'Kolay':difficulty==='hard'?'Uzman':'Orta'} · En iyi tur: ${(hud.bestLapMs||ended)/1000} sn`}</p>
    {roomId&&championshipEnabled&&<div style={{padding:'10px',border:'1px solid #6b748e65',borderRadius:12,display:'grid',gap:7,background:'rgba(11,17,28,.83)'}}>
-    <strong style={{fontSize:14}}>ğŸ† PUAN DURUMU Â· HEDEF {pointsTarget} PUAN</strong>
+    <strong style={{fontSize:14}}>🏁† PUAN DURUMU · HEDEF {pointsTarget} PUAN</strong>
     {standings.map((m,i)=><div key={m.user_id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12,padding:'8px',background:'rgba(255,255,255,.045)',borderRadius:7}}><span>{i+1}. {m.nickname}{m.user_id===userId?' (SEN)':''}</span><strong>{m.kr_points||0} {roundScored?`(+${m.kr_last_award||0})`:''}</strong></div>)}
-    {champion&&<strong style={{color:'#ffe188'}}>ğŸ† ÅAMPÄ°YON: {champion.nickname} Â· {champion.kr_points||0} PUAN</strong>}
-    {!roundScored&&isHost&&<p>DiÄŸer yarÄ±ÅŸÃ§Ä±larÄ± bekle. Ä°stersen bitiremeyenleri DNF sayÄ±p puanlamayÄ± onaylayabilirsin.</p>}
+    {champion&&<strong style={{color:'#ffe188'}}>🏁† ÅAMPİYON: {champion.nickname} · {champion.kr_points||0} PUAN</strong>}
+    {!roundScored&&isHost&&<p>Diğer yarışçıları bekle. İstersen bitiremeyenleri DNF sayıp puanlamayı onaylayabilirsin.</p>}
    </div>}
    <div className={s.results} style={{maxHeight:270,gridTemplateColumns:'repeat(auto-fit,minmax(210px,1fr))',margin:'12px 0'}}>
     {(roomId?[...members].sort((a,b)=>(a.finish_ms===null?1:0)-(b.finish_ms===null?1:0)||(a.finish_ms||0)-(b.finish_ms||0))
@@ -556,17 +555,17 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
      : classification.map(m=>({id:m.id,name:m.name,color:m.color,rank:m.pos,time:m.id===userId?ended:null,points:0}))).map(m=><div key={m.id} style={{display:'flex',alignItems:'center',gap:9,padding:'9px 12px',borderLeft:'3px solid '+m.color,background:m.id===userId?'rgba(220,52,76,.18)':undefined}}>
        <b style={{minWidth:26,color:m.rank<=3?'#ffdd86':'#d9e2ee'}}>P{m.rank}</b>
        <span style={{minWidth:0,flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{m.id===userId?'SEN':m.name}</span>
-       <small style={{whiteSpace:'nowrap'}}>{m.time!==null?(m.time/1000).toFixed(2)+' sn':roomId?'YARIÅTA':'SIRALAMA'}</small>
+       <small style={{whiteSpace:'nowrap'}}>{m.time!==null?(m.time/1000).toFixed(2)+' sn':roomId?'YARIŞTA':'SIRALAMA'}</small>
       </div>)}
    </div>
-   {!roomId&&onRetry&&<button onClick={onRetry}>â†» Tekrar yarÄ±ÅŸ</button>}
-   {roomId&&isHost&&championshipEnabled&&!roundScored&&onFinalize&&<button onClick={onFinalize}>{everyoneFinished?'ğŸ† PUANLARI HESAPLA':'ğŸ KALANLARI DNF SAY VE PUANLA'}</button>}
-   {roomId&&isHost&&championshipEnabled&&roundScored&&!championId&&onNextRound&&<button onClick={onNextRound}>ğŸ SONRAKÄ° YARIÅ Â· PUANLAR KORUNACAK</button>}
-   {roomId&&championshipEnabled&&roundScored&&championId&&<strong>ğŸ† ÅAMPÄ°YONA TAMAMLANDI Â· {champion?.nickname||'ÅAMPÄ°YON'}</strong>}
-   {roomId&&isHost&&!championshipEnabled&&onReset&&<button onClick={onReset}>â†» AYNI LOBÄ°DE YENÄ° YARIÅ</button>}
-   {roomId&&!isHost&&<p>Yeni yarÄ±ÅŸ iÃ§in lobi sahibinin baÅŸlatmasÄ±nÄ± bekleyebilirsin.</p>}
-   <button type="button" onClick={()=>setShowResults(false)}>ğŸï¸ AraÃ§larÄ± izle</button>
-   <button onClick={onExit}>{roomId?'âœ• LOBÄ°DEN AYRIL':'Arcadeâ€™e dÃ¶n'}</button>
+   {!roomId&&onRetry&&<button onClick={onRetry}>↻ Tekrar yarış</button>}
+   {roomId&&isHost&&championshipEnabled&&!roundScored&&onFinalize&&<button onClick={onFinalize}>{everyoneFinished?'🏁† PUANLARI HESAPLA':'🏁 KALANLARI DNF SAY VE PUANLA'}</button>}
+   {roomId&&isHost&&championshipEnabled&&roundScored&&!championId&&onNextRound&&<button onClick={onNextRound}>🏁 SONRAKİ YARIŞ · PUANLAR KORUNACAK</button>}
+   {roomId&&championshipEnabled&&roundScored&&championId&&<strong>🏁† ÅAMPİYONA TAMAMLANDI · {champion?.nickname||'ÅAMPİYON'}</strong>}
+   {roomId&&isHost&&!championshipEnabled&&onReset&&<button onClick={onReset}>↻ AYNI LOBİDE YENİ YARIŞ</button>}
+   {roomId&&!isHost&&<p>Yeni yarış için lobi sahibinin başlatmasını bekleyebilirsin.</p>}
+   <button type="button" onClick={()=>setShowResults(false)}>🏁ï¸ Araçları izle</button>
+    <button onClick={onExit}>{roomId ? "✕ LOBİDEN AYRIL" : "Arcade'e dön"}</button>
   </div></div>}
  </section>;
  if(renderMode==='pending')return null;

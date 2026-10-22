@@ -24,8 +24,8 @@ export default async function AdminTeamRadioPage() {
           </div>
           <h1 style={{ fontSize: "clamp(30px,4vw,45px)", letterSpacing: "-.05em", margin: "20px 0 10px" }}>OpenF1 Telsiz Arşivi</h1>
           <p style={{ color: "#a7afbd", lineHeight: 1.65, margin: "0 0 28px" }}>
-            Gerçek telsizleri OpenF1 arÅŸivinden yıl, yarış, seans ve pilota göre ara. Önizle, seç ve arşivine ekle.
-            Ana sayfanın sağ altındaki TEAM RADIO penceresinde yalnÄ±zca yayımladığın kayıtlar görünür.
+            Gerçek telsizleri OpenF1 arşivinden yıl, yarış, seans ve pilota göre ara. Önizle, seç ve arşivine ekle.
+            Ana sayfanın sağ altındaki TEAM RADIO penceresinde yanlızca yayımladığın kayıtlar görünür.
           </p>
           <AdminTeamRadioManager />
         </div>

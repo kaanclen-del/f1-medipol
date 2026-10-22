@@ -39,6 +39,7 @@
     "exclude":  [
                     "node_modules",
                     "kart-rush-sade-menu",
-                    "recovery-20261021-235733"
+                    "recovery-20261021-235733",
+                    "encoding-backup-20261022-164048"
                 ]
 }

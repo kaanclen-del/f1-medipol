@@ -40,7 +40,7 @@ export default async function LeaderboardPage() {
   /*
     NORMAL SUPABASE:
     SADECE MEVCUT KULLANICIYI
-    TANIMAK Ä°Ã‡Ä°N
+    TANIMAK İÇİN
   */
 
   const supabase =
@@ -53,12 +53,12 @@ export default async function LeaderboardPage() {
   /*
     ADMIN CLIENT:
 
-    Liderlik tablosu iÃ§in tÃ¼m
-    kullanÄ±cÄ±larÄ±n tahminlerini
-    sunucu tarafÄ±nda okuyoruz.
+    Liderlik tablosu için tüm
+    kullancıların tahminlerini
+    sunucu tarafından okuyoruz.
 
-    Secret key hiÃ§bir zaman
-    tarayÄ±cÄ±ya gÃ¶nderilmez.
+    Secret key hiçbir zaman
+    tarayıcıya gonderilmez.
   */
 
   const admin =
@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
       []) as Prediction[];
 
   /*
-    USER ID -> PROFÄ°L
+    USER ID -> PROFİL
   */
 
   const profileMap =
@@ -119,7 +119,7 @@ export default async function LeaderboardPage() {
 
   /*
     PUANLARI KULLANICIYA
-    GÃ–RE TOPLA
+    GÖRE TOPLA
   */
 
   const rankingMap =
@@ -156,7 +156,7 @@ export default async function LeaderboardPage() {
             displayName:
               profile?.display_name ||
               profile?.username ||
-              "F1 SOCIAL Ãœyesi",
+              "F1 SOCIAL Üyesi",
 
             username:
               profile?.username ??
@@ -218,8 +218,8 @@ export default async function LeaderboardPage() {
   );
 
   /*
-    HENÃœZ TAHMÄ°N YAPMAMIÅ
-    PROFÄ°LLERÄ° DE EKLE
+    Henüz Tahmin Yapmamaış 
+    Olanlanlarıda Ekle
   */
 
   profiles.forEach(
@@ -240,7 +240,7 @@ export default async function LeaderboardPage() {
           displayName:
             profile.display_name ||
             profile.username ||
-            "F1 SOCIAL Ãœyesi",
+            "F1 SOCIAL Üyesi",
 
           username:
             profile.username,
@@ -263,8 +263,8 @@ export default async function LeaderboardPage() {
     SIRALAMA
 
     1. Toplam puan
-    2. En yÃ¼ksek tek yarÄ±ÅŸ puanÄ±
-    3. Tahmin sayÄ±sÄ±
+    2. En yüksek tekil tahmin puanı
+    3. Tahmin sayısı
   */
 
   const leaderboard =
@@ -313,7 +313,7 @@ export default async function LeaderboardPage() {
       : 0;
 
   /*
-    TOPLAM Ä°STATÄ°STÄ°KLER
+    TOPLAM İSTATİSTİKLER
   */
 
   const totalPlayers =
@@ -348,10 +348,10 @@ export default async function LeaderboardPage() {
               "80px",
           }}
         >
-          {/* BAÅLIK */}
+          {/* BAŞLIK */}
 
           <div className="eyebrow">
-            F1 MEDÄ°POL Â·
+            F1 SOCIAL·
             PREDICTION CHAMPIONSHIP
           </div>
 
@@ -367,7 +367,7 @@ export default async function LeaderboardPage() {
                 "-.05em",
             }}
           >
-            LÄ°DERLÄ°K TABLOSU
+            LİDERLİK TABLOSU
           </h1>
 
           <p
@@ -387,15 +387,15 @@ export default async function LeaderboardPage() {
                 1.6,
             }}
           >
-            YarÄ±ÅŸ ve Sprint
+            Yarış ve Sprint
             tahminlerinden
-            kazandÄ±ÄŸÄ±n puanlarla
+            kazandığın puanlarla
             F1 SOCIAL Prediction
             Championship&apos;te
-            yÃ¼ksel.
+            yükselirsiniz.
           </p>
 
-          {/* GENEL Ä°STATÄ°STÄ°KLER */}
+          {/* GENEL İSTATİSTİKLER */}
 
           <section
             style={{
@@ -446,8 +446,8 @@ export default async function LeaderboardPage() {
                     "9px",
                 }}
               >
-                Åampiyonadaki
-                kullanÄ±cÄ±
+                Şampiyonadadi
+                kullanıcılar
               </div>
             </div>
 
@@ -459,7 +459,7 @@ export default async function LeaderboardPage() {
               }}
             >
               <div className="eyebrow">
-                TAHMÄ°N
+                TAHMİN
               </div>
 
               <div
@@ -501,7 +501,7 @@ export default async function LeaderboardPage() {
               }}
             >
               <div className="eyebrow">
-                DAÄITILAN PUAN
+                DAĞITILAN PUAN
               </div>
 
               <div
@@ -532,12 +532,12 @@ export default async function LeaderboardPage() {
               >
                 Toplam
                 championship
-                puanÄ±
+                puanı
               </div>
             </div>
           </section>
 
-          {/* Ä°LK 3 */}
+          {/* İLK 3 */}
 
           {podium.length >
             0 && (
@@ -898,7 +898,7 @@ export default async function LeaderboardPage() {
                       "28px",
                   }}
                 >
-                  Genel SÄ±ralama
+                  Genel Sıralama
                 </h2>
               </div>
 
@@ -925,7 +925,7 @@ export default async function LeaderboardPage() {
                       900,
                   }}
                 >
-                  SÄ±ralaman: P
+                  Sıralaman: P
                   {
                     currentUserRank
                   }
@@ -950,7 +950,7 @@ export default async function LeaderboardPage() {
                     "#8994a2",
                 }}
               >
-                HenÃ¼z sÄ±ralama
+                Henüz sıralama
                 verisi yok.
               </div>
             ) : (
@@ -1164,7 +1164,7 @@ export default async function LeaderboardPage() {
                               }
 
                               {isMe &&
-                                " Â· SEN"}
+                                "SEN"}
                             </div>
 
                             <div
@@ -1237,7 +1237,7 @@ export default async function LeaderboardPage() {
                           </b>
                         </div>
 
-                        {/* TAHMÄ°N */}
+                        {/* TAHMİN */}
 
                         <div>
                           <div
@@ -1252,7 +1252,7 @@ export default async function LeaderboardPage() {
                                 900,
                             }}
                           >
-                            TAHMÄ°N
+                            TAHMİN
                           </div>
 
                           <b>

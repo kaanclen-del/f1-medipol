@@ -205,14 +205,14 @@ export default async function AdminPage() {
                     "radial-gradient(circle at 88% 12%, rgba(255, 73, 94, .23), transparent 45%), linear-gradient(145deg, #291721, #131820)",
                 }}
               >
-                <div className="module-icon">ğŸ“»</div>
-                <span>OPENF1 Â· TEAM RADIO</span>
-                <h3>Telsiz ArÅŸivi</h3>
+                <div className="module-icon">📻</div>
+                <span>OPENF1 TEAM RADIO</span>
+                <h3>Telsiz Arşivi</h3>
                 <p>
-                  YÄ±l, Grand Prix, seans ve pilot seÃ§erek OpenF1
-                  telsizlerini ara, dinle ve yayÄ±n listesini yÃ¶net.
+                  Yıl, Grand Prix, seans ve pilot seçerek OpenF1
+                  telsizlerini ara, dinle ve yayın listesini yönet.
                 </p>
-                <strong>ARÅÄ°VÄ° YÃ–NET â†’</strong>
+                <strong>ARŞİVİ YÖNET →</strong>
               </Link>
                 <Link href="/admin/profile-wallpapers" className="admin-module">
                   <div className="module-icon">🎨</div>

@@ -6,7 +6,7 @@ import styles from "./AdminTeamRadioManager.module.css";
 
 async function readJson(response: Response) {
   const body = await response.json();
-  if (!response.ok) throw new Error(body.error || `Ä°ÅŸlem baÅŸarÄ±sÄ±z (${response.status}).`);
+  if (!response.ok) throw new Error(body.error || `İşlem başarısız (${response.status}).`);
   return body;
 }
 
@@ -71,7 +71,7 @@ export default function AdminTeamRadioManager() {
     setLoadingList(true);
     fetch("/api/admin/team-radio", { cache: "no-store" }).then(readJson)
       .then((body) => { if (active) setClips(Array.isArray(body.clips) ? body.clips : []); })
-      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "ArÅŸiv okunamadÄ±."); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "Arşiv okunamadı."); })
       .finally(() => { if (active) setLoadingList(false); });
     return () => { active = false; };
   }, []);
@@ -89,7 +89,7 @@ export default function AdminTeamRadioManager() {
     setSelectedUrl("");
     searchArchive<RadioMeeting>("meetings", { year })
       .then((items) => { if (active) setMeetings(items); })
-      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "YarÄ±ÅŸlar getirilemedi."); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "Yarışlar getirilemedi."); })
       .finally(() => { if (active) setLoadingYears(false); });
     return () => { active = false; };
   }, [year, yearRetry]);
@@ -123,14 +123,14 @@ export default function AdminTeamRadioManager() {
 
   async function findRecordings() {
     setError(""); setMessage(""); setRecordings([]); setSelectedUrl(""); setRecordingFilter(""); setVisibleCount(24);
-    if (!sessionKey || !driverNumber) { setError("Ã–nce seans ve pilot seÃ§melisin."); return; }
+    if (!sessionKey || !driverNumber) { setError("Önce seans ve pilot seçmelisin."); return; }
     setLoadingRecordings(true);
     try {
       const items = await searchArchive<OpenF1Radio>("recordings", { sessionKey, driverNumber });
       setRecordings(items);
-      setMessage(items.length ? `${items.length} telsiz kaydÄ± bulundu. Dinleyip istediÄŸini arÅŸive ekleyebilirsin.` : "Bu pilot ve seans iÃ§in OpenF1 arÅŸivinde telsiz kaydÄ± bulunamadÄ±.");
+      setMessage(items.length ? `${items.length} telsiz kaydı bulundu. Dinleyip istediğini arşive ekleyebilirsin.` : "Bu pilot ve seans için OpenF1 arşivinde telsiz kaydı bulunamadı.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Telsizler aranamadÄ±.");
+      setError(err instanceof Error ? err.message : "Telsizler aranamadı.");
     } finally {
       setLoadingRecordings(false);
     }
@@ -150,9 +150,9 @@ export default function AdminTeamRadioManager() {
         }),
       }));
       await refreshClips();
-      setMessage("KayÄ±t arÅŸive taslak olarak eklendi. KullanÄ±m hakkÄ±nÄ± doÄŸruladÄ±ktan sonra yayÄ±mlayabilirsin.");
+      setMessage("Kayıt arşive taslak olarak eklendi. Kullanım hakkını doğruladıktan sonra yayımlayabilirsin.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "KayÄ±t eklenemedi.");
+      setError(err instanceof Error ? err.message : "Kayıt eklenemedi.");
     } finally {
       setBusyId("");
     }
@@ -160,7 +160,7 @@ export default function AdminTeamRadioManager() {
 
   async function togglePublished(clip: TeamRadioRecord) {
     setError(""); setMessage("");
-    if (!clip.is_published && !window.confirm("Bu ses kaydÄ±nÄ± F1 SOCIAL'da herkese aÃ§Ä±k oynatmak iÃ§in gerekli kullanÄ±m haklarÄ±na sahip olduÄŸunu onaylÄ±yor musun?")) return;
+    if (!clip.is_published && !window.confirm("Bu ses kaydını F1 SOCIAL'da herkese açık oynatmak için gerekli kullanım haklarına sahip olduğunu onaylıyor musun?")) return;
     setBusyId(clip.id);
     try {
       await readJson(await fetch(`/api/admin/team-radio/${clip.id}`, {
@@ -168,13 +168,13 @@ export default function AdminTeamRadioManager() {
         body: JSON.stringify({ isPublished: !clip.is_published, rightsConfirmed: !clip.is_published }),
       }));
       await refreshClips();
-      setMessage(clip.is_published ? "KayÄ±t yayÄ±ndan kaldÄ±rÄ±ldÄ±." : "KayÄ±t yayÄ±mlandÄ±. Ana sayfa popup'Ä±nda gÃ¶rÃ¼necek.");
-    } catch (err) { setError(err instanceof Error ? err.message : "KayÄ±t durumu deÄŸiÅŸtirilemedi."); }
+      setMessage(clip.is_published ? "Kayıt yayından kaldırıldı." : "Kayıt yayımlandı. Ana sayfa popup'ında görünecek.");
+    } catch (err) { setError(err instanceof Error ? err.message : "Kayıt durumu değiştirilemedi."); }
     finally { setBusyId(""); }
   }
 
   async function remove(clip: TeamRadioRecord) {
-    if (!window.confirm(`â€œ${clip.title}â€ kaydÄ± arÅŸivinden kaldÄ±rÄ±lsÄ±n mÄ±?`)) return;
+    if (!window.confirm(`“${clip.title}” kaydÄ± arÅŸivinden kaldÄ±rÄ±lsÄ±n mÄ±?`)) return;
     setError(""); setMessage(""); setBusyId(clip.id);
     try {
       await readJson(await fetch(`/api/admin/team-radio/${clip.id}`, { method: "DELETE" }));

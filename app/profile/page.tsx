@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ProfileActions from "@/components/ProfileActions";
 import Header from "@/components/Header";
 import ProfileWallpaperBackdrop from "@/components/ProfileWallpaperBackdrop";
 import ProfileAchievements from "@/components/ProfileAchievements";
@@ -43,24 +44,24 @@ type ScoreBreakdown = {
   total?: number;
 };
 const BULLETIN_NAMES: Record<string, string> = {
-  redFlag: "KÄ±rmÄ±zÄ± bayrak",
-  safetyCar: "GÃ¼venlik aracÄ±",
-  vsc: "Sanal gÃ¼venlik aracÄ±",
-  dnf3: "En az 3 pilot yarÄ±ÅŸÄ± bÄ±rakÄ±r mÄ±?",
-  lap1Incident: "Ä°lk turda olay",
-  rain: "YaÄŸmur",
-  poleWins: "Pole sahibi yarÄ±ÅŸÄ± kazanÄ±r mÄ±?",
-  lightsToFlag: "Liderlik el deÄŸiÅŸtirmez mi?",
-  margin10: "Fark 10 saniyeyi aÅŸar mÄ±?",
-  fastestOnPodium: "En hÄ±zlÄ± tur sahibi podyumda mÄ±?",
-  leaders4: "En az 4 farklÄ± lider olur mu?",
-  lateNeutral: "GeÃ§ bÃ¶lÃ¼mde nÃ¶tralizasyon",
+  redFlag: "Kırmızı bayrak",
+  safetyCar: "Güvenlik aracı",
+  vsc: "Sanal güvenlik aracı",
+  dnf3: "En az 3 pilot yarışı bırakır mı?",
+  lap1Incident: "İlk turda olay",
+  rain: "Yağmur",
+  poleWins: "Pole sahibi yarışı kazanır mı?",
+  lightsToFlag: "Liderlik el değiştirmez mi?",
+  margin10: "Fark 10 saniyeyi aşar mı?",
+  fastestOnPodium: "En hızlı tur sahibi podyumda mı?",
+  leaders4: "En az 4 farklı lider olur mu?",
+  lateNeutral: "Geç bölümde nötralizasyon",
 };
 const SPECIAL_NAMES: Record<string, string> = {
-  fastestLap: "En hÄ±zlÄ± tur",
-  firstDnf: "Ä°lk yarÄ±ÅŸÄ± bÄ±rakan pilot",
-  mostGained: "En Ã§ok sÄ±ra kazanan pilot",
-  winningTeam: "Kazanan takÄ±m",
+  fastestLap: "En hızlı tur",
+  firstDnf: "İlk yarışı bırakan pilot",
+  mostGained: "En çok sıra kazanan pilot",
+  winningTeam: "Kazanan takım",
 };
 function readScoreBreakdown(value: unknown): ScoreBreakdown | null {
   let parsed = value;
@@ -79,11 +80,11 @@ function detailRows(value?: Record<string, PredictionDetail>): Array<[string, Pr
 }
 function formatAnswer(value: unknown): string {
   if (value === null || value === undefined) return "Belirlenmedi";
-  if (typeof value === "boolean") return value ? "Evet" : "HayÄ±r";
+  if (typeof value === "boolean") return value ? "Evet" : "Hayır";
   if (Array.isArray(value)) return value.length ? value.map(formatAnswer).join(", ") : "Yok";
   if (typeof value === "string") {
     if (value.toLowerCase() === "yes") return "Evet";
-    if (value.toLowerCase() === "no") return "HayÄ±r";
+    if (value.toLowerCase() === "no") return "Hayır";
     return value;
   }
   return String(value);
@@ -121,7 +122,7 @@ function formatPaddockDate(value: string) {
 }
 function driverInitials(driver?: string | null) {
   return driver ? driver.trim().split(/\s+/).filter(Boolean).slice(0, 2)
-    .map((word) => word.charAt(0)).join("").toUpperCase() : "â€”";
+    .map((word) => word.charAt(0)).join("").toUpperCase() : "—";
 }
 function normalizeDriverName(value?: string | null) {
   return (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "")
@@ -154,10 +155,10 @@ export default async function ProfilePage() {
     <Header />
     <main className="profile-login"><style>{styles}</style>
       <div className="login-card">
-        <span className="profile-kicker">F1 MEDÄ°POL Â· DRIVER PROFILE</span>
-        <h1>Profiline giriÅŸ yap</h1>
-        <p>Profilini, seviyeni, baÅŸarÄ±mlarÄ±nÄ± ve yarÄ±ÅŸ istatistiklerini gÃ¶rmek iÃ§in giriÅŸ yap.</p>
-        <Link href="/login" className="profile-red-button">GiriÅŸ Yap â†’</Link>
+        <span className="profile-kicker">F1 SOCIAL·DRIVER PROFILE</span>
+        <h1>Profiline giriş yap</h1>
+        <p>Profilini, seviyeni, başarımlarını ve yarış istatistiklerini görmek için giriş yap.</p>
+        <Link href="/login" className="profile-red-button">Giriş Yap →</Link>
       </div>
     </main>
   </>;
@@ -240,13 +241,13 @@ export default async function ProfilePage() {
     const storedLevel = Number(member?.level ?? 0);
     return {
       id: friend.user_id,
-      name: member?.display_name || friend.display_name || member?.username || "F1 SOCIAL Ãœyesi",
+      name: member?.display_name || friend.display_name || member?.username || "F1 SOCIAL Üyesi",
       username: member?.username || null,
       avatar: member?.avatar_url || friend.avatar_url || null,
       level: storedLevel >= 1 ? storedLevel : calculateLevel(xp),
     };
   }).sort((a, b) => b.level - a.level || a.name.localeCompare(b.name, "tr"));
-  const displayName = profile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "F1 SOCIAL Ãœyesi";
+  const displayName = profile?.display_name || user.user_metadata?.display_name || user.email?.split("@")[0] || "F1 SOCIAL Üyesi";
   const initial = displayName.charAt(0).toUpperCase();
   const teamBrand = getTeamBranding(profile?.favorite_team);
   let latestDrivers: OpenF1Driver[] = [];
@@ -287,8 +288,11 @@ export default async function ProfilePage() {
       <div className="profile-theme-wallpaper profile-theme-wallpaper-red"><ProfileWallpaperBackdrop wallpaper={wallpapers.red} /></div>
       <div className="profile-container">
         <div className="profile-top-strip">
-          <div><span>F1 MEDÄ°POL</span><strong>DRIVER PROFILE</strong></div>
-          <Link href="/profile/edit" className="edit-profile-button">PROFÄ°LÄ° DÃœZENLE</Link>
+          <div><span>F1 SOCIAL</span><strong>DRIVER PROFILE</strong></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+            <Link href="/profile/edit" className="edit-profile-button">PROFİLİ DÜZENLE</Link>
+            <ProfileActions />
+          </div>
         </div>
         <section className="profile-shell">
           <div className="hero-accent-top" />
@@ -302,28 +306,28 @@ export default async function ProfilePage() {
             </div>
             <div className="profile-identity">
               <div className="identity-line">
-                <span className="profile-kicker">F1 MEDÄ°POL MEMBER</span>
+                <span className="profile-kicker">F1 SOCIAL MEMBER</span>
                 <span className="member-badge">LEVEL {currentLevel}</span>
               </div>
               <h1>{displayName}</h1>
               <div className="identity-meta">
                 {profile?.username && <span>@{profile.username}</span>}
-                <span>F1 MEDÄ°POL</span>
+                <span>F1 SOCIAL</span>
                 <span className="identity-level">LEVEL {currentLevel}</span>
                 {teamBrand && <span style={{ color: teamBrand.color }}>{teamBrand.name}</span>}
               </div>
-              <p className="profile-bio">{profile?.bio || "Bu kullanÄ±cÄ± henÃ¼z profil aÃ§Ä±klamasÄ± eklemedi."}</p>
-              <div className="identity-accent"><span /><small>{totalXp} XP Â· LEVEL {currentLevel}</small></div>
+              <p className="profile-bio">{profile?.bio || "Bu kullanıcı henüz profil açıklaması eklemedi."}</p>
+              <div className="identity-accent"><span /><small>{totalXp} XP · LEVEL {currentLevel}</small></div>
             </div>
             <aside className="profile-summary profile-summary-favorites">
-              <div className="summary-title">FAVORÄ°LER</div>
+              <div className="summary-title">FAVORİLER</div>
               <div className="summary-favorite" style={{ ["--pick-accent" as string]: teamBrand?.color || profileAccent.primary }}>
                 <div className="summary-favorite-visual summary-favorite-logo">
                   {teamBrand ? <img src={teamBrand.logoUrl} alt={teamBrand.name} /> : <span>F1</span>}
                 </div>
                 <div className="summary-favorite-content">
-                  <span>FAVORÄ° TAKIM</span>
-                  <strong>{teamBrand?.name || "SeÃ§ilmedi"}</strong>
+                  <span>FAVORİ TAKIM</span>
+                  <strong>{teamBrand?.name || "Seçilmedi"}</strong>
                 </div>
               </div>
               <div className="summary-favorite" style={{ ["--pick-accent" as string]: favoriteDriverTeamColor || profileAccent.primary }}>
@@ -331,8 +335,8 @@ export default async function ProfilePage() {
                   {favoriteDriverImage ? <img src={favoriteDriverImage} alt={profile?.favorite_driver || "Favori pilot"} /> : <span>{driverInitials(profile?.favorite_driver)}</span>}
                 </div>
                 <div className="summary-favorite-content">
-                  <span>FAVORÄ° PÄ°LOT</span>
-                  <strong>{profile?.favorite_driver || "SeÃ§ilmedi"}</strong>
+                  <span>FAVORİ PİLOT</span>
+                  <strong>{profile?.favorite_driver || "Seçilmedi"}</strong>
                   {favoriteDriverData?.team_name && <small>{favoriteDriverData.team_name}</small>}
                 </div>
               </div>
@@ -346,7 +350,7 @@ export default async function ProfilePage() {
           </div>
           <div className="level-progress-area">
             <div className="level-progress-title">
-              <div><span>LEVEL {currentLevel}</span><strong>Seviye Ä°lerlemesi</strong></div>
+              <div><span>LEVEL {currentLevel}</span><strong>Seviye İlerlemesi</strong></div>
               <div className="next-level-label">LEVEL {nextLevel}</div>
             </div>
             <div className="level-big-track">
@@ -356,16 +360,16 @@ export default async function ProfilePage() {
               <div><strong>{levelXpProgress} / {levelXpNeeded} XP</strong><span>bu seviyede</span></div>
               <div className="level-remaining"><strong>{xpRemaining} XP</strong><span>LEVEL {nextLevel}'E KALDI</span></div>
             </div>
-            <div className="level-threshold-info">Bir sonraki seviyeye ulaÅŸmak iÃ§in toplam <strong>{nextLevelTotalXp} XP</strong> gerekiyor.</div>
+            <div className="level-threshold-info">Bir sonraki seviyeye ulaşmak için toplam <strong>{nextLevelTotalXp} XP</strong> gerekiyor.</div>
           </div>
           <div className="xp-source-area">
             <div className="xp-source-title">XP SOURCES</div>
             <div className="xp-source-card">
-              <div className="xp-source-icon">ğŸ</div>
-              <div><span>TAHMÄ°NLER</span><strong>+{predictionXp} XP</strong></div>
+              <div className="xp-source-icon">🏁</div>
+              <div><span>TAHMİNLER</span><strong>+{predictionXp} XP</strong></div>
             </div>
             <div className="xp-source-card">
-              <div className="xp-source-icon">ğŸ†</div>
+              <div className="xp-source-icon">🏆</div>
               <div><span>ROZETLER</span><strong>+{achievementXp} XP</strong></div>
             </div>
           </div>
@@ -374,10 +378,10 @@ export default async function ProfilePage() {
           <div className="profile-column">
 <section className="glass-panel">
               <div className="panel-header-row">
-                <PanelHeader kicker="PADDOCK ACTIVITY" title="Paddock PaylaÅŸÄ±mlarÄ±" />
-                <Link href="/paddock" className="panel-link">PADDOCK'A GÄ°T â†’</Link>
+                <PanelHeader kicker="PADDOCK ACTIVITY" title="Paddock Paylaşımları" />
+                <Link href="/paddock" className="panel-link">PADDOCK'A GİT →</Link>
               </div>
-              {paddockPosts.length === 0 ? <div className="empty-history">HenÃ¼z Paddock paylaÅŸÄ±mÄ± yok.</div> :
+              {paddockPosts.length === 0 ? <div className="empty-history">Henüz Paddock paylaşımı yok.</div> :
                 <div className="paddock-profile-grid">
                   {paddockPosts.map((post) => {
                     const media = mediaByPost.get(post.id) ?? [];
@@ -390,8 +394,8 @@ export default async function ProfilePage() {
                       </div>}
                       <div className="paddock-profile-copy">
                         <div className="paddock-post-meta"><span>{formatPaddockDate(post.created_at)}</span>{post.is_pinned && <strong>PINNED</strong>}</div>
-                        <p>{post.content || "Medya paylaÅŸÄ±mÄ±"}</p>
-                        <div className="paddock-open">GÃ–NDERÄ°YÄ° GÃ–R â†’</div>
+                        <p>{post.content || "Medya paylaşımı"}</p>
+                        <div className="paddock-open">GÖNDERİYİ GÖR →</div>
                       </div>
                     </Link>;
                   })}
@@ -399,16 +403,16 @@ export default async function ProfilePage() {
               }
             </section>
             <section className="glass-panel">
-              <PanelHeader kicker="PREDICTION HISTORY" title="Tahmin GeÃ§miÅŸi" />
+              <PanelHeader kicker="PREDICTION HISTORY" title="Tahmin Geçmişi" />
               <div className="prediction-xp-note">
-                <div>âš¡</div>
+                <div>⚡</div>
                 <p>
-                  SonuÃ§landÄ±rÄ±lmÄ±ÅŸ her <strong>1 tahmin puanÄ± = 1 XP</strong>.
-                  Her kartÄ± aÃ§arak hangi seÃ§imlerden puan aldÄ±ÄŸÄ±nÄ± gÃ¶rebilirsin.
+                  Sonuçlandırılmış her <strong>1 tahmin puanı = 1 XP</strong>.
+                  Her kartı açarak hangi seçimlerden puan aldığını görebilirsin.
                 </p>
               </div>
               {recentPredictions.length === 0 ? (
-                <div className="empty-history">HenÃ¼z kayÄ±tlÄ± tahminin yok.</div>
+                <div className="empty-history">Henüz kayıtlı tahminin yok.</div>
               ) : (
                 <div className="prediction-list">
                   {recentPredictions.map((prediction) => {
@@ -435,13 +439,13 @@ export default async function ProfilePage() {
                           <div className="prediction-info">
                             <strong>{prediction.race_name}</strong>
                             <span>
-                              {prediction.season} Â· ROUND {prediction.round} Â· {prediction.prediction_type === "sprint" ? "SPRINT" : "RACE"}
+                              {prediction.season} · ROUND {prediction.round} · {prediction.prediction_type === "sprint" ? "SPRINT" : "RACE"}
                             </span>
                             <small>
-                              P1 #{prediction.p1_driver_number} Â· P2 #{prediction.p2_driver_number} Â· P3 #{prediction.p3_driver_number}
+                              P1 #{prediction.p1_driver_number} · P2 #{prediction.p2_driver_number} · P3 #{prediction.p3_driver_number}
                             </small>
                             <div className={`prediction-status ${isScored ? "done" : "pending"}`}>
-                              {isScored ? "âœ“ SONUÃ‡LANDI" : "â—· SONUÃ‡ BEKLENÄ°YOR"}
+                              {isScored ? "✓ SONUÇLANDI" : "◷ SONUÇ BEKLENİYOR"}
                             </div>
                           </div>
                           <div className="prediction-result-area">
@@ -453,24 +457,24 @@ export default async function ProfilePage() {
                                 <div className="prediction-xp-earned">+{score} XP</div>
                               </>
                             ) : (
-                              <div className="prediction-awaiting">â€”<span>BEKLENÄ°YOR</span></div>
+                              <div className="prediction-awaiting">—<span>BEKLENİYOR</span></div>
                             )}
                           </div>
                         </div>
                         {isScored && breakdown && (
                           <details className="prediction-breakdown">
                             <summary>
-                              <span>TAHMÄ°N SONUÃ‡LARINI GÃ–R</span>
+                              <span>TAHMİN SONUÇLARINI GÖR</span>
                               <span className="prediction-summary-meta">
                                 Podyumdan puan: {podiumHits}/3
-                                {bulletinAvailable.length > 0 ? ` Â· BÃ¼lten: ${bulletinCorrect}/${bulletinAvailable.length}` : ""}
-                                {specialAvailable.length > 0 ? ` Â· Ã–zel: ${specialCorrect}/${specialAvailable.length}` : ""}
+                                {bulletinAvailable.length > 0 ? ` · Bülten: ${bulletinCorrect}/${bulletinAvailable.length}` : ""}
+                                {specialAvailable.length > 0 ? ` · Özel: ${specialCorrect}/${specialAvailable.length}` : ""}
                               </span>
-                              <span className="prediction-toggle-icon">âŒ„</span>
+                              <span className="prediction-toggle-icon">⌄</span>
                             </summary>
                             <div className="prediction-breakdown-content">
                               <div className="prediction-detail-heading">
-                                <strong>ğŸ Podyum tahminleri</strong>
+                                <strong>🏆 Podyum Tahminleri</strong>
                                 <span>{scoreNumber(prediction.podium_points)} P</span>
                               </div>
                               <div className="prediction-podium-grid">
@@ -486,23 +490,23 @@ export default async function ProfilePage() {
                                 })}
                               </div>
                               <p className="prediction-detail-footnote">
-                                Podyum puanÄ±, pilotun doÄŸru sÄ±rada veya farklÄ± bir podyum sÄ±rasÄ±nda tahmin edilmesine gÃ¶re deÄŸiÅŸebilir.
+                                Podyum puanı, pilotun doğru sırada veya farklı bir podyum sırasında tahmin edilmesine göre değişebilir.
                               </p>
                               {bulletin.length > 0 && (
                                 <>
                                   <div className="prediction-detail-heading">
-                                    <strong>ğŸ“‹ YarÄ±ÅŸ bÃ¼lteni</strong>
-                                    <span>{scoreNumber(prediction.bulletin_points)} P Â· {bulletinCorrect}/{bulletinAvailable.length} doÄŸru</span>
+                                    <strong>📋 Yarış bülteni</strong>
+                                    <span>{scoreNumber(prediction.bulletin_points)} P · {bulletinCorrect}/{bulletinAvailable.length} doğru</span>
                                   </div>
                                   <div className="prediction-answers">
                                     {bulletin.map(([key, answer]) => (
                                       <div className="prediction-answer" key={key}>
                                         <span className={answer.available === false ? "unavailable" : answer.correct ? "correct" : "incorrect"}>
-                                          {answer.available === false ? "â€”" : answer.correct ? "âœ“" : "Ã—"}
+                                          {answer.available === false ? "—" : answer.correct ? "✓" : "×"}
                                         </span>
                                         <div>
                                           <strong>{BULLETIN_NAMES[key] ?? key}</strong>
-                                          <small>Sen: {formatAnswer(answer.predicted)} Â· SonuÃ§: {formatAnswer(answer.actual)}</small>
+                                          <small>Sen: {formatAnswer(answer.predicted)} · Sonuç: {formatAnswer(answer.actual)}</small>
                                         </div>
                                         <b>+{scoreNumber(answer.points)} P</b>
                                       </div>
@@ -513,18 +517,18 @@ export default async function ProfilePage() {
                               {specials.length > 0 && (
                                 <>
                                   <div className="prediction-detail-heading">
-                                    <strong>â­ Ã–zel tahminler</strong>
-                                    <span>{scoreNumber(prediction.special_points)} P Â· {specialCorrect}/{specialAvailable.length} doÄŸru</span>
+                                    <strong>⭐ Özel tahminler</strong>
+                                    <span>{scoreNumber(prediction.special_points)} P · {specialCorrect}/{specialAvailable.length} doğru</span>
                                   </div>
                                   <div className="prediction-answers">
                                     {specials.map(([key, answer]) => (
                                       <div className="prediction-answer" key={key}>
                                         <span className={answer.available === false ? "unavailable" : answer.correct ? "correct" : "incorrect"}>
-                                          {answer.available === false ? "â€”" : answer.correct ? "âœ“" : "Ã—"}
+                                          {answer.available === false ? "—" : answer.correct ? "✓" : "×"}
                                         </span>
                                         <div>
                                           <strong>{SPECIAL_NAMES[key] ?? key}</strong>
-                                          <small>Sen: {formatAnswer(answer.predicted)} Â· SonuÃ§: {formatAnswer(answer.actual)}</small>
+                                          <small>Sen: {formatAnswer(answer.predicted)} · Sonuç: {formatAnswer(answer.actual)}</small>
                                         </div>
                                         <b>+{scoreNumber(answer.points)} P</b>
                                       </div>
@@ -545,19 +549,19 @@ export default async function ProfilePage() {
           <aside className="profile-sidebar">
             <ProfileAchievements achievements={achievements} userAchievements={userAchievements}
               stats={{ paddockPostCount, predictionCount, totalPoints, bestScore }} />
-            <section className="glass-panel friends-panel" aria-label="ArkadaÅŸlarÄ±m">
+            <section className="glass-panel friends-panel" aria-label="Arkadaşlarım">
               <div className="friends-panel-top">
                 <div>
-                  <span className="profile-kicker">F1 MEDÄ°POL Â· SOSYAL</span>
-                  <h2>ArkadaÅŸlar <span className="friends-count">{friendsList.length} kiÅŸi</span></h2><p className="friends-panel-intro">Pilot arkadaÅŸlarÄ±n Â· yÃ¼ksek seviyeden dÃ¼ÅŸÃ¼ÄŸe</p>
+                  <span className="profile-kicker">F1 SOCIAL·SOSYAL</span>
+                  <h2>Arkadaşlar <span className="friends-count">{friendsList.length} kişi</span></h2><p className="friends-panel-intro">Pilot arkadaşların · yüksek seviyeden düşüğe</p>
                 </div>
                 <ProfileFriendManager variant="icon" />
               </div>
               {friendsError ? (
-                <p className="friends-panel-empty">ArkadaÅŸlar ÅŸu an yÃ¼klenemedi. MesajlaÅŸma baÄŸlantÄ±nÄ± kontrol et.</p>
+                <p className="friends-panel-empty">Arkadaşlar şu an yüklenemedi. Mesajlaşma bağlantını kontrol et.</p>
               ) : friendsList.length === 0 ? (
                 <div className="friends-panel-empty">
-                  <p>HenÃ¼z arkadaÅŸÄ±n yok.</p>
+                  <p>Henüz arkadaşın yok.</p>
                   <ProfileFriendManager variant="inline" />
                 </div>
               ) : (
@@ -569,10 +573,10 @@ export default async function ProfilePage() {
                       </div>
                       <div className="friend-identity">
                         <strong>{friend.name}</strong>
-                        <span>{friend.username ? `@${friend.username}` : "F1 SOCIAL Ãœyesi"}</span>
+                        <span>{friend.username ? `@${friend.username}` : "F1 SOCIAL Üyesi"}</span>
                       </div>
                       <div className="friend-level"><span>LEVEL</span><strong>{friend.level}</strong></div>
-                      <span className="friend-open" aria-hidden="true">â†—</span>
+                      <span className="friend-open" aria-hidden="true">↗</span>
                     </Link>
                   ))}
                 </div>
@@ -583,11 +587,11 @@ export default async function ProfilePage() {
         </section>
         {profile?.is_admin && (
           <section className="glass-panel" style={{marginTop:20,padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:14,flexWrap:"wrap"}}>
-            <div><span className="profile-kicker">F1 MEDÄ°POL Â· YÃ–NETÄ°M</span>
-              <div style={{color:"#f5f7fa",fontWeight:900,marginTop:6}}>YÃ¶netim Paneli</div>
-              <div style={{color:"#aeb8c4",fontSize:12,marginTop:5}}>Etkinlikler, bildirimler ve yÃ¶netim iÅŸlemleri.</div>
+            <div><span className="profile-kicker">F1 SOCIAL·YÖNETİM</span>
+              <div style={{color:"#f5f7fa",fontWeight:900,marginTop:6}}>Yönetim Paneli</div>
+              <div style={{color:"#aeb8c4",fontSize:12,marginTop:5}}>Etkinlikler, bildirimler ve yönetim işlemleri.</div>
             </div>
-            <Link href="/admin" className="side-button accent" style={{minWidth:190,textAlign:"center"}}>ADMÄ°N PANELÄ°NE GÄ°T â†’</Link>
+            <Link href="/admin" className="side-button accent" style={{minWidth:190,textAlign:"center"}}>ADMİN PANELİNE GİT →</Link>
           </section>
         )}
       </div>
@@ -634,7 +638,7 @@ const styles = `
 .member-badge { padding:5px 9px; border:1px solid color-mix( in srgb,var(--profile-accent),transparent 62% ); border-radius:999px; color:var(--profile-accent); background:var(--profile-accent-soft); font-size:7px; font-weight:1000; }
 .profile-identity h1 { margin:12px 0 8px; font-size:clamp( 48px,4.7vw,68px ); line-height:.95; letter-spacing:-.055em; }
 .identity-meta { display:flex; flex-wrap:wrap; gap:11px; color:#9ba6b1; font-size:11px; font-weight:800; }
-.identity-meta span + span::before { content:"â€¢"; margin-right:11px; color:#555f69; }
+.identity-meta span + span::before { content:"•"; margin-right:11px; color:#555f69; }
 .identity-level { color:var(--profile-accent); }
 .profile-bio { max-width:760px; margin:23px 0 0; color:#bac3cd !important; font-size:14px; line-height:1.7; }
 .identity-accent { margin-top:24px; display:flex; align-items:center; gap:10px; }
@@ -784,7 +788,7 @@ const styles = `
 .paddock-profile-media { height:210px; }
 .profile-top-strip strong { display:none; }
 }
-/* TAHMÄ°N GEÃ‡MÄ°ÅÄ° â€” AÃ‡ILABÄ°LÄ°R SONUÃ‡ KARTLARI */
+/* TAHMİN GEÇMİŞİ — AÇILABİLİR SONUÇ KARTLARI */
 .prediction-history-card { overflow:hidden; border:1px solid rgba(255,255,255,.09); border-radius:11px; background:rgba(255,255,255,.025); }
 .prediction-history-card .prediction-row { border:0; border-radius:0; background:transparent; }
 .prediction-status { display:inline-flex; align-items:center; margin-top:10px; padding:5px 9px; border-radius:999px; font-size:8px; font-weight:900; letter-spacing:.045em; }
@@ -845,7 +849,7 @@ const styles = `
 @media (max-width:1150px) { .profile-summary-favorites { grid-column:1 / -1; grid-template-columns:repeat(2,minmax(0,1fr)); } .profile-summary-favorites .summary-title { grid-column:1 / -1; } }
 @media (max-width:650px) { .profile-summary-favorites { grid-template-columns:1fr; text-align:left; } .profile-summary-favorites .summary-title { grid-column:auto; } .summary-favorite { min-height:75px; } }
 
-/* G6.17.2: Friends â€” replaces the redundant profile info/wallpaper sidebar cards */
+/* G6.17.2: Friends — replaces the redundant profile info/wallpaper sidebar cards */
 .friends-panel { padding:22px 19px; min-height:420px; }
 .friends-panel-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:19px; }
 .friends-panel-top h2 { margin:8px 0 0; display:flex; align-items:center; gap:9px; font-size:26px; line-height:1.05; }
@@ -929,7 +933,7 @@ const styles = `
 :root[data-site-theme="red"] .level-ring {background:#fff2f2!important;}
 :root[data-site-theme="red"] .level-big-track {background:#f8dde2!important;}
 :root[data-site-theme="red"] .edit-profile-button {color:#ae2437!important;}
-/* G6.17.4 â€“ Per-theme profile backgrounds + contrast polish */
+/* G6.17.4 – Per-theme profile backgrounds + contrast polish */
 .profile-theme-wallpaper {position:absolute; inset:0; z-index:0; display:none; overflow:hidden; pointer-events:none;}
 .profile-theme-wallpaper-dark {display:block;}
 :root[data-site-theme="light"] .profile-theme-wallpaper-dark,
@@ -971,7 +975,7 @@ const styles = `
 :root[data-site-theme="light"] .steam-profile .prediction-breakdown summary,
 :root[data-site-theme="red"] .steam-profile .prediction-breakdown summary {color:#344153!important; background:rgba(239,243,248,.82)!important;}
 
-/* G6.17.6 â€“ Racing red profile cards; scoped to the red theme only.
+/* G6.17.6 – Racing red profile cards; scoped to the red theme only.
    Keeps the per-theme wallpaper visible and leaves dark/light modes alone. */
 :root[data-site-theme="red"] .steam-profile {
   color:#fff4f5!important;

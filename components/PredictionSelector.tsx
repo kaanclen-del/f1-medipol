@@ -176,7 +176,7 @@ export default function PredictionSelector({
   ] =
     useState(
       initialPrediction
-        ? "âœ… KayÄ±tlÄ± tahminin yÃ¼klendi."
+        ? "✅ Kayıtlı tahminin yüklendi."
         : ""
     );
 
@@ -193,13 +193,13 @@ export default function PredictionSelector({
   type Stage = "podium" | "bulletin" | "special" | "review";
   const stages: { id: Stage; title: string; subtitle: string }[] = isRace
     ? [
-        { id: "podium", title: "Podyum", subtitle: "Ä°lk Ã¼Ã§" },
-        { id: "bulletin", title: "YarÄ±ÅŸ SenaryolarÄ±", subtitle: "12 soru" },
-        { id: "special", title: "Ã–zel SeÃ§imler", subtitle: "4 tahmin" },
+        { id: "podium", title: "Podyum", subtitle: "İlk üç" },
+        { id: "bulletin", title: "Yarış Senaryoları", subtitle: "12 soru" },
+        { id: "special", title: "Özel Seçimler", subtitle: "4 tahmin" },
         { id: "review", title: "Onay", subtitle: "Kaydet" },
       ]
     : [
-        { id: "podium", title: "Sprint Podyumu", subtitle: "Ä°lk Ã¼Ã§" },
+        { id: "podium", title: "Sprint Podyumu", subtitle: "İlk üç" },
         { id: "review", title: "Onay", subtitle: "Kaydet" },
       ];
 
@@ -454,7 +454,7 @@ export default function PredictionSelector({
   async function savePrediction() {
     if (locked) {
       setMessage(
-        "ğŸ”’ Tahmin sÃ¼resi sona erdi."
+        "🔒 Tahmin süresi sona erdi."
       );
 
       return;
@@ -466,7 +466,7 @@ export default function PredictionSelector({
       !selected.P3
     ) {
       setMessage(
-        "Ã–nce P1, P2 ve P3 pilotlarÄ±nÄ± seÃ§."
+        "Önce P1, P2 ve P3 pilotlarını seç."
       );
 
       return;
@@ -577,8 +577,8 @@ export default function PredictionSelector({
 
       setMessage(
         isRace
-          ? `âœ… YarÄ±ÅŸ tahmin paketin kaydedildi. ${answeredCount}/12 senaryo ve ${specialCount}/4 Ã¶zel seÃ§im iÅŸaretlendi.`
-          : "âœ… Sprint podyum tahminin kaydedildi."
+          ? `✅ Yarış tahmin paketin kaydedildi. ${answeredCount}/12 senaryo ve ${specialCount}/4 özel seçimi işaretlendi.`
+          : "✅ Sprint podyum tahminin kaydedildi."
       );
       setCommunityRevision((revision) => revision + 1);
     } finally {
@@ -1817,18 +1817,18 @@ export default function PredictionSelector({
       {locked && (
         <div className="prediction-lock">
           <b>
-            ğŸ”’ TAHMÄ°NLER KÄ°LÄ°TLENDÄ°
+           TAHMİNLER KİLİTLENDİ
           </b>
 
           <span>
-            Seans baÅŸladÄ±. KaydedilmiÅŸ tahminler artÄ±k deÄŸiÅŸtirilemez.
+            Seans başladı. Kaydedilen tahminler artık değiştirilemez.
           </span>
         </div>
       )}
 
       <div className="prediction-wizard">
         <div className="prediction-wizard-top">
-          <span>TAHMÄ°N ROTASI Â· {isRace ? "GRAND PRIX" : "SPRINT"}</span>
+          <span>TAHMİN ROTASI · {isRace ? "GRAND PRIX" : "SPRINT"}</span>
           <span>ADIM {currentStageIndex + 1} / {stages.length}</span>
         </div>
         <div className="prediction-wizard-progress"><span style={{ width: `${((currentStageIndex + 1) / stages.length) * 100}%` }} /></div>
@@ -1896,7 +1896,7 @@ export default function PredictionSelector({
 
                   {active && (
                     <span className="podium-badge">
-                      SEÃ‡Ä°LÄ°YOR
+                      SEÇİLİYOR
                     </span>
                   )}
                 </div>
@@ -1946,12 +1946,12 @@ export default function PredictionSelector({
                   </div>
                 ) : (
                   <div className="empty-podium">
-                    AÅŸaÄŸÄ±dan pilot seÃ§
+                    Aşağıdan pilot seç
                   </div>
                 )}
                 {driver && communityPodium(slot.key, driver.driver_number) !== null && (
                   <div className="community-mini">
-                    <div className="community-mini-label"><span>{slot.key} iÃ§in topluluk tercihi</span><b>%{communityPodium(slot.key, driver.driver_number)}</b></div>
+                    <div className="community-mini-label"><span>{slot.key} için topluluk tercihi</span><b>%{communityPodium(slot.key, driver.driver_number)}</b></div>
                     <div className="community-track"><i style={{ width: `${communityPodium(slot.key, driver.driver_number)}%` }} /></div>
                   </div>
                 )}
@@ -1971,12 +1971,12 @@ export default function PredictionSelector({
             </small>
 
             <h3>
-              {activeSlot} iÃ§in pilot seÃ§
+              {activeSlot} için pilot seç
             </h3>
           </div>
 
           <div className="prediction-progress">
-            PODIUM Â· {PODIUM_MAX_POINTS} PUAN
+            PODIUM · {PODIUM_MAX_POINTS} PUAN
           </div>
         </div>
 
@@ -2044,7 +2044,7 @@ export default function PredictionSelector({
                         "Formula 1"}
                     </div>
                     {communityPodium(activeSlot, driver.driver_number) !== null && (
-                      <div className="community-mini-label" style={{ marginTop: 6 }}><span>{activeSlot} seÃ§imi</span><b>%{communityPodium(activeSlot, driver.driver_number)}</b></div>
+                      <div className="community-mini-label" style={{ marginTop: 6 }}><span>{activeSlot} seçimi</span><b>%{communityPodium(activeSlot, driver.driver_number)}</b></div>
                     )}
                   </div>
                 </button>
@@ -2055,9 +2055,9 @@ export default function PredictionSelector({
       </section>
 
       {community?.ready ? (
-        <div className="community-footnote">Topluluk tercihleri Â· {community.total} kayÄ±tlÄ± tahmin Ã¼zerinden hesaplanÄ±yor. YÃ¼zdeler gerÃ§ek katÄ±lÄ±ma gÃ¶re deÄŸiÅŸir.</div>
+        <div className="community-footnote">Topluluk tercihleri · {community.total} kayıtlı tahmin üzerinden hesaplanıyor. Yüzdelers gerçeğe göre değişir.</div>
       ) : (
-        <div className="community-footnote">Topluluk oranlarÄ± en az 10 kiÅŸinin bu yarÄ±ÅŸ iÃ§in tahmin kaydetmesinden sonra gÃ¶rÃ¼nÃ¼r.</div>
+        <div className="community-footnote">Topluluk oranları en az 10 kişinin bu yarış için tahmin kaydetmesinden sonra görünür.</div>
       )}
       </>)}
 
@@ -2073,12 +2073,12 @@ export default function PredictionSelector({
                 </small>
 
                 <h3>
-                  YarÄ±ÅŸ SenaryolarÄ±
+                  Yarış Senaryoları
                 </h3>
               </div>
 
               <div className="prediction-progress">
-                {answeredCount}/12 Â· MAKS. {BULLETIN_MAX_POINTS} PUAN
+                {answeredCount}/12 · MAKS. {BULLETIN_MAX_POINTS} PUAN
               </div>
             </div>
 
@@ -2189,12 +2189,12 @@ export default function PredictionSelector({
                 </small>
 
                 <h3>
-                  Ã–zel Tahminler
+                  Özel Tahminler
                 </h3>
               </div>
 
               <div className="prediction-progress">
-                {specialCount}/4 Â· MAKS. {SPECIAL_MAX_POINTS} PUAN
+                {specialCount}/4 · MAKS. {SPECIAL_MAX_POINTS} PUAN
               </div>
             </div>
 
@@ -2204,7 +2204,7 @@ export default function PredictionSelector({
               <div className="special-card">
                 <div className="special-head">
                   <strong>
-                    âš¡ En hÄ±zlÄ± turu kim atar?
+                    ⚡ En hızlı turu kim atar?
                   </strong>
 
                   <span className="special-points">
@@ -2244,7 +2244,7 @@ export default function PredictionSelector({
                   }
                 >
                   <option value="">
-                    Pilot seÃ§
+                    Pilot seç
                   </option>
 
                   {drivers.map(
@@ -2263,7 +2263,7 @@ export default function PredictionSelector({
                           driverName(
                             driver
                           )}
-                        {" Â· "}
+                        {" · "}
                         {driverName(
                           driver
                         )}
@@ -2278,7 +2278,7 @@ export default function PredictionSelector({
               <div className="special-card">
                 <div className="special-head">
                   <strong>
-                    ğŸ’¥ Ä°lk DNF kim olur?
+                    💥 İlk DNF kim olur?
                   </strong>
 
                   <span className="special-points">
@@ -2322,7 +2322,7 @@ export default function PredictionSelector({
                   }}
                 >
                   <option value="">
-                    Pilot seÃ§
+                    Pilot seç
                   </option>
 
                   <option value="NONE">
@@ -2345,7 +2345,7 @@ export default function PredictionSelector({
                           driverName(
                             driver
                           )}
-                        {" Â· "}
+                        {" · "}
                         {driverName(
                           driver
                         )}
@@ -2360,7 +2360,7 @@ export default function PredictionSelector({
               <div className="special-card">
                 <div className="special-head">
                   <strong>
-                    ğŸ“ˆ En Ã§ok sÄ±ra kazanan pilot
+                    📈 En çok sıra kazanan pilot
                   </strong>
 
                   <span className="special-points">
@@ -2400,7 +2400,7 @@ export default function PredictionSelector({
                   }
                 >
                   <option value="">
-                    Pilot seÃ§
+                    Pilot seç
                   </option>
 
                   {drivers.map(
@@ -2419,7 +2419,7 @@ export default function PredictionSelector({
                           driverName(
                             driver
                           )}
-                        {" Â· "}
+                        {" · "}
                         {driverName(
                           driver
                         )}
@@ -2434,7 +2434,7 @@ export default function PredictionSelector({
               <div className="special-card">
                 <div className="special-head">
                   <strong>
-                    ğŸ† Kazanan takÄ±m
+                    🏆 Kazanan takım
                   </strong>
 
                   <span className="special-points">
@@ -2469,7 +2469,7 @@ export default function PredictionSelector({
                   }
                 >
                   <option value="">
-                    TakÄ±m seÃ§
+                    Takım seç
                   </option>
 
                   {teams.map(
@@ -2493,7 +2493,7 @@ export default function PredictionSelector({
             </div>
             {community?.ready && (
               <div className="community-footnote">
-                <b style={{ color: "white" }}>TopluluÄŸun favorileri</b>
+                <b style={{ color: "white" }}>Topluluğun favorileri</b>
                 {RACE_SPECIAL_PICKS.map((pick) => {
                   const stat = community.specials[pick.key];
                   if (!stat || stat.total < 10) return null;
@@ -2501,7 +2501,7 @@ export default function PredictionSelector({
                   if (!top) return null;
                   const driver = getDriver(Number(top[0]));
                   const label = pick.key === "winningTeam" ? top[0] : top[0] === "NONE" ? "DNF yok" : driver ? driverName(driver) : `#${top[0]}`;
-                  return <div key={pick.key} style={{ marginTop: 8 }}>{pick.label}: <strong style={{ color: "#f9fafc" }}>{label} Â· %{pct(top[1],stat.total)}</strong></div>;
+                  return <div key={pick.key} style={{ marginTop: 8 }}>{pick.label}: <strong style={{ color: "#f9fafc" }}>({top[1]}/{stat.total})</strong></div>;
                 })}
               </div>
             )}
@@ -2511,26 +2511,26 @@ export default function PredictionSelector({
 
       {currentStage === "review" && (
         <div className="prediction-review">
-          <div className="eyebrow">SON KONTROL Â· TAHMÄ°N Ã–ZETÄ°N</div>
-          <h3>Pistte her ÅŸey hazÄ±r mÄ±?</h3>
-          <p style={{ color: "#abb4c0", fontSize: 12 }}>SeÃ§imlerini kontrol et, ardÄ±ndan tahmin paketini hesabÄ±na kaydet.</p>
+          <div className="eyebrow">SON KONTROL TAHMİN ÖZETİN </div>
+          <h3>Pistte her şey hazır mı?</h3>
+          <p style={{ color: "#abb4c0", fontSize: 12 }}>Seçimlerini kontrol et, ardından tahmin paketini hesabına kaydet.</p>
           <div className="prediction-review-picks">
             {slots.map(({ key }) => (
-              <div key={key}><span>{key}</span><strong>{getDriver(selected[key]) ? driverName(getDriver(selected[key])!) : "HenÃ¼z seÃ§ilmedi"}</strong></div>
+              <div key={key}><span>{key}</span><strong>{getDriver(selected[key]) ? driverName(getDriver(selected[key])!) : "Henüz Seçilmedi"}</strong></div>
             ))}
-            {isRace && <div><span>EK SEÃ‡Ä°MLER</span><strong>{answeredCount}/12 senaryo Â· {specialCount}/4 Ã¶zel seÃ§im</strong></div>}
+            {isRace && <div><span>EK SEÇİMLER</span><strong>{answeredCount}/12 senaryo · {specialCount}/4 özel seçim</strong></div>}
           </div>
           <div className="save-summary">
         <div>
           <strong>
             {isRace
               ? `Maksimum ${RACE_MAX_POINTS} puan`
-              : `${PODIUM_MAX_POINTS} puanlÄ±k Sprint tahmini`}
+              : `${PODIUM_MAX_POINTS} puanlama Sprint tahmini`}
           </strong>
 
           <span>
             {isRace
-              ? `${PODIUM_MAX_POINTS} podyum + ${BULLETIN_MAX_POINTS} senaryo + ${SPECIAL_MAX_POINTS} Ã¶zel seÃ§im`
+              ? `${PODIUM_MAX_POINTS} podyum + ${BULLETIN_MAX_POINTS} senaryo + ${SPECIAL_MAX_POINTS} Özel Seçim`
               : "P1, P2 ve P3 tahminlerini tek pakette kaydet."}
           </span>
         </div>
@@ -2547,10 +2547,10 @@ export default function PredictionSelector({
           }
         >
           {saving
-            ? "KAYDEDÄ°LÄ°YOR..."
+            ? "KAYDEDİLİYOR..."
             : locked
-            ? "TAHMÄ°NLER KÄ°LÄ°TLÄ°"
-            : "TAHMÄ°N PAKETÄ°NÄ° KAYDET â†’"}
+            ? "TAHMİNLER KİLİTLENDİ"
+            : "TAHMİN PAKETİNİ KAYDET → "}
         </button>
       </div>
 
@@ -2558,9 +2558,9 @@ export default function PredictionSelector({
       )}
 
       <div className="prediction-wizard-controls">
-        <button type="button" className="back" disabled={currentStageIndex === 0} onClick={() => navigateStage(stages[currentStageIndex - 1].id)}>â† GERÄ°</button>
+        <button type="button" className="back" disabled={currentStageIndex === 0} onClick={() => navigateStage(stages[currentStageIndex - 1].id)}>← GERİ</button>
         {currentStageIndex < stages.length - 1 && (
-          <button type="button" className="next" onClick={() => navigateStage(stages[currentStageIndex + 1].id)}>DEVAM ET â†’</button>
+          <button type="button" className="next" onClick={() => navigateStage(stages[currentStageIndex + 1].id)}>DEVAM ET →</button>
         )}
       </div>
 
