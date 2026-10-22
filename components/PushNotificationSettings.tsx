@@ -40,14 +40,14 @@ export default function PushNotificationSettings() {
         return;
       }
       try {
-        // Kayıt kullanıcı hareketinden önce hazırlanır. SW sayfa içeriğini cache'lemez.
+        // KayÄ±t kullanÄ±cÄ± hareketinden Ã¶nce hazÄ±rlanÄ±r. SW sayfa iÃ§eriÄŸini cache'lemez.
         const registration = await navigator.serviceWorker.register("/push-sw.js", {
           updateViaCache: "none",
         });
         const response = await fetch("/api/push/public-key", { cache: "no-store" });
         const json = await readJson(response);
         if (!response.ok || typeof json.publicKey !== "string") {
-          throw new Error(typeof json.error === "string" ? json.error : "Bildirim anahtarı bulunamadı.");
+          throw new Error(typeof json.error === "string" ? json.error : "Bildirim anahtarÄ± bulunamadÄ±.");
         }
         const existing = await registration.pushManager.getSubscription();
         if (active) {
@@ -59,7 +59,7 @@ export default function PushNotificationSettings() {
         }
       } catch (error) {
         if (active) {
-          setMessage(error instanceof Error ? error.message : "Bildirimler hazırlanamadı.");
+          setMessage(error instanceof Error ? error.message : "Bildirimler hazÄ±rlanamadÄ±.");
           setStatus("error");
         }
       }
@@ -73,11 +73,11 @@ export default function PushNotificationSettings() {
     setBusy(true);
     setMessage("");
     try {
-      // iOS bildirim izni tıklama olayından doğrudan istenir.
+      // iOS bildirim izni tÄ±klama olayÄ±ndan doÄŸrudan istenir.
       const granted = await Notification.requestPermission();
       setPermission(granted);
       if (granted !== "granted") {
-        setMessage("Bildirim izni verilmedi. İzinleri cihaz ayarlarından değiştirebilirsin.");
+        setMessage("Bildirim izni verilmedi. Ä°zinleri cihaz ayarlarÄ±ndan deÄŸiÅŸtirebilirsin.");
         return;
       }
       const registration = await navigator.serviceWorker.ready;
@@ -95,9 +95,9 @@ export default function PushNotificationSettings() {
       const data = await readJson(response);
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Abonelik sunucuya kaydedilemedi.");
       setSubscribed(true);
-      setMessage("Bildirimler etkin! Şimdi test bildirimi gönderebilirsin.");
+      setMessage("Bildirimler etkin! Åimdi test bildirimi gÃ¶nderebilirsin.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Bildirim izni oluşturulamadı.");
+      setMessage(error instanceof Error ? error.message : "Bildirim izni oluÅŸturulamadÄ±.");
     } finally {
       setBusy(false);
     }
@@ -117,13 +117,13 @@ export default function PushNotificationSettings() {
           body: JSON.stringify({ endpoint: subscription.endpoint }),
         });
         const data = await readJson(response);
-        if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Abonelik kaldırılamadı.");
+        if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Abonelik kaldÄ±rÄ±lamadÄ±.");
         await subscription.unsubscribe();
       }
       setSubscribed(false);
-      setMessage("Bu cihaz için bildirimler kapatıldı.");
+      setMessage("Bu cihaz iÃ§in bildirimler kapatÄ±ldÄ±.");
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Bildirimler kapatılamadı.");
+      setMessage(error instanceof Error ? error.message : "Bildirimler kapatÄ±lamadÄ±.");
     } finally {
       setBusy(false);
     }
@@ -136,11 +136,11 @@ export default function PushNotificationSettings() {
     try {
       const response = await fetch("/api/push/test", { method: "POST" });
       const data = await readJson(response);
-      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Test gönderilemedi.");
-      setMessage(`Test bildirimi gönderildi (${Number(data.sent) || 1} cihaz). Bildirimi cihazında kontrol et.`);
+      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "Test gÃ¶nderilemedi.");
+      setMessage(`Test bildirimi gÃ¶nderildi (${Number(data.sent) || 1} cihaz). Bildirimi cihazÄ±nda kontrol et.`);
       window.dispatchEvent(new Event("f1-notifications-updated"));
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Test bildirimi başarısız.");
+      setMessage(error instanceof Error ? error.message : "Test bildirimi baÅŸarÄ±sÄ±z.");
     } finally {
       setBusy(false);
     }
@@ -150,43 +150,43 @@ export default function PushNotificationSettings() {
     <section className={styles.panel} aria-label="Bildirim izinleri">
       <div className={styles.panelTop}>
         <div>
-          <span className={styles.kicker}>CİHAZ AYARLARI</span>
+          <span className={styles.kicker}>CÄ°HAZ AYARLARI</span>
           <h2 className={styles.panelTitle}>Push bildirimleri</h2>
         </div>
         <span className={`${styles.state} ${subscribed ? styles.stateOn : ""}`}>
-          {status === "loading" ? "KONTROL EDİLİYOR" : subscribed ? "ETKİN" : "KAPALI"}
+          {status === "loading" ? "KONTROL EDÄ°LÄ°YOR" : subscribed ? "ETKÄ°N" : "KAPALI"}
         </span>
       </div>
       <p className={styles.description}>
-        Yarış ve tahmin hatırlatmaları için cihazını F1 Medipol hesabına bağla.
-        İlk aşamada gerçek bir test bildirimi göndereceğiz.
+        YarÄ±ÅŸ ve tahmin hatÄ±rlatmalarÄ± iÃ§in cihazÄ±nÄ± F1 SOCIAL hesabÄ±na baÄŸla.
+        Ä°lk aÅŸamada gerÃ§ek bir test bildirimi gÃ¶ndereceÄŸiz.
       </p>
       {status === "unsupported" && (
         <div className={styles.notice}>
-          <strong>Bu tarayıcıda bildirim özelliği bulunamadı.</strong>
-          <p>iPhone kullanıyorsan Safari&apos;den Paylaş → Ana Ekrana Ekle seçeneğiyle siteyi yükle.
-            Sonra ana ekrandaki F1 Medipol simgesinden bu sayfayı aç. iOS 16.4 veya üzeri gerekir.</p>
+          <strong>Bu tarayÄ±cÄ±da bildirim Ã¶zelliÄŸi bulunamadÄ±.</strong>
+          <p>iPhone kullanÄ±yorsan Safari&apos;den PaylaÅŸ â†’ Ana Ekrana Ekle seÃ§eneÄŸiyle siteyi yÃ¼kle.
+            Sonra ana ekrandaki F1 SOCIAL simgesinden bu sayfayÄ± aÃ§. iOS 16.4 veya Ã¼zeri gerekir.</p>
         </div>
       )}
       {status === "ready" && !isInstalled && (
         <div className={styles.note}>
-          iPhone&apos;da bildirim almak için siteyi ana ekrana ekleyip oradan açmalısın.
-          Android ve masaüstünde desteklenen tarayıcıdan devam edebilirsin.
+          iPhone&apos;da bildirim almak iÃ§in siteyi ana ekrana ekleyip oradan aÃ§malÄ±sÄ±n.
+          Android ve masaÃ¼stÃ¼nde desteklenen tarayÄ±cÄ±dan devam edebilirsin.
         </div>
       )}
       {status === "ready" && permission === "denied" && (
-        <div className={styles.notice}>Bildirim izni engellenmiş. Cihazının tarayıcı veya uygulama bildirim ayarlarından izin ver.</div>
+        <div className={styles.notice}>Bildirim izni engellenmiÅŸ. CihazÄ±nÄ±n tarayÄ±cÄ± veya uygulama bildirim ayarlarÄ±ndan izin ver.</div>
       )}
       <div className={styles.buttons}>
         {!subscribed ? (
           <button type="button" className={styles.primary} onClick={enable}
             disabled={status !== "ready" || busy || permission === "denied"}>
-            {busy ? "İşleniyor..." : "Bildirimleri etkinleştir"}
+            {busy ? "Ä°ÅŸleniyor..." : "Bildirimleri etkinleÅŸtir"}
           </button>
         ) : (
           <>
             <button type="button" className={styles.primary} onClick={sendTest} disabled={busy}>
-              {busy ? "Gönderiliyor..." : "Test bildirimi gönder"}
+              {busy ? "GÃ¶nderiliyor..." : "Test bildirimi gÃ¶nder"}
             </button>
             <button type="button" className={styles.secondary} onClick={disable} disabled={busy}>
               Bildirimleri kapat
@@ -194,11 +194,11 @@ export default function PushNotificationSettings() {
           </>
         )}
       </div>
-      {status === "loading" && <p className={styles.feedback}>Cihaz desteği kontrol ediliyor...</p>}
+      {status === "loading" && <p className={styles.feedback}>Cihaz desteÄŸi kontrol ediliyor...</p>}
       {message && <p className={styles.feedback} role="status">{message}</p>}
       <div className={styles.footnote}>
-        Test bildirimi hesabına kayıtlı cihazlara gönderilir. Kendi iznin dışında
-        hiçbir cihaz eklenmez. Otomatik yarış hatırlatmaları sonraki aşamada açılacak.
+        Test bildirimi hesabÄ±na kayÄ±tlÄ± cihazlara gÃ¶nderilir. Kendi iznin dÄ±ÅŸÄ±nda
+        hiÃ§bir cihaz eklenmez. Otomatik yarÄ±ÅŸ hatÄ±rlatmalarÄ± sonraki aÅŸamada aÃ§Ä±lacak.
       </div>
     </section>
   );

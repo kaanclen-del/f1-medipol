@@ -450,7 +450,7 @@ export default async function PaddockPage({
               marginBottom: "10px",
             }}
           >
-            MEDİPOL F1 KULÜBÜ
+            SOCIAL
           </div>
 
           <h1
@@ -595,7 +595,7 @@ export default async function PaddockPage({
                             ?.display_name ||
                             post.profile
                               ?.username ||
-                            "Medipol F1"}
+                            "Social"}
                         </strong></Link>
 
                         {post.is_pinned && (

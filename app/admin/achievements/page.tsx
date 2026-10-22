@@ -33,7 +33,7 @@ export default async function AdminAchievementsPage() {
 
           <div className="access-card">
             <span>
-              F1 MEDİPOL · ADMIN
+              11 MEDİPOL · ADMIN
             </span>
 
             <h1>
@@ -88,7 +88,7 @@ export default async function AdminAchievementsPage() {
 
           <div className="access-card">
             <span>
-              F1 MEDİPOL · ADMIN
+              11 MEDİPOL · ADMIN
             </span>
 
             <h1>
@@ -104,7 +104,7 @@ export default async function AdminAchievementsPage() {
               href="/"
               className="access-button"
             >
-              Ana Sayfa
+              Ana Oayfa
             </Link>
           </div>
         </main>
@@ -125,7 +125,7 @@ export default async function AdminAchievementsPage() {
           <header className="achievement-admin-header">
             <div>
               <span>
-                F1 MEDİPOL · CONTROL CENTER
+                11 MEDİPOL · CONTROL CENTER
               </span>
 
               <h1>

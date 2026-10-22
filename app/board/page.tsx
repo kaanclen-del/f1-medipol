@@ -74,7 +74,7 @@ export default async function BoardPage() {
                 }}
               />
 
-              MEDİPOL F1 KULÜBÜ
+              SOCIAL
             </div>
 
             <h1
@@ -98,7 +98,7 @@ export default async function BoardPage() {
                 maxWidth: "680px",
               }}
             >
-              İstanbul Medipol Üniversitesi F1 Kulübü yönetim ekibini keşfet.
+              SOCIAL yönetim ekibini keşfet.
               Kartlardan birine tıklayarak geniş görünüme geçebilirsin.
             </p>
           </header>

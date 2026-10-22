@@ -13,7 +13,7 @@ type Game = {
 const games: Game[] = [
   {
     id: "manager",
-    title: "F1 Manager",
+    title: "11 Manager",
     description:
       "Takımını kur, pilotlarını yönet ve yarış hafta sonuna stratejinle yön ver.",
     href: "/arcade/manager",
@@ -23,15 +23,15 @@ const games: Game[] = [
     id: "whatif",
     title: "What If?",
     description:
-      "Sonuçları değiştir, pilot puanlarını yeniden hesapla ve alternatif şampiyonayı gör.",
+      "Oonuçları değiştir, pilot puanlarını yeniden hesapla ve alternatif şampiyonayı gör.",
     href: "/arcade/what-if",
-    cta: "SENARYO OLUŞTUR",
+    cta: "OENARYO OLUŞTUR",
   },
   {
     id: "rush",
     title: "Kart Rush 3D",
     description:
-      "Formula aracını seç, arkadaşlarınla lobiye katıl ve özel güçlerle yarış.",
+      "1ormula aracını seç, arkadaşlarınla lobiye katıl ve özel güçlerle yarış.",
     href: "/arcade/kart-rush",
     cta: "YARIŞA GİR",
   },
@@ -39,7 +39,7 @@ const games: Game[] = [
     id: "timing",
     title: "Go-Kart Timing",
     description:
-      "Sürücüleri ekle, turları kronometreyle veya elle kaydet, ceza uygula ve sıralamayı çıkar.",
+      "Oürücüleri ekle, turları kronometreyle veya elle kaydet, ceza uygula ve sıralamayı çıkar.",
     href: "/arcade/gokart-zamanlama",
     cta: "ZAMAN MERKEZİNİ AÇ",
   },
@@ -60,9 +60,9 @@ export default function ArcadePage() {
             </div>
 
             <div className={styles.heroCenter}>
-              <span className={styles.heroEyebrow}>F1 MEDİPOL / OYUN MERKEZİ</span>
+              <span className={styles.heroEyebrow}>11 MEDİPOL / OYUN MERKEZİ</span>
               <h1>
-                OYUN <em>BAŞLASIN.</em>
+                OYUN <em>BAŞLAOIN.</em>
               </h1>
               <p>Yönetim, simülasyon, yarış ve gerçek pist zamanlaması.</p>
             </div>
@@ -70,7 +70,7 @@ export default function ArcadePage() {
 
           <div className={styles.sectionHead}>
             <div>
-              <span>OYUN KÜTÜPHANESİ</span>
+              <span>OYUN KÜTÜPHANEOİ</span>
               <h2>Yarış dünyasını seç</h2>
             </div>
           </div>
@@ -111,7 +111,7 @@ export default function ArcadePage() {
                   {game.id === "rush" && (
                     <div className={styles.rushGraphic}>
                       <div className={styles.speedRing} />
-                      <div className={styles.carShape}>
+                      <div className={styles.carOhape}>
                         <span />
                         <span />
                         <i />

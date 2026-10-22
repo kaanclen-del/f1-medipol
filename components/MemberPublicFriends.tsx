@@ -42,8 +42,8 @@ function getPair(row: FriendshipRow): [string, string] | null {
   ];
   const known = knownPairs.find(([first, second]) => first in row && second in row);
   if (known) return known;
-  // Farklı bir şema kullanılıyorsa yalnızca UUID tutan, kullanıcıyı ifade eden
-  // iki sütuna izin ver. Genel "id" veya mesaj kimliği bu alana girmez.
+  // FarklÄ± bir ÅŸema kullanÄ±lÄ±yorsa yalnÄ±zca UUID tutan, kullanÄ±cÄ±yÄ± ifade eden
+  // iki sÃ¼tuna izin ver. Genel "id" veya mesaj kimliÄŸi bu alana girmez.
   const keys = Object.keys(row).filter(key =>
     /(?:user|friend|requester|recipient|sender|receiver|addressee|initiator)/i.test(key)
       && typeof row[key] === "string"
@@ -58,7 +58,7 @@ function isAccepted(row: FriendshipRow) {
   if (typeof row.is_accepted === "boolean") return row.is_accepted;
   if (typeof row.accepted === "boolean") return row.accepted;
   if ("accepted_at" in row) return Boolean(row.accepted_at);
-  // Kabul bilgisi saptanamadığında bekleyen istekleri dışarı sızdırma.
+  // Kabul bilgisi saptanamadÄ±ÄŸÄ±nda bekleyen istekleri dÄ±ÅŸarÄ± sÄ±zdÄ±rma.
   return false;
 }
 
@@ -76,20 +76,20 @@ export default async function MemberPublicFriends({ memberId }: { memberId: stri
   if (!UUID.test(memberId)) return null;
   const admin = createAdminClient();
 
-  // "dm_list_friends" yalnızca oturum açan kullanıcının arkadaşlarını getirir.
-  // Burada ziyaret edilen üyenin kabul edilmiş arkadaşlıklarını sunucu tarafında
-  // okuyoruz; özel mesajlar ve bekleyen istekler hiç görüntülenmez.
+  // "dm_list_friends" yalnÄ±zca oturum aÃ§an kullanÄ±cÄ±nÄ±n arkadaÅŸlarÄ±nÄ± getirir.
+  // Burada ziyaret edilen Ã¼yenin kabul edilmiÅŸ arkadaÅŸlÄ±klarÄ±nÄ± sunucu tarafÄ±nda
+  // okuyoruz; Ã¶zel mesajlar ve bekleyen istekler hiÃ§ gÃ¶rÃ¼ntÃ¼lenmez.
   const sample = await admin.from("dm_friendships").select("*").limit(1);
   if (sample.error) {
     console.error("Public member friends: friendship table unavailable", sample.error.message);
-    return <section className={styles.panel}><h2>Arkadaşlar</h2><p className={styles.empty}>Arkadaş listesi şu anda yüklenemiyor.</p></section>;
+    return <section className={styles.panel}><h2>ArkadaÅŸlar</h2><p className={styles.empty}>ArkadaÅŸ listesi ÅŸu anda yÃ¼klenemiyor.</p></section>;
   }
   const probe = (sample.data?.[0] ?? null) as FriendshipRow | null;
-  if (!probe) return <section className={styles.panel}><h2>Arkadaşlar</h2><p className={styles.empty}>Henüz arkadaş bağlantısı bulunmuyor.</p></section>;
+  if (!probe) return <section className={styles.panel}><h2>ArkadaÅŸlar</h2><p className={styles.empty}>HenÃ¼z arkadaÅŸ baÄŸlantÄ±sÄ± bulunmuyor.</p></section>;
   const pair = getPair(probe);
   if (!pair) {
     console.error("Public member friends: unsupported friendship column schema");
-    return <section className={styles.panel}><h2>Arkadaşlar</h2><p className={styles.empty}>Arkadaş listesi şu anda yüklenemiyor.</p></section>;
+    return <section className={styles.panel}><h2>ArkadaÅŸlar</h2><p className={styles.empty}>ArkadaÅŸ listesi ÅŸu anda yÃ¼klenemiyor.</p></section>;
   }
   const [left, right] = pair;
   const connection = await admin.from("dm_friendships")
@@ -98,7 +98,7 @@ export default async function MemberPublicFriends({ memberId }: { memberId: stri
     .limit(750);
   if (connection.error) {
     console.error("Public member friends: query failed", connection.error.message);
-    return <section className={styles.panel}><h2>Arkadaşlar</h2><p className={styles.empty}>Arkadaş listesi şu anda yüklenemiyor.</p></section>;
+    return <section className={styles.panel}><h2>ArkadaÅŸlar</h2><p className={styles.empty}>ArkadaÅŸ listesi ÅŸu anda yÃ¼klenemiyor.</p></section>;
   }
 
   const friendIds = Array.from(new Set(((connection.data || []) as FriendshipRow[])
@@ -107,7 +107,7 @@ export default async function MemberPublicFriends({ memberId }: { memberId: stri
     .filter((id): id is string => typeof id === "string" && UUID.test(id) && id !== memberId)));
 
   if (friendIds.length === 0) {
-    return <section className={styles.panel}><div className={styles.eyebrow}>F1 MEDIPOL · SOSYAL</div><h2>Arkadaşlar</h2><p className={styles.empty}>Henüz kabul edilmiş arkadaşlık yok.</p></section>;
+    return <section className={styles.panel}><div className={styles.eyebrow}>F1 SOCIAL Â· SOSYAL</div><h2>ArkadaÅŸlar</h2><p className={styles.empty}>HenÃ¼z kabul edilmiÅŸ arkadaÅŸlÄ±k yok.</p></section>;
   }
 
   const chunks = batches(friendIds, BATCH);
@@ -157,21 +157,21 @@ export default async function MemberPublicFriends({ memberId }: { memberId: stri
     .map(person => ({ ...person, level: levelFromXp(xp.get(person.id) || 0), xp: xp.get(person.id) || 0 }))
     .sort((a, b) => b.level - a.level || b.xp - a.xp || (a.display_name || "").localeCompare(b.display_name || "", "tr"));
 
-  return <section className={styles.panel} aria-label="Üyenin arkadaşları">
+  return <section className={styles.panel} aria-label="Ãœyenin arkadaÅŸlarÄ±">
     <div className={styles.top}>
-      <div><span className={styles.eyebrow}>F1 MEDIPOL · SOCIAL PADDOCK</span><h2>Arkadaşlar <span>{friends.length}</span></h2><p>Kabul edilmiş arkadaşlıklar · En yüksek seviyeden başlayarak</p></div>
+      <div><span className={styles.eyebrow}>F1 SOCIAL Â· SOCIAL PADDOCK</span><h2>ArkadaÅŸlar <span>{friends.length}</span></h2><p>Kabul edilmiÅŸ arkadaÅŸlÄ±klar Â· En yÃ¼ksek seviyeden baÅŸlayarak</p></div>
     </div>
     {friends.length ? <div className={styles.list}>
       {friends.map((person, index) => {
-        const name = person.display_name?.trim() || person.username || "F1 Medipol Üyesi";
+        const name = person.display_name?.trim() || person.username || "F1 SOCIAL Ãœyesi";
         return <Link href={`/members/${person.id}`} className={styles.friend} key={person.id} title={`${name} profilini ziyaret et`}>
           <span className={styles.rank}>{String(index + 1).padStart(2, "0")}</span>
           <span className={styles.avatar}>{person.avatar_url ? <img src={person.avatar_url} alt="" loading="lazy" /> : initials(name)}</span>
-          <span className={styles.info}><strong>{name}</strong><small>{person.username ? `@${person.username}` : "F1 MEDIPOL ÜYESİ"}{person.favorite_team ? ` · ${person.favorite_team}` : ""}</small></span>
+          <span className={styles.info}><strong>{name}</strong><small>{person.username ? `@${person.username}` : "F1 SOCIAL ÃœYESÄ°"}{person.favorite_team ? ` Â· ${person.favorite_team}` : ""}</small></span>
           <span className={styles.level}><small>LEVEL</small><strong>{person.level}</strong></span>
-          <span className={styles.arrow} aria-hidden="true">↗</span>
+          <span className={styles.arrow} aria-hidden="true">â†—</span>
         </Link>;
       })}
-    </div> : <p className={styles.empty}>Henüz görüntülenebilen arkadaş yok.</p>}
+    </div> : <p className={styles.empty}>HenÃ¼z gÃ¶rÃ¼ntÃ¼lenebilen arkadaÅŸ yok.</p>}
   </section>;
 }

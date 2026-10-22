@@ -1,4 +1,4 @@
-/* F1 Medipol Web Push Service Worker (v1)
+/* F1 SOCIAL Web Push Service Worker (v1)
  * Bildirim haricinde sayfa isteklerine dokunmaz; offline cache yapmaz.
  */
 self.addEventListener("push", (event) => {
@@ -10,7 +10,7 @@ self.addEventListener("push", (event) => {
   }
 
   const title = typeof payload.title === "string"
-    ? payload.title.slice(0, 100) : "F1 Medipol";
+    ? payload.title.slice(0, 100) : "F1 SOCIAL";
   const body = typeof payload.body === "string"
     ? payload.body.slice(0, 300) : "Yeni bir bildirimin var.";
   const candidate = typeof payload.url === "string" ? payload.url : "/";

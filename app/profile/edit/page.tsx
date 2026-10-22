@@ -59,11 +59,11 @@ const DRIVER_SUGGESTIONS = [
   "Pierre Gasly",
   "Esteban Ocon",
   "Oliver Bearman",
-  "Nico Hülkenberg",
+  "Nico HÃ¼lkenberg",
   "Gabriel Bortoleto",
   "Liam Lawson",
   "Isack Hadjar",
-  "Sergio Pérez",
+  "Sergio PÃ©rez",
   "Valtteri Bottas",
 ];
 
@@ -289,7 +289,7 @@ export default function EditProfilePage() {
       !displayName.trim()
     ) {
       setMessage(
-        "Görünen ad boş bırakılamaz."
+        "GÃ¶rÃ¼nen ad boÅŸ bÄ±rakÄ±lamaz."
       );
 
       return;
@@ -300,7 +300,7 @@ export default function EditProfilePage() {
       username.length < 3
     ) {
       setMessage(
-        "Kullanıcı adı en az 3 karakter olmalı."
+        "KullanÄ±cÄ± adÄ± en az 3 karakter olmalÄ±."
       );
 
       return;
@@ -380,7 +380,7 @@ export default function EditProfilePage() {
           )
       ) {
         setMessage(
-          "Bu kullanıcı adı başka biri tarafından kullanılıyor."
+          "Bu kullanÄ±cÄ± adÄ± baÅŸka biri tarafÄ±ndan kullanÄ±lÄ±yor."
         );
       } else {
         setMessage(
@@ -405,14 +405,14 @@ export default function EditProfilePage() {
       setSaving(false);
 
       setMessage(
-        `Profil kaydedildi fakat hesap adı güncellenemedi: ${authError.message}`
+        `Profil kaydedildi fakat hesap adÄ± gÃ¼ncellenemedi: ${authError.message}`
       );
 
       return;
     }
 
     setMessage(
-      "✓ Profil başarıyla güncellendi."
+      "âœ“ Profil baÅŸarÄ±yla gÃ¼ncellendi."
     );
 
     window.setTimeout(
@@ -430,7 +430,7 @@ export default function EditProfilePage() {
         <Header />
 
         <main className="edit-loading">
-          Profil yükleniyor...
+          Profil yÃ¼kleniyor...
         </main>
       </>
     );
@@ -474,17 +474,17 @@ export default function EditProfilePage() {
           <header className="edit-heading">
             <div>
               <span>
-                F1 MEDİPOL · DRIVER PROFILE
+                F1 MEDÄ°POL Â· DRIVER PROFILE
               </span>
 
               <h1>
-                Profili Düzenle
+                Profili DÃ¼zenle
               </h1>
 
               <p>
                 Profil bilgilerini,
                 favorilerini, accent rengini
-                ve profil arka planını düzenle.
+                ve profil arka planÄ±nÄ± dÃ¼zenle.
               </p>
             </div>
 
@@ -492,7 +492,7 @@ export default function EditProfilePage() {
               href="/profile"
               className="preview-button"
             >
-              PROFİLİ GÖR →
+              PROFÄ°LÄ° GÃ–R â†’
             </Link>
           </header>
 
@@ -518,7 +518,7 @@ export default function EditProfilePage() {
 
               <h2>
                 {displayName ||
-                  "F1 Medipol Üyesi"}
+                  "F1 SOCIAL Ãœyesi"}
               </h2>
 
               <p>
@@ -530,20 +530,20 @@ export default function EditProfilePage() {
               <div className="preview-favorites">
                 <b>
                   {favoriteTeam ||
-                    "Takım seçilmedi"}
+                    "TakÄ±m seÃ§ilmedi"}
                 </b>
 
                 <i />
 
                 <b>
                   {favoriteDriver ||
-                    "Pilot seçilmedi"}
+                    "Pilot seÃ§ilmedi"}
                 </b>
               </div>
 
               <strong>
                 {selectedWallpaper.name}
-                {" · "}
+                {" Â· "}
                 {selectedAccent.name}
               </strong>
             </div>
@@ -573,7 +573,7 @@ export default function EditProfilePage() {
               <ProfileAvatarUploader />
 
               <label className="field-label">
-                Görünen Ad
+                GÃ¶rÃ¼nen Ad
 
                 <input
                   value={displayName}
@@ -589,7 +589,7 @@ export default function EditProfilePage() {
               </label>
 
               <label className="field-label">
-                Kullanıcı Adı
+                KullanÄ±cÄ± AdÄ±
 
                 <div className="username-field">
                   <span>
@@ -611,7 +611,7 @@ export default function EditProfilePage() {
               </label>
 
               <label className="field-label">
-                Hakkımda
+                HakkÄ±mda
 
                 <textarea
                   value={bio}
@@ -633,7 +633,7 @@ export default function EditProfilePage() {
 
               <div className="preference-grid">
                 <label className="field-label">
-                  Favori Takım
+                  Favori TakÄ±m
 
                   <select
                     value={favoriteTeam}
@@ -646,7 +646,7 @@ export default function EditProfilePage() {
                     }
                   >
                     <option value="">
-                      Takım seçilmedi
+                      TakÄ±m seÃ§ilmedi
                     </option>
 
                     {TEAMS.map(
@@ -675,7 +675,7 @@ export default function EditProfilePage() {
                         event.target.value
                       )
                     }
-                    placeholder="Pilot seç veya yaz"
+                    placeholder="Pilot seÃ§ veya yaz"
                     maxLength={60}
                   />
 
@@ -708,10 +708,10 @@ export default function EditProfilePage() {
                 </h2>
 
                 <p>
-                  Profil başlıkları,
-                  avatar çerçevesi,
-                  butonlar ve özel detaylarda
-                  kullanılacak rengi seç.
+                  Profil baÅŸlÄ±klarÄ±,
+                  avatar Ã§erÃ§evesi,
+                  butonlar ve Ã¶zel detaylarda
+                  kullanÄ±lacak rengi seÃ§.
                 </p>
               </div>
 
@@ -754,7 +754,7 @@ export default function EditProfilePage() {
                         <div className="accent-circle">
                           {active && (
                             <span>
-                              ✓
+                              âœ“
                             </span>
                           )}
                         </div>
@@ -766,8 +766,8 @@ export default function EditProfilePage() {
 
                           <small>
                             {active
-                              ? "Seçili"
-                              : "Seç"}
+                              ? "SeÃ§ili"
+                              : "SeÃ§"}
                           </small>
                         </div>
                       </button>
@@ -801,14 +801,14 @@ export default function EditProfilePage() {
                 </span>
 
                 <h2>
-                  Profil Arka Planı
+                  Profil Arka PlanÄ±
                 </h2>
 
-                <p>Her tema için farklı bir arka plan seçebilir veya aynı görseli üçüne de uygulayabilirsin.</p>
+                <p>Her tema iÃ§in farklÄ± bir arka plan seÃ§ebilir veya aynÄ± gÃ¶rseli Ã¼Ã§Ã¼ne de uygulayabilirsin.</p>
               </div>
 
-              <div className="wallpaper-theme-toolbar" aria-label="Arka planın uygulanacağı tema">
-                <div className="wallpaper-theme-tabs" role="group" aria-label="Tema seçimi">
+              <div className="wallpaper-theme-toolbar" aria-label="Arka planÄ±n uygulanacaÄŸÄ± tema">
+                <div className="wallpaper-theme-tabs" role="group" aria-label="Tema seÃ§imi">
                   {(["dark", "red", "light"] as const).map((theme) => (
                     <button
                       key={theme}
@@ -818,17 +818,17 @@ export default function EditProfilePage() {
                       onClick={() => setWallpaperTheme(theme)}
                     >
                       <span className={`wallpaper-theme-dot ${theme}`} />
-                      {theme === "dark" ? "Koyu" : theme === "red" ? "Kırmızı" : "Açık"}
+                      {theme === "dark" ? "Koyu" : theme === "red" ? "KÄ±rmÄ±zÄ±" : "AÃ§Ä±k"}
                     </button>
                   ))}
                 </div>
                 <button type="button" className="wallpaper-apply-all" onClick={useWallpaperForEveryTheme}>
-                  Bu görseli tüm temalarda kullan ↗
+                  Bu gÃ¶rseli tÃ¼m temalarda kullan â†—
                 </button>
               </div>
               <div className="wallpaper-theme-help">
-                Şu an <strong>{wallpaperTheme === "dark" ? "koyu" : wallpaperTheme === "red" ? "kırmızı" : "açık"}</strong> tema için seçim yapıyorsun.
-                Kaydedince profilin ziyaretçinin seçtiği temaya uygun görselle açılır.
+                Åu an <strong>{wallpaperTheme === "dark" ? "koyu" : wallpaperTheme === "red" ? "kÄ±rmÄ±zÄ±" : "aÃ§Ä±k"}</strong> tema iÃ§in seÃ§im yapÄ±yorsun.
+                Kaydedince profilin ziyaretÃ§inin seÃ§tiÄŸi temaya uygun gÃ¶rselle aÃ§Ä±lÄ±r.
               </div>
 
               <div className="wallpaper-grid">
@@ -870,7 +870,7 @@ export default function EditProfilePage() {
                         >
                           {active && (
                             <div className="selected-badge">
-                              ✓ SEÇİLİ
+                              âœ“ SEÃ‡Ä°LÄ°
                             </div>
                           )}
                         </div>
@@ -901,7 +901,7 @@ export default function EditProfilePage() {
               {message && (
                 <span
                   className={
-                    message.startsWith("✓")
+                    message.startsWith("âœ“")
                       ? "success"
                       : "error"
                   }
@@ -916,7 +916,7 @@ export default function EditProfilePage() {
                 href="/profile"
                 className="cancel-button"
               >
-                İptal
+                Ä°ptal
               </Link>
 
               <button
@@ -2052,7 +2052,7 @@ const styles = `
         1;
     }
   }
-/* G6.17.4 – Independent wallpapers for dark / red / light themes */
+/* G6.17.4 â€“ Independent wallpapers for dark / red / light themes */
 .wallpaper-theme-toolbar {display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin:0 0 12px;}
 .wallpaper-theme-tabs {display:flex; flex-wrap:wrap; align-items:center; gap:7px;}
 .wallpaper-theme-tab {cursor:pointer; display:inline-flex; gap:8px; align-items:center; padding:11px 14px; border:1px solid rgba(255,255,255,.17); border-radius:10px; background:#141c28; color:#d8e1ed; font-weight:800; font-size:12px;}

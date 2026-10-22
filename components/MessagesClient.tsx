@@ -18,7 +18,7 @@ type Theme = "gray" | "red" | "light";
 type View = "chats" | "find" | "requests" | "groups";
 type ChatWallpaper = "white" | "gray" | "red" | "blue" | "violet" | "custom";
 const WALLPAPERS: {key:ChatWallpaper;title:string}[] = [
-  {key:"white",title:"Beyaz"}, {key:"gray",title:"Gri"}, {key:"red",title:"F1 Kırmızı"},
+  {key:"white",title:"Beyaz"}, {key:"gray",title:"Gri"}, {key:"red",title:"F1 KÄ±rmÄ±zÄ±"},
   {key:"blue",title:"Gece Mavisi"}, {key:"violet",title:"Mor Neon"},
 ];
 function isWallpaper(value:string|null):value is ChatWallpaper {return value === "custom" || WALLPAPERS.some(item=>item.key===value);}
@@ -33,13 +33,13 @@ function readTheme(): Theme {
   if (typeof document === "undefined") return "gray";
   const html = document.documentElement;
   const v = (html.getAttribute("data-theme") || html.getAttribute("data-site-theme") || "").toLowerCase();
-  if (["light", "white", "açık", "acik"].includes(v)) return "light";
-  if (["red", "f1-red", "kırmızı", "kirmizi"].includes(v)) return "red";
+  if (["light", "white", "aÃ§Ä±k", "acik"].includes(v)) return "light";
+  if (["red", "f1-red", "kÄ±rmÄ±zÄ±", "kirmizi"].includes(v)) return "red";
   try {
     for (const key of ["f1-site-theme", "site-theme", "siteTheme", "theme"]) {
       const stored = (localStorage.getItem(key) || "").toLowerCase();
-      if (["light", "white", "açık", "acik"].includes(stored)) return "light";
-      if (["red", "f1-red", "kırmızı", "kirmizi"].includes(stored)) return "red";
+      if (["light", "white", "aÃ§Ä±k", "acik"].includes(stored)) return "light";
+      if (["red", "f1-red", "kÄ±rmÄ±zÄ±", "kirmizi"].includes(stored)) return "red";
     }
   } catch {}
   return "gray";
@@ -168,7 +168,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
   }, [active]);
   function quoteMessage(message: Message) {
     const text = parseChatReply(message.body).text;
-    setReplyTarget({id:message.id,author:message.sender_id === userId ? "Sen" : (friendsRef.current.find(f => f.user_id === message.sender_id)?.display_name || "Üye"),preview:messagePreview(text).slice(0,65)});
+    setReplyTarget({id:message.id,author:message.sender_id === userId ? "Sen" : (friendsRef.current.find(f => f.user_id === message.sender_id)?.display_name || "Ãœye"),preview:messagePreview(text).slice(0,65)});
     draftInputRef.current?.focus();
   }
   useEffect(() => { openRef.current = open; }, [open]);
@@ -205,8 +205,8 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
   }
 
   function copyMessage(body:string) {
-    if(!navigator.clipboard?.writeText){setStatus("Kopyalama için güvenli bağlantı (HTTPS/localhost) gerekli.");return;}
-    void navigator.clipboard.writeText(parseChatReply(body).text).catch(()=>setStatus("Mesaj kopyalanamadı."));
+    if(!navigator.clipboard?.writeText){setStatus("Kopyalama iÃ§in gÃ¼venli baÄŸlantÄ± (HTTPS/localhost) gerekli.");return;}
+    void navigator.clipboard.writeText(parseChatReply(body).text).catch(()=>setStatus("Mesaj kopyalanamadÄ±."));
   }
 
 
@@ -214,7 +214,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
     if (!userId) return;
     const [f, r] = await Promise.all([supabase.rpc("dm_list_friends"), supabase.rpc("dm_list_requests")]);
     if (f.error || r.error) {
-      setStatus("Mesajlaşma verileri alınamadı. DM_FRIENDS_SETUP.sql kurulumunu kontrol et.");
+      setStatus("MesajlaÅŸma verileri alÄ±namadÄ±. DM_FRIENDS_SETUP.sql kurulumunu kontrol et.");
       return;
     }
     friendsRef.current = (f.data || []) as Friend[];
@@ -363,7 +363,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
           void loadMessages(next.sender_id);
         } else if (next.sender_id) {
           const body = String(next.body || "Yeni mesaj").slice(0, 65);
-          const senderName = friendsRef.current.find(f => f.user_id === next.sender_id)?.display_name || "Bir arkadaşın";
+          const senderName = friendsRef.current.find(f => f.user_id === next.sender_id)?.display_name || "Bir arkadaÅŸÄ±n";
           setToast({ text: body, from: next.sender_id, name: senderName });
           if (toastTimer.current) clearTimeout(toastTimer.current);
           toastTimer.current = setTimeout(() => setToast(null), 6500);
@@ -491,7 +491,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
         setFound((data || []) as Person[]);
       }
       window.dispatchEvent(new Event("f1-notifications-updated"));
-    } catch (e) { setStatus(e instanceof Error ? e.message : "İşlem başarısız oldu."); }
+    } catch (e) { setStatus(e instanceof Error ? e.message : "Ä°ÅŸlem baÅŸarÄ±sÄ±z oldu."); }
     finally { setBusy(false); }
   }
 
@@ -501,7 +501,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
     const recipient = active;
     if (!userId || !recipient || !body.trim() || busy) return;
     const outgoing = retryId ? body : createChatReply(body, replyTarget, 1000);
-    if (outgoing === null) { setStatus("Yanıt alıntısı dahil mesaj 1000 karakteri geçemez. Mesajı biraz kısalt."); return; }
+    if (outgoing === null) { setStatus("YanÄ±t alÄ±ntÄ±sÄ± dahil mesaj 1000 karakteri geÃ§emez. MesajÄ± biraz kÄ±salt."); return; }
     const tempId = retryId || `local-${crypto.randomUUID()}`;
     setReplyTarget(null);
     setBusy(true);
@@ -530,7 +530,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
       void refresh();
     } catch (error) {
       setMessages(previous => previous.map(m => m.id === tempId ? {...m, pending:false, failed:true} : m));
-      setStatus(error instanceof Error ? `Mesaj gönderilemedi: ${error.message}` : "Mesaj gönderilemedi.");
+      setStatus(error instanceof Error ? `Mesaj gÃ¶nderilemedi: ${error.message}` : "Mesaj gÃ¶nderilemedi.");
       setBusy(false);
     }
   }
@@ -559,10 +559,10 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
     if (!userId || !active || busy) return;
     const mime = file.type.toLowerCase().split(";")[0];
     const kind = mime.startsWith("image/") ? "image" : mime.startsWith("video/") ? "video" : mime.startsWith("audio/") ? "audio" : "";
-    if (!ALLOWED.has(mime) || !kind) {setStatus("Desteklenmeyen dosya türü."); return;}
+    if (!ALLOWED.has(mime) || !kind) {setStatus("Desteklenmeyen dosya tÃ¼rÃ¼."); return;}
     const maxSize = kind === "audio" ? 8 * 1024 * 1024 : kind === "video" ? 25 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {setStatus(`Dosya çok büyük. En fazla ${Math.round(maxSize/1024/1024)} MB yükleyebilirsin.`);return;}
-    setBusy(true); setStatus("Dosya yükleniyor...");
+    if (file.size > maxSize) {setStatus(`Dosya Ã§ok bÃ¼yÃ¼k. En fazla ${Math.round(maxSize/1024/1024)} MB yÃ¼kleyebilirsin.`);return;}
+    setBusy(true); setStatus("Dosya yÃ¼kleniyor...");
     const recipient = active;
     const extension = mime.split("/")[1]?.replace("quicktime","mov").replace("jpeg","jpg") || "bin";
     const path = `${userId}/${crypto.randomUUID()}.${extension}`;
@@ -579,7 +579,7 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
       await loadMessages(recipient);
       await refresh();
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Dosya gönderilemedi. SQL yükseltmesini kontrol et.");
+      setStatus(err instanceof Error ? err.message : "Dosya gÃ¶nderilemedi. SQL yÃ¼kseltmesini kontrol et.");
     } finally { setBusy(false); if (fileInputRef.current) fileInputRef.current.value=""; }
   }
 
@@ -590,13 +590,13 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
       return;
     }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setStatus("Tarayıcın mikrofonla ses kaydını desteklemiyor.");return;
+      setStatus("TarayÄ±cÄ±n mikrofonla ses kaydÄ±nÄ± desteklemiyor.");return;
     }
     try {
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
       const supported=["audio/webm;codecs=opus","audio/mp4","audio/webm","audio/ogg"]
         .find(t=>MediaRecorder.isTypeSupported(t));
-      if (!supported) {stream.getTracks().forEach(t=>t.stop());setStatus("Tarayıcı uygun ses formatı sunmuyor.");return;}
+      if (!supported) {stream.getTracks().forEach(t=>t.stop());setStatus("TarayÄ±cÄ± uygun ses formatÄ± sunmuyor.");return;}
       const recorder=new MediaRecorder(stream,{mimeType:supported});
       const pieces:BlobPart[]=[];
       recorderRef.current=recorder; microphoneRef.current=stream;
@@ -608,8 +608,8 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
         const file=new File(pieces,`ses-kaydi-${Date.now()}.${mime==="audio/mp4"?"m4a":"webm"}`,{type:mime});
         void uploadFile(file);
       };
-      recorder.start();setRecording(true);setStatus("Kayıt sürüyor. Bitirmek için tekrar mikrofona bas.");
-    } catch {setStatus("Mikrofon izni verilmedi veya cihaz kullanılamıyor.");}
+      recorder.start();setRecording(true);setStatus("KayÄ±t sÃ¼rÃ¼yor. Bitirmek iÃ§in tekrar mikrofona bas.");
+    } catch {setStatus("Mikrofon izni verilmedi veya cihaz kullanÄ±lamÄ±yor.");}
   }
 
   useEffect(() => () => {
@@ -644,29 +644,29 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
   const canChat = Boolean(partner);
   const incoming = requests.filter(item => item.direction === "incoming");
   const outgoing = requests.filter(item => item.direction === "outgoing");
-  if (!authReady) return <div className={`${styles.portal} ${mode === "popup" ? styles.popupMode : styles.pageMode} ${styles[theme] || ""}`}><div className={styles.signinMessage}>Mesajlar yükleniyor...</div></div>;
-  if (!userId) return <div className={`${styles.portal} ${mode === "popup" ? styles.popupMode : styles.pageMode} ${styles[theme] || ""}`}><div className={styles.signinMessage}><h1>Mesajlaşmak için giriş yap</h1><Link href="/login">Giriş ekranına git →</Link></div></div>;
+  if (!authReady) return <div className={`${styles.portal} ${mode === "popup" ? styles.popupMode : styles.pageMode} ${styles[theme] || ""}`}><div className={styles.signinMessage}>Mesajlar yÃ¼kleniyor...</div></div>;
+  if (!userId) return <div className={`${styles.portal} ${mode === "popup" ? styles.popupMode : styles.pageMode} ${styles[theme] || ""}`}><div className={styles.signinMessage}><h1>MesajlaÅŸmak iÃ§in giriÅŸ yap</h1><Link href="/login">GiriÅŸ ekranÄ±na git â†’</Link></div></div>;
 
   const dialog = (
     <div className={`${styles.portal} ${mode === "popup" ? styles.popupMode : styles.pageMode} ${styles[theme] || ""} ${mode === "page" && keyboardOpen ? styles.keyboardOpen : ""}`}>
-      <section className={styles.panel} role="region" aria-label="F1 Medipol mesajlar">
+      <section className={styles.panel} role="region" aria-label="F1 SOCIAL mesajlar">
 
           <header className={styles.panelHead}>
-            {active ? <button className={styles.iconBtn} onClick={() => { setActive(null); setMessages([]); }} aria-label="Konuşmalara dön"><Icon name="back"/></button> : <span className={styles.headIcon}><Icon name="chat" size={21}/></span>}
+            {active ? <button className={styles.iconBtn} onClick={() => { setActive(null); setMessages([]); }} aria-label="KonuÅŸmalara dÃ¶n"><Icon name="back"/></button> : <span className={styles.headIcon}><Icon name="chat" size={21}/></span>}
             <div className={styles.heading}>{active && partner ? <div className={styles.profileHeader}>
-              <button type="button" className={styles.profileAvatarButton} onClick={()=>setProfileActions(v=>!v)} aria-expanded={profileActions} aria-label="Kişi işlemlerini aç"><Avatar small name={partner.display_name} src={partner.avatar_url}/></button>
-              <Link className={styles.profileNameLink} href={`/members/${partner.user_id}`} title="Gerçek profili ziyaret et"><strong>{partner.display_name}</strong><small>Profilini ziyaret et ↗</small></Link>
-            </div> : <><strong>Mesajlar</strong><small>{unread} okunmamış mesaj · {waiting} istek</small></>}</div>
+              <button type="button" className={styles.profileAvatarButton} onClick={()=>setProfileActions(v=>!v)} aria-expanded={profileActions} aria-label="KiÅŸi iÅŸlemlerini aÃ§"><Avatar small name={partner.display_name} src={partner.avatar_url}/></button>
+              <Link className={styles.profileNameLink} href={`/members/${partner.user_id}`} title="GerÃ§ek profili ziyaret et"><strong>{partner.display_name}</strong><small>Profilini ziyaret et â†—</small></Link>
+            </div> : <><strong>Mesajlar</strong><small>{unread} okunmamÄ±ÅŸ mesaj Â· {waiting} istek</small></>}</div>
             {mode === "page" && <HeaderThemeMenu compact />}
-            {active && canChat && <button className={styles.iconBtn} title="Kişi işlemleri" aria-label="Kişi işlemleri" onClick={()=>setProfileActions(v=>!v)} aria-expanded={profileActions}><Icon name="more" size={19}/></button>}
-            {!active && view === "chats" && <button className={styles.iconBtn} onClick={() => {setView("find");setSearch("");}} aria-label="Yeni sohbet başlat" title="Yeni sohbet"><Icon name="plus"/></button>}
-            <button className={styles.iconBtn} onClick={closePanel} aria-label="Mesajlaşmayı kapat"><Icon name="close"/></button>
+            {active && canChat && <button className={styles.iconBtn} title="KiÅŸi iÅŸlemleri" aria-label="KiÅŸi iÅŸlemleri" onClick={()=>setProfileActions(v=>!v)} aria-expanded={profileActions}><Icon name="more" size={19}/></button>}
+            {!active && view === "chats" && <button className={styles.iconBtn} onClick={() => {setView("find");setSearch("");}} aria-label="Yeni sohbet baÅŸlat" title="Yeni sohbet"><Icon name="plus"/></button>}
+            <button className={styles.iconBtn} onClick={closePanel} aria-label="MesajlaÅŸmayÄ± kapat"><Icon name="close"/></button>
           </header>
-          {active && partner && profileActions && <div className={styles.profileActionMenu} role="menu" aria-label="Arkadaş işlemleri">
-            <div className={styles.profileActionCaption}><Avatar small name={partner.display_name} src={partner.avatar_url}/><span><strong>{partner.display_name}</strong><small>Kişi işlemleri</small></span></div>
+          {active && partner && profileActions && <div className={styles.profileActionMenu} role="menu" aria-label="ArkadaÅŸ iÅŸlemleri">
+            <div className={styles.profileActionCaption}><Avatar small name={partner.display_name} src={partner.avatar_url}/><span><strong>{partner.display_name}</strong><small>KiÅŸi iÅŸlemleri</small></span></div>
             <div className={styles.wallpaperSelector}>
               <div className={styles.wallpaperLabel}>SOHBET ARKA PLANI</div>
-              <div className={styles.wallpaperChoices} role="group" aria-label="Sohbet arka planını seç">
+              <div className={styles.wallpaperChoices} role="group" aria-label="Sohbet arka planÄ±nÄ± seÃ§">
                 {WALLPAPERS.map(option => <button
                   type="button" key={option.key} title={option.title}
                   className={`${styles.wallpaperChoice} ${wallpaper === option.key ? styles.wallpaperChosen : ""}`}
@@ -674,131 +674,131 @@ export default function MessagesClient({ mode = "page", onClose, initialTarget }
                 ><span className={styles.wallpaperPreview} data-wallpaper={option.key}/><span>{option.title}</span></button>)}
               </div>
               <input ref={galleryPickerRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" className={styles.fileHidden}
-                aria-label="Galeriden sohbet arka planı seç" onChange={event => {
+                aria-label="Galeriden sohbet arka planÄ± seÃ§" onChange={event => {
                   const photo = event.currentTarget.files?.[0];
                   event.currentTarget.value = "";
                   if (photo) void pickGalleryPhoto(photo);
                 }} />
               <button type="button" className={`${styles.galleryPickButton} ${wallpaper === "custom" ? styles.galleryPickActive : ""}`}
                 disabled={gallery.saving} onClick={() => galleryPickerRef.current?.click()}>
-                📷 {gallery.saving ? "Fotoğraf hazırlanıyor..." : "Galeriden fotoğraf seç"}{wallpaper === "custom" ? " ✓" : ""}
+                ğŸ“· {gallery.saving ? "FotoÄŸraf hazÄ±rlanÄ±yor..." : "Galeriden fotoÄŸraf seÃ§"}{wallpaper === "custom" ? " âœ“" : ""}
               </button>
               {gallery.error && <p className={styles.galleryError} role="status">{gallery.error}</p>}
-              <small className={styles.galleryHint}>Bu sohbete özel, yalnızca bu cihazda saklanır. Diğer kullanıcı görmez.</small>
+              <small className={styles.galleryHint}>Bu sohbete Ã¶zel, yalnÄ±zca bu cihazda saklanÄ±r. DiÄŸer kullanÄ±cÄ± gÃ¶rmez.</small>
             </div>
-            <Link role="menuitem" href={`/members/${partner.user_id}`} onClick={()=>setProfileActions(false)}>↗ &nbsp; Profili ziyaret et</Link>
+            <Link role="menuitem" href={`/members/${partner.user_id}`} onClick={()=>setProfileActions(false)}>â†— &nbsp; Profili ziyaret et</Link>
             <button role="menuitem" disabled={busy} onClick={()=>{
-              if(confirm(`${partner.display_name} ile arkadaşlığını kaldırmak istiyor musun? Konuşma geçmişi de silinecek.`)) {
-                void act(()=>supabase.rpc("dm_remove_friend",{p_target:partner.user_id}),"Arkadaşlıktan çıkarıldı.").then(()=>{setActive(null);setProfileActions(false);});
+              if(confirm(`${partner.display_name} ile arkadaÅŸlÄ±ÄŸÄ±nÄ± kaldÄ±rmak istiyor musun? KonuÅŸma geÃ§miÅŸi de silinecek.`)) {
+                void act(()=>supabase.rpc("dm_remove_friend",{p_target:partner.user_id}),"ArkadaÅŸlÄ±ktan Ã§Ä±karÄ±ldÄ±.").then(()=>{setActive(null);setProfileActions(false);});
               }
-            }}>♧ &nbsp; Arkadaşlıktan çıkar</button>
+            }}>â™§ &nbsp; ArkadaÅŸlÄ±ktan Ã§Ä±kar</button>
             <button role="menuitem" className={styles.dangerAction} disabled={busy} onClick={()=>{
-              if(confirm(`${partner.display_name} adlı kişiyi engellemek istiyor musun? Arkadaşlık ve konuşma geçmişi silinecek.`)) {
-                void act(()=>supabase.rpc("dm_block_user",{p_target:partner.user_id,p_block:true}),"Kullanıcı engellendi.").then(()=>{setActive(null);setProfileActions(false);});
+              if(confirm(`${partner.display_name} adlÄ± kiÅŸiyi engellemek istiyor musun? ArkadaÅŸlÄ±k ve konuÅŸma geÃ§miÅŸi silinecek.`)) {
+                void act(()=>supabase.rpc("dm_block_user",{p_target:partner.user_id,p_block:true}),"KullanÄ±cÄ± engellendi.").then(()=>{setActive(null);setProfileActions(false);});
               }
-            }}>⊘ &nbsp; Kullanıcıyı engelle</button>
-            <button className={styles.dismissActions} onClick={()=>setProfileActions(false)}>Vazgeç</button>
+            }}>âŠ˜ &nbsp; KullanÄ±cÄ±yÄ± engelle</button>
+            <button className={styles.dismissActions} onClick={()=>setProfileActions(false)}>VazgeÃ§</button>
           </div>}
           {view === "groups" && !active ? (
             <GroupChatClient userId={userId} onBack={() => setView("chats")} compact={keyboardOpen && mode === "page"} />
           ) : active ? (
             <>
-              {canChat && <ChatPinnedNotice pin={pinned} busy={pinBusy} onJump={id=>{if(!focusQuotedMessage(id))setStatus("Sabitlenen mesaj son 70 mesaj arasında değil.");}} onRemove={()=>void togglePin(null)}/>}
+              {canChat && <ChatPinnedNotice pin={pinned} busy={pinBusy} onJump={id=>{if(!focusQuotedMessage(id))setStatus("Sabitlenen mesaj son 70 mesaj arasÄ±nda deÄŸil.");}} onRemove={()=>void togglePin(null)}/>}
               <div className={`${styles.chatMessages} ${wallpaper === "custom" ? styles.galleryWallpaper : styles[`wallpaper_${wallpaper}`]}`}
                 style={wallpaper === "custom" && gallery.url ? {
                   backgroundImage: `linear-gradient(180deg,rgba(5,9,17,.25),rgba(5,9,17,.55)),url("${gallery.url}")`,
                   backgroundPosition: "center", backgroundSize: "cover", backgroundRepeat: "no-repeat",
                 } : undefined}>
-                {!canChat && <div className={styles.empty}>Bu kullanıcıyla konuşmak için arkadaş olmanız gerekiyor. Arkadaşlarını veya isteklerini kontrol et.</div>}
-                {canChat && messages.length === 0 && historyError && <div className={styles.historyError} role="alert">Mesajlar alınamadı. Bağlantını kontrol edip sohbeti tekrar açabilirsin.</div>}
+                {!canChat && <div className={styles.empty}>Bu kullanÄ±cÄ±yla konuÅŸmak iÃ§in arkadaÅŸ olmanÄ±z gerekiyor. ArkadaÅŸlarÄ±nÄ± veya isteklerini kontrol et.</div>}
+                {canChat && messages.length === 0 && historyError && <div className={styles.historyError} role="alert">Mesajlar alÄ±namadÄ±. BaÄŸlantÄ±nÄ± kontrol edip sohbeti tekrar aÃ§abilirsin.</div>}
                 {canChat && messages.length === 0 && !historyError && (historyLoading || historyLoadedFor !== active) &&
-                  <div className={styles.historyGhost} role="status" aria-label="Mesajlar hazırlanıyor"><span/><span/><span/></div>}
+                  <div className={styles.historyGhost} role="status" aria-label="Mesajlar hazÄ±rlanÄ±yor"><span/><span/><span/></div>}
                 {canChat && messages.map(m => <div id={`f1-chat-message-${m.id}`} key={m.id} className={`${styles.bubbleRow} ${m.sender_id === userId ? styles.mine : ""}`}>
                   <ChatMessageGesture disabled={Boolean(m.pending || m.failed)} pinBusy={pinBusy} pinned={pinned?.message_id===m.id}
                     onReply={()=>quoteMessage(m)} onPin={()=>void togglePin(m)} onCopy={()=>copyMessage(m.body)}>
                     <div className={styles.bubble}>
                     {parseChatReply(m.body).quote && <ChatReplyQuote quote={parseChatReply(m.body).quote!} onJump={focusQuotedMessage}/>}
-                    {m.media_url && m.media_kind === "image" ? <a href={m.media_url} target="_blank" rel="noopener noreferrer" aria-label="Fotoğrafı aç"><img className={styles.mediaImage} src={m.media_url} alt={m.media_name || "Gönderilen fotoğraf"}/></a>
+                    {m.media_url && m.media_kind === "image" ? <a href={m.media_url} target="_blank" rel="noopener noreferrer" aria-label="FotoÄŸrafÄ± aÃ§"><img className={styles.mediaImage} src={m.media_url} alt={m.media_name || "GÃ¶nderilen fotoÄŸraf"}/></a>
                       : m.media_url && m.media_kind === "video" ? <video className={styles.mediaVideo} src={m.media_url} controls playsInline preload="metadata" />
                       : m.media_url && m.media_kind === "audio" ? <audio className={styles.mediaAudio} src={m.media_url} controls preload="metadata" />
                       : <ChatMessageBody body={parseChatReply(m.body).text}/>}
-                    <small>{formatTime(m.created_at)} {m.pending ? "· Gönderiliyor…" : m.failed ? "· Gönderilemedi" : m.sender_id === userId ? (m.read_at ? "· Görüldü" : "· Gönderildi") : ""}</small>
-                    {m.failed && <button type="button" className={styles.retrySend} disabled={busy} onClick={() => void sendBody(m.body, m.id)}>Tekrar dene ↻</button>}
+                    <small>{formatTime(m.created_at)} {m.pending ? "Â· GÃ¶nderiliyorâ€¦" : m.failed ? "Â· GÃ¶nderilemedi" : m.sender_id === userId ? (m.read_at ? "Â· GÃ¶rÃ¼ldÃ¼" : "Â· GÃ¶nderildi") : ""}</small>
+                    {m.failed && <button type="button" className={styles.retrySend} disabled={busy} onClick={() => void sendBody(m.body, m.id)}>Tekrar dene â†»</button>}
                     </div>
                   </ChatMessageGesture>
-                  {m.sender_id !== userId && <button title="Mesajı bildir" className={styles.report} onClick={() => {
-                    if (confirm("Bu mesajı moderatörlere bildirilsin mi?")) void act(() => supabase.rpc("dm_report_message", { p_message: m.id, p_reason: "Uygunsuz mesaj" }), "Mesaj bildirildi.");
+                  {m.sender_id !== userId && <button title="MesajÄ± bildir" className={styles.report} onClick={() => {
+                    if (confirm("Bu mesajÄ± moderatÃ¶rlere bildirilsin mi?")) void act(() => supabase.rpc("dm_report_message", { p_message: m.id, p_reason: "Uygunsuz mesaj" }), "Mesaj bildirildi.");
                   }}>Bildir</button>}
                 </div>)}
                 <div ref={bottomRef}/>
               </div>
-              {canChat && replyTarget && <div className={styles.replyDraft}><ChatReplyQuote quote={replyTarget} composing onJump={focusQuotedMessage}/><button type="button" onClick={()=>setReplyTarget(null)} aria-label="Yanıtı iptal et">✕</button></div>}
+              {canChat && replyTarget && <div className={styles.replyDraft}><ChatReplyQuote quote={replyTarget} composing onJump={focusQuotedMessage}/><button type="button" onClick={()=>setReplyTarget(null)} aria-label="YanÄ±tÄ± iptal et">âœ•</button></div>}
               {canChat && <form onSubmit={send} className={styles.composer}>
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className={styles.fileHidden} aria-label="Fotoğraf veya video ekle" onChange={event=>{const f=event.target.files?.[0];if(f)void uploadFile(f);}}/>
-                <button type="button" onClick={()=>fileInputRef.current?.click()} disabled={busy||recording} title="Fotoğraf veya video gönder" aria-label="Fotoğraf veya video ekle" className={styles.attachBtn}>＋</button>
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className={styles.fileHidden} aria-label="FotoÄŸraf veya video ekle" onChange={event=>{const f=event.target.files?.[0];if(f)void uploadFile(f);}}/>
+                <button type="button" onClick={()=>fileInputRef.current?.click()} disabled={busy||recording} title="FotoÄŸraf veya video gÃ¶nder" aria-label="FotoÄŸraf veya video ekle" className={styles.attachBtn}>ï¼‹</button>
                 <div className={styles.expressionAnchor}>
-                  <button type="button" className={styles.attachBtn} title="Emoji veya çıkartma" aria-label="Emoji ve çıkartmaları aç" aria-expanded={expressionsOpen}
-                    onClick={() => setExpressionsOpen(value => !value)}>☺</button>
+                  <button type="button" className={styles.attachBtn} title="Emoji veya Ã§Ä±kartma" aria-label="Emoji ve Ã§Ä±kartmalarÄ± aÃ§" aria-expanded={expressionsOpen}
+                    onClick={() => setExpressionsOpen(value => !value)}>â˜º</button>
                   {expressionsOpen && <ChatExpressionPicker
                     onEmoji={emoji => { setDraft(previous => (previous + emoji).slice(0,1000)); setExpressionsOpen(false); }}
                     onSticker={value => { setExpressionsOpen(false); void sendBody(value); }}
                     onClose={() => setExpressionsOpen(false)} />}
                 </div>
                 <input ref={draftInputRef} value={draft} onChange={e => setDraft(e.target.value)} onKeyDown={e => { if (e.key === "Escape") setReplyTarget(null); }} maxLength={1000} placeholder="Mesaj yaz..." aria-label="Yeni mesaj"/>
-                <button type="button" disabled={busy} onClick={()=>void toggleRecording()} aria-label={recording?"Ses kaydını bitir":"Ses kaydet"} title={recording?"Kaydı bitir":"Ses kaydet"} className={`${styles.attachBtn} ${recording?styles.recording:""}`}>{recording ? <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none" /></svg> : <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" /><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0M12 17v4M8.5 21h7" /></svg>}</button>
+                <button type="button" disabled={busy} onClick={()=>void toggleRecording()} aria-label={recording?"Ses kaydÄ±nÄ± bitir":"Ses kaydet"} title={recording?"KaydÄ± bitir":"Ses kaydet"} className={`${styles.attachBtn} ${recording?styles.recording:""}`}>{recording ? <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none" /></svg> : <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="9" y="2.5" width="6" height="12" rx="3" /><path d="M5.5 10.5a6.5 6.5 0 0 0 13 0M12 17v4M8.5 21h7" /></svg>}</button>
                 <button type="submit"
                   onPointerDown={event => { if (document.activeElement === draftInputRef.current) event.preventDefault(); }}
                   onClick={() => draftInputRef.current?.focus({ preventScroll: true })}
-                  disabled={!draft.trim() || busy || recording} aria-label="Mesaj gönder"><Icon name="send"/></button>
+                  disabled={!draft.trim() || busy || recording} aria-label="Mesaj gÃ¶nder"><Icon name="send"/></button>
               </form>}
             </>
           ) : (
             <>
               <div className={styles.tabs}>
                 <button className={view === "chats" ? styles.selected : ""} onClick={() => setView("chats")}><Icon name="chat" size={16}/> Sohbetler</button>
-                <button className={view === "find" ? styles.selected : ""} onClick={() => setView("find")}><Icon name="search" size={16}/> Kişi bul</button>
-                <button className={view === "requests" ? styles.selected : ""} onClick={() => setView("requests")}><Icon name="users" size={16}/> İstekler {waiting > 0 && <em>{waiting}</em>}</button>
+                <button className={view === "find" ? styles.selected : ""} onClick={() => setView("find")}><Icon name="search" size={16}/> KiÅŸi bul</button>
+                <button className={view === "requests" ? styles.selected : ""} onClick={() => setView("requests")}><Icon name="users" size={16}/> Ä°stekler {waiting > 0 && <em>{waiting}</em>}</button>
                 <button className={view === "groups" ? styles.selected : ""} onClick={() => {setActive(null);setView("groups");}}><Icon name="users" size={16}/> Gruplar</button>
               </div>
               <div className={styles.listBody}>
-                {view === "chats" && <div className={styles.listSectionHeader}><strong>Son konuşmalar</strong><span>{friends.length} sohbet</span></div>}
-                {view === "chats" && mode === "popup" && friends.length > 1 && <p className={styles.chooseHint}>Mesaj yazmak için bir arkadaşının üzerine dokun.</p>}
+                {view === "chats" && <div className={styles.listSectionHeader}><strong>Son konuÅŸmalar</strong><span>{friends.length} sohbet</span></div>}
+                {view === "chats" && mode === "popup" && friends.length > 1 && <p className={styles.chooseHint}>Mesaj yazmak iÃ§in bir arkadaÅŸÄ±nÄ±n Ã¼zerine dokun.</p>}
                 {view === "chats" && <>
-                  {friends.length === 0 && <div className={styles.empty}>Henüz arkadaşın yok. “Kişi bul” sekmesinden kullanıcı arayıp arkadaşlık isteği gönder.</div>}
+                  {friends.length === 0 && <div className={styles.empty}>HenÃ¼z arkadaÅŸÄ±n yok. â€œKiÅŸi bulâ€ sekmesinden kullanÄ±cÄ± arayÄ±p arkadaÅŸlÄ±k isteÄŸi gÃ¶nder.</div>}
                   {friends.map(friend => <button className={styles.friendItem} key={friend.user_id} onClick={() => { setActive(friend.user_id); setDraft(""); }}>
                     <Avatar name={friend.display_name} src={friend.avatar_url}/><span className={styles.friendCopy}><strong>{friend.display_name}</strong><small>{messagePreview(parseChatReply(friend.last_message || "").text)}</small></span>
                     <span className={styles.meta}>{friend.unread_count > 0 ? <b>{friend.unread_count}</b> : <small>{formatTime(friend.last_at)}</small>}</span>
                   </button>)}
                 </>}
                 {view === "find" && <>
-                  <label className={styles.searchBox}><Icon name="search" size={18}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Kullanıcı adı veya görünen ad (en az 2 harf)" maxLength={40}/></label>
-                  {search.trim().length < 2 && <div className={styles.empty}>Arkadaş eklemek için en az iki karakter yaz.</div>}
-                  {search.trim().length >= 2 && found.length === 0 && <div className={styles.empty}>Bu aramayla eşleşen kullanıcı bulunamadı.</div>}
+                  <label className={styles.searchBox}><Icon name="search" size={18}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="KullanÄ±cÄ± adÄ± veya gÃ¶rÃ¼nen ad (en az 2 harf)" maxLength={40}/></label>
+                  {search.trim().length < 2 && <div className={styles.empty}>ArkadaÅŸ eklemek iÃ§in en az iki karakter yaz.</div>}
+                  {search.trim().length >= 2 && found.length === 0 && <div className={styles.empty}>Bu aramayla eÅŸleÅŸen kullanÄ±cÄ± bulunamadÄ±.</div>}
                   {found.map(person => <div className={styles.personItem} key={person.user_id}>
                     <Avatar small name={person.display_name} src={person.avatar_url}/><strong>{person.display_name}</strong>
-                    {person.relationship === "accepted" ? <button disabled className={styles.secondary}>Arkadaşın</button>
-                      : person.relationship === "pending" ? <button className={styles.secondary} onClick={() => setView("requests")}>İstek var</button>
-                      : person.relationship === "declined" ? <span className={styles.muted}>İstek reddedildi</span>
-                      : <button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_add_friend", { p_target: person.user_id }), "Arkadaşlık isteği gönderildi.")}><Icon name="plus" size={15}/> Ekle</button>}
+                    {person.relationship === "accepted" ? <button disabled className={styles.secondary}>ArkadaÅŸÄ±n</button>
+                      : person.relationship === "pending" ? <button className={styles.secondary} onClick={() => setView("requests")}>Ä°stek var</button>
+                      : person.relationship === "declined" ? <span className={styles.muted}>Ä°stek reddedildi</span>
+                      : <button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_add_friend", { p_target: person.user_id }), "ArkadaÅŸlÄ±k isteÄŸi gÃ¶nderildi.")}><Icon name="plus" size={15}/> Ekle</button>}
                   </div>)}
                 </>}
                 {view === "requests" && <>
-                  {requests.length === 0 && <div className={styles.empty}>Bekleyen arkadaşlık isteğin yok.</div>}
+                  {requests.length === 0 && <div className={styles.empty}>Bekleyen arkadaÅŸlÄ±k isteÄŸin yok.</div>}
                   {incoming.map(r => <div className={styles.personItem} key={r.friendship_id}>
-                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>Sana istek gönderdi</small></span>
-                    <div className={styles.requestButtons}><button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: true }), "Arkadaşlık isteği kabul edildi.")}><Icon name="check" size={15}/></button><button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: false }), "İstek reddedildi.")}><Icon name="close" size={15}/></button></div>
+                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>Sana istek gÃ¶nderdi</small></span>
+                    <div className={styles.requestButtons}><button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: true }), "ArkadaÅŸlÄ±k isteÄŸi kabul edildi.")}><Icon name="check" size={15}/></button><button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: false }), "Ä°stek reddedildi.")}><Icon name="close" size={15}/></button></div>
                   </div>)}
                   {outgoing.map(r => <div className={styles.personItem} key={r.friendship_id}>
-                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>Yanıt bekleniyor</small></span>
-                    <button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_remove_friend", { p_target: r.user_id }), "İstek iptal edildi.")}>İptal</button>
+                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>YanÄ±t bekleniyor</small></span>
+                    <button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_remove_friend", { p_target: r.user_id }), "Ä°stek iptal edildi.")}>Ä°ptal</button>
                   </div>)}
                 </>}
               </div>
             </>
           )}
           {status && <div className={styles.status} role="status">{status}</div>}
-          {toast && <button className={styles.toastInPage} onClick={()=>{setActive(toast.from);setView("chats");setToast(null)}}><strong>{toast.name} · Yeni mesaj</strong><small>{toast.text}</small></button>}
-          <footer className={styles.panelFoot}><span>F1 MEDİPOL · ÖZEL MESAJLAR</span><span>Arkadaşlar arasında</span></footer>
+          {toast && <button className={styles.toastInPage} onClick={()=>{setActive(toast.from);setView("chats");setToast(null)}}><strong>{toast.name} Â· Yeni mesaj</strong><small>{toast.text}</small></button>}
+          <footer className={styles.panelFoot}><span>F1 MEDÄ°POL Â· Ã–ZEL MESAJLAR</span><span>ArkadaÅŸlar arasÄ±nda</span></footer>
       </section>
     </div>
   );

@@ -797,13 +797,13 @@ export default async function HomePage() {
       <Header />
 
       {(tickerMessage || race) && (
-        <div className="f1-next-race-strip" aria-label="F1 Medipol kayan duyuru şeridi">
+        <div className="f1-next-race-strip" aria-label="F1 SOCIAL kayan duyuru şeridi">
           <div className="f1-next-race-track">
             {[0, 1].map((copy) => (
               <div className="f1-next-race-group" key={copy} aria-hidden={copy === 1}>
                 {Array.from({ length: 20 }, (_, index) => (
                   <span className="f1-next-race-item" key={index}>
-                    <b>● F1 MEDİPOL</b><span aria-hidden="true">◆</span>
+                    <b>● SOCIAL</b><span aria-hidden="true">◆</span>
                     {tickerMessage ? <strong>{tickerMessage}</strong> : <strong>YAKLAŞAN YARIŞ: {race?.raceName}</strong>}
                     {!tickerMessage && race && <><span aria-hidden="true">◆</span><span>{formatSessionTimeTR(race.raceDate, race.raceTime)} (TSİ)</span></>}
                   </span>
@@ -3690,7 +3690,7 @@ export default async function HomePage() {
                 <div className="eyebrow">
                   {race
                     ? `ROUND ${race.round} · ${race.circuitName}`
-                    : "F1 MEDİPOL"}
+                    : "SOCIAL"}
                 </div>
 
                 <div className="pills">
@@ -3907,7 +3907,7 @@ export default async function HomePage() {
               <RotatingPredictionPrompt />
 
               <div className="prediction-summary-line">
-                <span>🏁 PODYUM</span>
+                <span>🏆 PODYUM</span>
                 <span>⚑ 12 SENARYO</span>
                 <span>⚡ 4 ÖZEL SEÇİM</span>
               </div>
@@ -3928,7 +3928,7 @@ export default async function HomePage() {
             <div className="paddock-wide-intro">
               <div className="paddock-wide-kicker">
                 <span className="paddock-wide-pulse" aria-hidden="true" />
-                F1 MEDİPOL PADDOCK
+                SOCIAL PADDOCK
               </div>
               <h3>Paddock Nabzı</h3>
               <p>Yarış heyecanının toplulukla buluştuğu yer.</p>
@@ -3945,7 +3945,7 @@ export default async function HomePage() {
                 <span className="paddock-wide-tile-arrow" aria-hidden="true">↗</span>
               </Link>
               <Link href="/arcade" className="paddock-wide-tile">
-                <span className="paddock-wide-tile-icon" aria-hidden="true">🎮</span>
+                <span className="paddock-wide-tile-icon" aria-hidden="true">🏎️</span>
                 <strong>Paddock Arcade</strong>
                 <small>Manager, Quiz ve mini oyunlar.</small>
                 <span className="paddock-wide-tile-arrow" aria-hidden="true">↗</span>
@@ -3975,7 +3975,7 @@ export default async function HomePage() {
                   <h2>{weeklyCommentary.title}</h2>
                   {weeklyCommentary.summary && <p className="weekly-lead">{weeklyCommentary.summary}</p>}
                   <div className="weekly-longtext">{weeklyCommentary.content}</div>
-                  <div className="weekly-author">İDİL BOYALI · F1 MEDİPOL YÖNETİM KURULU</div>
+                  <div className="weekly-author">İDİL BOYALI · SOCIAL YÖNETİM EKİBİ</div>
                 </div>
                 {weeklyCommentary.image_url && (
                   <div className="weekly-image">
@@ -4194,7 +4194,7 @@ export default async function HomePage() {
           <div className="section-head">
             <div className="section-title">
               <h2>F1 Arcade</h2>
-              <p>F1 Medipol arcade alanında dört farklı deneyime hemen gir.</p>
+              <p>F1 SOCIAL arcade alanında dört farklı deneyime hemen gir.</p>
             </div>
           </div>
 

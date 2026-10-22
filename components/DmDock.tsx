@@ -1,6 +1,6 @@
 "use client";
 
-// F1 Medipol DM button repair: responsive Header icon + resilient desktop popup.
+// F1 SOCIAL DM button repair: responsive Header icon + resilient desktop popup.
 // Message data, database operations and visual chat implementation stay unchanged.
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -48,14 +48,14 @@ function ChatStatus({ title, description, onClose }: { title: string; descriptio
         <button type="button" onClick={onClose} aria-label="Sohbet penceresini kapat" style={{
           background: "#303747", color: "#fff", border: 0, borderRadius: 8,
           cursor: "pointer", width: 32, height: 32, fontSize: 18,
-        }}>×</button>
+        }}>Ã—</button>
       </div>
       <p style={{ fontSize: 13, lineHeight: 1.6, margin: 0, color: "#c4cbd7" }}>{description}</p>
       <Link href="/messages?full=1" onClick={onClose} style={{
         display: "inline-flex", justifyContent: "center", alignItems: "center",
         background: "#e52d40", color: "#fff", fontWeight: 700, fontSize: 13,
         borderRadius: 10, minHeight: 42, textDecoration: "none",
-      }}>Mesajları tam sayfada aç →</Link>
+      }}>MesajlarÄ± tam sayfada aÃ§ â†’</Link>
     </section>
   );
 }
@@ -64,11 +64,11 @@ class ChatErrorBoundary extends Component<PopupBoundaryProps, PopupBoundaryState
   state: PopupBoundaryState = { error: false };
   static getDerivedStateFromError(): PopupBoundaryState { return { error: true }; }
   componentDidCatch(error: Error) {
-    console.error("[F1 Medipol] DM popup render error:", error);
+    console.error("[F1 SOCIAL] DM popup render error:", error);
   }
   render() {
     if (this.state.error) {
-      return <ChatStatus title="Sohbet açılamadı" description="Sohbet penceresi yüklenirken bir sorun oluştu. Tam sayfa görünümünü deneyebilirsin." onClose={this.props.onClose} />;
+      return <ChatStatus title="Sohbet aÃ§Ä±lamadÄ±" description="Sohbet penceresi yÃ¼klenirken bir sorun oluÅŸtu. Tam sayfa gÃ¶rÃ¼nÃ¼mÃ¼nÃ¼ deneyebilirsin." onClose={this.props.onClose} />;
     }
     return this.props.children;
   }
@@ -101,7 +101,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
     void import("./MessagesClient").then(module => {
       setChatComponent(() => module.default);
     }).catch(error => {
-      console.error("[F1 Medipol] DM popup download error:", error);
+      console.error("[F1 SOCIAL] DM popup download error:", error);
       setLoadError(true);
     }).finally(() => { loadPending.current = false; });
   }, [popupOpen, chatComponent, loadError]);
@@ -109,7 +109,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
   useEffect(() => {
     if (!popupOpen || chatComponent || loadError) return;
     const timer = window.setTimeout(() => {
-      console.warn("[F1 Medipol] DM component loading timed out");
+      console.warn("[F1 SOCIAL] DM component loading timed out");
       setLoadError(true);
     }, 12000);
     return () => window.clearTimeout(timer);
@@ -120,7 +120,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
     let mounted = true;
     void supabase.auth.getSession().then(({ data }) => {
       if (mounted) setUid(data.session?.user?.id || null);
-    }).catch(error => console.warn("[F1 Medipol] DM session:", error));
+    }).catch(error => console.warn("[F1 SOCIAL] DM session:", error));
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (mounted) setUid(session?.user?.id || null);
     });
@@ -140,7 +140,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
       if (!groups.error) setGroupUnread(((groups.data || []) as Array<{ unread_count: number }>).reduce((n, item) => n + Number(item.unread_count || 0), 0));
     } catch (error) {
       // Badge refresh failures must NEVER break the button.
-      console.warn("[F1 Medipol] DM badge refresh:", error);
+      console.warn("[F1 SOCIAL] DM badge refresh:", error);
     }
   }, [supabase, uid]);
 
@@ -172,7 +172,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
       if (window.location.pathname !== "/messages") {
         window.sessionStorage.setItem("f1-dm-last-page", currentPage());
       }
-    } catch (error) { console.warn("[F1 Medipol] DM page history:", error); }
+    } catch (error) { console.warn("[F1 SOCIAL] DM page history:", error); }
 
     const handleOpen = (event: Event) => {
       const payload = (event as CustomEvent<{ userId?: string; view?: string }>).detail;
@@ -232,7 +232,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
   return <>
     <button type="button" onClick={handleClick} className={`${styles.headerButton} ${isLight ? styles.headerLight : ""}`}
       title="Mesajlar" aria-haspopup="dialog" aria-expanded={popupOpen}
-      aria-label={`Mesajlar, ${unread + groupUnread} okunmamış, ${requests} arkadaşlık isteği`}
+      aria-label={`Mesajlar, ${unread + groupUnread} okunmamÄ±ÅŸ, ${requests} arkadaÅŸlÄ±k isteÄŸi`}
       style={{ textDecoration: "none", pointerEvents: "auto", position: "relative", zIndex: 3, touchAction: "manipulation", flexShrink: 0 }}>
       <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <path d="M20 11.5a8.5 8.5 0 0 1-8.5 8.5 9 9 0 0 1-3.6-.75L3 21l1.75-4.9A8.5 8.5 0 1 1 20 11.5Z" />
@@ -243,10 +243,10 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
     {popupOpen && typeof document !== "undefined" && createPortal(
       <ChatErrorBoundary onClose={closePopup}>
         {loadError
-          ? <ChatStatus title="Mesajlaşma yüklenemedi" description="Sohbet dosyası açılamadı. Sayfayı yenilemeyi veya tam ekran mesajları kullanmayı deneyebilirsin." onClose={closePopup} />
+          ? <ChatStatus title="MesajlaÅŸma yÃ¼klenemedi" description="Sohbet dosyasÄ± aÃ§Ä±lamadÄ±. SayfayÄ± yenilemeyi veya tam ekran mesajlarÄ± kullanmayÄ± deneyebilirsin." onClose={closePopup} />
           : chatComponent
             ? <ChatRender Component={chatComponent} targetId={targetId} onClose={closePopup} />
-            : <ChatStatus title="Mesajlar yükleniyor…" description="Sohbet hazırlanıyor. İlk açılışta kısa sürebilir." onClose={closePopup} />}
+            : <ChatStatus title="Mesajlar yÃ¼kleniyorâ€¦" description="Sohbet hazÄ±rlanÄ±yor. Ä°lk aÃ§Ä±lÄ±ÅŸta kÄ±sa sÃ¼rebilir." onClose={closePopup} />}
       </ChatErrorBoundary>,
       document.body,
     )}

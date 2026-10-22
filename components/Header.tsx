@@ -234,7 +234,7 @@ export default function Header() {
             user.email?.split(
               "@"
             )[0] ||
-            "F1 Medipol Üyesi";
+            "F1 SOCIAL Üyesi";
 
           const {
             data:
@@ -476,10 +476,7 @@ export default function Header() {
      LOGO
      ======================================================= */
 
-  const logoSrc =
-    theme === "light"
-      ? "/f1-medipol-logo-light.png"
-      : "/f1-medipol-logo-dark.png";
+  const logoSrc = "/f1-social-logo.png";
 
   /* =======================================================
      COLORS
@@ -1699,6 +1696,25 @@ export default function Header() {
               align-items:center!important;
             }
             .medipol-quick-control > div:first-child { min-width:0!important; }
+            .medipol-quick-dm > button {
+              box-sizing:border-box!important;
+              width:100%!important;
+              height:100%!important;
+              min-width:0!important;
+              min-height:0!important;
+              max-width:100%!important;
+              max-height:100%!important;
+              padding:0!important;
+              display:flex!important;
+              align-items:center!important;
+              justify-content:center!important;
+            }
+            .medipol-quick-dm > button > svg {
+              width:20px!important;
+              height:20px!important;
+              display:block!important;
+              flex:none!important;
+            }
             .medipol-header-login-icon {display:block!important;}
             .medipol-header-login-label {display:none!important;}
           }
@@ -1809,7 +1825,7 @@ export default function Header() {
         <Link
           href="/"
           className="medipol-header-logo"
-          aria-label="F1 Medipol Ana Sayfa"
+          aria-label="F1Social Ana Sayfa"
           onClick={() =>
             setMenuOpen(false)
           }

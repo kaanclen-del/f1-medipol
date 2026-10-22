@@ -1,6 +1,6 @@
 
 /* =========================================================
-   F1 MEDIPOL
+   F1 SOCIAL
    REPLAY ENGINE V3
 
    - Practice / Qualifying:
@@ -16,7 +16,7 @@
      intervals
 
    - Track:
-     gerçek OpenF1 x/y/z geometrisi
+     gerÃ§ek OpenF1 x/y/z geometrisi
    ========================================================= */
 
 export type ReplaySessionKind =
@@ -74,7 +74,7 @@ export type ReplayDriverFrame = {
 
   /*
     O anda devam eden turun
-    geçen süresi.
+    geÃ§en sÃ¼resi.
   */
 
   currentLapTime:
@@ -90,7 +90,7 @@ export type ReplayDriverFrame = {
     | null;
 
   /*
-    Session içindeki o ana kadarki
+    Session iÃ§indeki o ana kadarki
     en iyi tur.
   */
 
@@ -99,7 +99,7 @@ export type ReplayDriverFrame = {
     | null;
 
   /*
-    Current lap sector süreleri.
+    Current lap sector sÃ¼releri.
 
     Sector tamamlanmadan null.
   */
@@ -117,9 +117,9 @@ export type ReplayDriverFrame = {
     | null;
 
   /*
-    OpenF1 mini-sector kodları.
+    OpenF1 mini-sector kodlarÄ±.
 
-    0    = henüz tamamlanmadı / yok
+    0    = henÃ¼z tamamlanmadÄ± / yok
     2048 = yellow
     2049 = green
     2051 = purple
@@ -158,10 +158,10 @@ export type ReplayDriverFrame = {
     | null;
 
   /*
-    0 → 1
+    0 â†’ 1
 
-    Track map üzerinde aracın
-    mevcut tur içindeki konumu.
+    Track map Ã¼zerinde aracÄ±n
+    mevcut tur iÃ§indeki konumu.
   */
 
   trackProgress:
@@ -662,10 +662,10 @@ async function fetchOpenF1<
   await waitForOpenF1();
 
   try {
-    // OpenF1 2023+ tarihsel arşivini ücretsiz ve tokensız sunuyor.
+    // OpenF1 2023+ tarihsel arÅŸivini Ã¼cretsiz ve tokensÄ±z sunuyor.
     // Vercel Preview'da OPENF1_USERNAME / PASSWORD bulunmasa da
-    // geçmiş seansların replay verilerini alabilmeliyiz.
-    // Ücretli canlı erişim için token yalnızca ilgili LIVE API'de kullanılır.
+    // geÃ§miÅŸ seanslarÄ±n replay verilerini alabilmeliyiz.
+    // Ãœcretli canlÄ± eriÅŸim iÃ§in token yalnÄ±zca ilgili LIVE API'de kullanÄ±lÄ±r.
     const response =
       await fetch(
         `https://api.openf1.org/v1/${path}`,
@@ -1095,7 +1095,7 @@ async function getCompletedSessions() {
   let all =
     [...thisYear];
 
-  // Son seansın arşivi geç yayımlandığında geçen sezona düşebilir.
+  // Son seansÄ±n arÅŸivi geÃ§ yayÄ±mlandÄ±ÄŸÄ±nda geÃ§en sezona dÃ¼ÅŸebilir.
   const previous = await fetchOpenF1<RawSession>(
     `sessions?year=${currentYear - 1}`
   );
@@ -1226,8 +1226,8 @@ async function findReplayCandidate():
     }
 
     /*
-      Laps artık sector +
-      mini-sector verilerini de içerir.
+      Laps artÄ±k sector +
+      mini-sector verilerini de iÃ§erir.
     */
 
     const laps =
@@ -1580,7 +1580,7 @@ function getCurrentLapTime(
 
   /*
     Elimizde final lap duration varsa
-    onun üzerine çıkma.
+    onun Ã¼zerine Ã§Ä±kma.
   */
 
   if (
@@ -1602,12 +1602,12 @@ function getCurrentLapTime(
 /* =========================================================
    MINI SECTOR REVEAL
 
-   Historical API bütün turun final mini-sector
-   datasını verir.
+   Historical API bÃ¼tÃ¼n turun final mini-sector
+   datasÄ±nÄ± verir.
 
-   Replay sırasında geleceği önceden göstermemek
-   için segmentleri aracın trackProgress'i kadar
-   adım adım açıyoruz.
+   Replay sÄ±rasÄ±nda geleceÄŸi Ã¶nceden gÃ¶stermemek
+   iÃ§in segmentleri aracÄ±n trackProgress'i kadar
+   adÄ±m adÄ±m aÃ§Ä±yoruz.
    ========================================================= */
 
 function blankSegments(
@@ -1711,7 +1711,7 @@ function getMiniSectorSnapshot(
 
   /*
     Eski sessionlarda mini-sector
-    verisi hiç olmayabilir.
+    verisi hiÃ§ olmayabilir.
   */
 
   if (
@@ -2170,11 +2170,11 @@ async function buildTrackGeometry(
   }
 
   /*
-    Daha önce yaklaşık 190 nokta
-    kullanıyorduk.
+    Daha Ã¶nce yaklaÅŸÄ±k 190 nokta
+    kullanÄ±yorduk.
 
-    Haritayı biraz daha pürüzsüz
-    yapmak için 320 noktaya çıkardık.
+    HaritayÄ± biraz daha pÃ¼rÃ¼zsÃ¼z
+    yapmak iÃ§in 320 noktaya Ã§Ä±kardÄ±k.
   */
 
   const target =
@@ -2590,9 +2590,9 @@ export async function getLatestF1Replay():
     replayStart;
 
   /*
-    Önceki 260 frame yerine 420.
+    Ã–nceki 260 frame yerine 420.
 
-    Map ve timing değişimleri daha sık.
+    Map ve timing deÄŸiÅŸimleri daha sÄ±k.
   */
 
   const targetFrameCount =
@@ -2673,8 +2673,8 @@ export async function getLatestF1Replay():
             );
 
           /*
-            Mini sectors current lap üzerinden
-            adım adım açılıyor.
+            Mini sectors current lap Ã¼zerinden
+            adÄ±m adÄ±m aÃ§Ä±lÄ±yor.
           */
 
           const miniSectors =
@@ -3301,11 +3301,11 @@ export async function getLatestF1Replay():
     {
       latestCompleted:
         latestSession
-          ? `${latestSession.location} · ${latestSession.sessionName}`
+          ? `${latestSession.location} Â· ${latestSession.sessionName}`
           : null,
 
       replay:
-        `${replaySession.location} · ${replaySession.sessionName}`,
+        `${replaySession.location} Â· ${replaySession.sessionName}`,
 
       kind,
 

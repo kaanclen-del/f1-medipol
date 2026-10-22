@@ -3,9 +3,9 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "F1 Medipol",
-    short_name: "F1 Medipol",
-    description: "F1 Medipol yarış tahminleri, etkinlikler ve Arcade.",
+    name: "F1 SOCIAL",
+    short_name: "F1 SOCIAL",
+    description: "F1 SOCIAL yarış tahminleri, etkinlikler ve Arcade.",
     start_url: "/",
     scope: "/",
     display: "standalone",

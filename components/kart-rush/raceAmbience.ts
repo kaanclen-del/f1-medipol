@@ -1,5 +1,5 @@
 /**
- * F1 Medipol Kart Rush · V18 race ambience.
+ * F1 SOCIAL Kart Rush Â· V18 race ambience.
  * All sounds are synthesized locally. No audio downloads and no extra dependencies.
  * Starts only after a real user gesture (required by mobile browsers).
  */

@@ -1,4 +1,4 @@
-/* F1 Medipol Kart Rush — venue audio (G3.9.3)
+/* F1 SOCIAL Kart Rush â€” venue audio (G3.9.3)
  * Local grandstand murmur, approach-sensitive cheers & clapping, and existing camera bursts.
  * Browser WebAudio only. No external sound download or new SQL required.
  */

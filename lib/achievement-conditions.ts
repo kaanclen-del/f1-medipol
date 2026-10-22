@@ -1,6 +1,6 @@
 
 /*
-  F1 MEDIPOL
+  F1 SOCIAL
   AUTOMATIC ACHIEVEMENT CONDITIONS
 
   Otomatik basarim kosullari icin
@@ -18,22 +18,22 @@ export const ACHIEVEMENT_CONDITIONS = [
 
   {
     value: "paddock_post_count",
-    label: "Paddock paylaşım sayısı",
+    label: "Paddock paylaÅŸÄ±m sayÄ±sÄ±",
     category: "paddock",
   },
   {
     value: "paddock_comment_count",
-    label: "Paddock yorum sayısı",
+    label: "Paddock yorum sayÄ±sÄ±",
     category: "paddock",
   },
   {
     value: "paddock_likes_given",
-    label: "Verilen beğeni sayısı",
+    label: "Verilen beÄŸeni sayÄ±sÄ±",
     category: "paddock",
   },
   {
     value: "paddock_likes_received",
-    label: "Alınan beğeni sayısı",
+    label: "AlÄ±nan beÄŸeni sayÄ±sÄ±",
     category: "paddock",
   },
 
@@ -41,22 +41,22 @@ export const ACHIEVEMENT_CONDITIONS = [
 
   {
     value: "prediction_count",
-    label: "Toplam tahmin sayısı",
+    label: "Toplam tahmin sayÄ±sÄ±",
     category: "prediction",
   },
   {
     value: "race_prediction_count",
-    label: "Yarış tahmini sayısı",
+    label: "YarÄ±ÅŸ tahmini sayÄ±sÄ±",
     category: "prediction",
   },
   {
     value: "sprint_prediction_count",
-    label: "Sprint tahmini sayısı",
+    label: "Sprint tahmini sayÄ±sÄ±",
     category: "prediction",
   },
   {
     value: "scored_prediction_count",
-    label: "Puanlanmış tahmin sayısı",
+    label: "PuanlanmÄ±ÅŸ tahmin sayÄ±sÄ±",
     category: "prediction",
   },
 
@@ -64,22 +64,22 @@ export const ACHIEVEMENT_CONDITIONS = [
 
   {
     value: "prediction_points",
-    label: "Toplam tahmin puanı",
+    label: "Toplam tahmin puanÄ±",
     category: "prediction",
   },
   {
     value: "race_prediction_points",
-    label: "Toplam yarış tahmini puanı",
+    label: "Toplam yarÄ±ÅŸ tahmini puanÄ±",
     category: "prediction",
   },
   {
     value: "sprint_prediction_points",
-    label: "Toplam Sprint tahmini puanı",
+    label: "Toplam Sprint tahmini puanÄ±",
     category: "prediction",
   },
   {
     value: "best_prediction_score",
-    label: "Tek tahminde en yüksek puan",
+    label: "Tek tahminde en yÃ¼ksek puan",
     category: "prediction",
   },
 
@@ -87,22 +87,22 @@ export const ACHIEVEMENT_CONDITIONS = [
 
   {
     value: "race_winner_correct_count",
-    label: "Doğru yarış galibi tahmini",
+    label: "DoÄŸru yarÄ±ÅŸ galibi tahmini",
     category: "prediction",
   },
   {
     value: "sprint_winner_correct_count",
-    label: "Doğru Sprint galibi tahmini",
+    label: "DoÄŸru Sprint galibi tahmini",
     category: "prediction",
   },
   {
     value: "race_exact_podium_count",
-    label: "Tam doğru yarış podyumu",
+    label: "Tam doÄŸru yarÄ±ÅŸ podyumu",
     category: "prediction",
   },
   {
     value: "sprint_exact_podium_count",
-    label: "Tam doğru Sprint podyumu",
+    label: "Tam doÄŸru Sprint podyumu",
     category: "prediction",
   },
 
@@ -110,7 +110,7 @@ export const ACHIEVEMENT_CONDITIONS = [
 
   {
     value: "profile_avatar_set",
-    label: "Profil fotoğrafı ekleme",
+    label: "Profil fotoÄŸrafÄ± ekleme",
     category: "profile",
   },
   {

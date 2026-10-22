@@ -11,30 +11,30 @@ type Feedback = { type: "success" | "error"; text: string } | null;
 
 const features = [
   {
-    code: "01 / 03 · RACE PREDICTION",
-    title: "TAHMİNİNİ YAP. ZİRVEYE ÇIK.",
-    description: "Yarışın podyumunu tahmin et, puan topla ve sezon boyunca liderlik tablosunda yüksel.",
-    tab: "TAHMİNLER",
+    code: "01 / 03 Â· RACE PREDICTION",
+    title: "TAHMÄ°NÄ°NÄ° YAP. ZÄ°RVEYE Ã‡IK.",
+    description: "YarÄ±ÅŸÄ±n podyumunu tahmin et, puan topla ve sezon boyunca liderlik tablosunda yÃ¼ksel.",
+    tab: "TAHMÄ°NLER",
   },
   {
-    code: "02 / 03 · COMMUNITY",
-    title: "PADDOCK SENİN ALANIN.",
-    description: "F1 gündemini tartış, gönderi paylaş ve yarış heyecanını topluluğun diğer üyeleriyle yaşa.",
+    code: "02 / 03 Â· COMMUNITY",
+    title: "PADDOCK SENÄ°N ALANIN.",
+    description: "F1 gÃ¼ndemini tartÄ±ÅŸ, gÃ¶nderi paylaÅŸ ve yarÄ±ÅŸ heyecanÄ±nÄ± topluluÄŸun diÄŸer Ã¼yeleriyle yaÅŸa.",
     tab: "PADDOCK",
   },
   {
-    code: "03 / 03 · DRIVER PROFILE",
-    title: "KENDİ HİKÂYENİ YAZ.",
-    description: "Profilini kişiselleştir, başarımlar kazan ve seviye atlayarak gridde ilerle.",
-    tab: "PROFİL",
+    code: "03 / 03 Â· DRIVER PROFILE",
+    title: "KENDÄ° HÄ°KÃ‚YENÄ° YAZ.",
+    description: "Profilini kiÅŸiselleÅŸtir, baÅŸarÄ±mlar kazan ve seviye atlayarak gridde ilerle.",
+    tab: "PROFÄ°L",
   },
 ] as const;
 
 function parseTheme(value: string | null): Theme | null {
   const v = value?.toLocaleLowerCase("tr-TR").trim();
   if (v === "gray" || v === "grey" || v === "dark" || v === "koyu") return "gray";
-  if (v === "red" || v === "kırmızı" || v === "kirmizi" || v === "f1-red") return "red";
-  if (v === "light" || v === "açık" || v === "acik") return "light";
+  if (v === "red" || v === "kÄ±rmÄ±zÄ±" || v === "kirmizi" || v === "f1-red") return "red";
+  if (v === "light" || v === "aÃ§Ä±k" || v === "acik") return "light";
   return null;
 }
 
@@ -139,19 +139,19 @@ export default function LoginPage() {
 
     const normalizedEmail = email.trim();
     if (!reset && !normalizedEmail) {
-      setFeedback({ type: "error", text: "E-posta adresini yazmalısın." });
+      setFeedback({ type: "error", text: "E-posta adresini yazmalÄ±sÄ±n." });
       return;
     }
     if (register && !displayName.trim()) {
-      setFeedback({ type: "error", text: "Görünen adını yazmalısın." });
+      setFeedback({ type: "error", text: "GÃ¶rÃ¼nen adÄ±nÄ± yazmalÄ±sÄ±n." });
       return;
     }
     if (!forgot && password.length < 6) {
-      setFeedback({ type: "error", text: "Şifren en az 6 karakter olmalıdır." });
+      setFeedback({ type: "error", text: "Åifren en az 6 karakter olmalÄ±dÄ±r." });
       return;
     }
     if ((register || reset) && password !== confirmPassword) {
-      setFeedback({ type: "error", text: "Şifreler eşleşmiyor." });
+      setFeedback({ type: "error", text: "Åifreler eÅŸleÅŸmiyor." });
       return;
     }
 
@@ -162,18 +162,18 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/login?recovery=1`,
         });
         if (error) throw error;
-        setFeedback({ type: "success", text: "Şifre sıfırlama bağlantısı gönderildi. E-posta kutunu kontrol et." });
+        setFeedback({ type: "success", text: "Åifre sÄ±fÄ±rlama baÄŸlantÄ±sÄ± gÃ¶nderildi. E-posta kutunu kontrol et." });
       } else if (reset) {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
-          setFeedback({ type: "error", text: "Şifre sıfırlama oturumu doğrulanamadı. E-postandaki güncel bağlantıyı aç." });
+          setFeedback({ type: "error", text: "Åifre sÄ±fÄ±rlama oturumu doÄŸrulanamadÄ±. E-postandaki gÃ¼ncel baÄŸlantÄ±yÄ± aÃ§." });
           return;
         }
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
         switchMode("login");
         window.history.replaceState(null, "", "/login");
-        setFeedback({ type: "success", text: "Şifren güncellendi. Yeni şifrenle giriş yapabilirsin." });
+        setFeedback({ type: "success", text: "Åifren gÃ¼ncellendi. Yeni ÅŸifrenle giriÅŸ yapabilirsin." });
       } else if (register) {
         const { data, error } = await supabase.auth.signUp({
           email: normalizedEmail,
@@ -185,22 +185,22 @@ export default function LoginPage() {
           window.location.assign("/");
           return;
         }
-        setFeedback({ type: "success", text: "Kayıt isteğin alındı. E-posta doğrulaması açıksa, gelen kutundaki bağlantıyı onayla." });
+        setFeedback({ type: "success", text: "KayÄ±t isteÄŸin alÄ±ndÄ±. E-posta doÄŸrulamasÄ± aÃ§Ä±ksa, gelen kutundaki baÄŸlantÄ±yÄ± onayla." });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
         if (error) throw error;
         window.location.assign("/");
       }
     } catch (error) {
-      const text = error instanceof Error ? error.message : "İşlem sırasında hata oluştu. Tekrar dene.";
+      const text = error instanceof Error ? error.message : "Ä°ÅŸlem sÄ±rasÄ±nda hata oluÅŸtu. Tekrar dene.";
       setFeedback({ type: "error", text });
     } finally {
       setBusy(false);
     }
   }
 
-  const title = register ? "GRIDDE YERİNİ AL." : forgot ? "ERİŞİMİ YENİLE." : reset ? "YENİ ŞİFRENİ BELİRLE." : "GRID'E HOŞ GELDİN.";
-  const subtitle = register ? "Hesabını oluştur ve yarışın bir parçası ol." : forgot ? "E-posta adresine şifre sıfırlama bağlantısı gönderelim." : reset ? "Hesabın için yeni ve güvenli bir şifre belirle." : "Hesabına giriş yap, kaldığın yerden devam et.";
+  const title = register ? "GRIDDE YERÄ°NÄ° AL." : forgot ? "ERÄ°ÅÄ°MÄ° YENÄ°LE." : reset ? "YENÄ° ÅÄ°FRENÄ° BELÄ°RLE." : "GRID'E HOÅ GELDÄ°N.";
+  const subtitle = register ? "HesabÄ±nÄ± oluÅŸtur ve yarÄ±ÅŸÄ±n bir parÃ§asÄ± ol." : forgot ? "E-posta adresine ÅŸifre sÄ±fÄ±rlama baÄŸlantÄ±sÄ± gÃ¶nderelim." : reset ? "HesabÄ±n iÃ§in yeni ve gÃ¼venli bir ÅŸifre belirle." : "HesabÄ±na giriÅŸ yap, kaldÄ±ÄŸÄ±n yerden devam et.";
 
   return (
     <>
@@ -219,20 +219,20 @@ export default function LoginPage() {
             <section className={styles.story} aria-labelledby="auth-hero">
               <h1 id="auth-hero" className={styles.hero}>
                 <span className={styles.heroLine}>SADECE</span>
-                <span className={`${styles.heroLine} ${styles.outline}`}>İZLEME.</span>
-                <span className={`${styles.heroLine} ${styles.accentText}`}>YARIŞIN</span>
-                <span className={`${styles.heroLine} ${styles.heroLast}`}>PARÇASI OL.</span>
+                <span className={`${styles.heroLine} ${styles.outline}`}>Ä°ZLEME.</span>
+                <span className={`${styles.heroLine} ${styles.accentText}`}>YARIÅIN</span>
+                <span className={`${styles.heroLine} ${styles.heroLast}`}>PARÃ‡ASI OL.</span>
               </h1>
-              <p className={styles.storyDescription}>Bir yarış hafta sonundan çok daha fazlası. Tahminlerini yap, kendi profilini oluştur, sezon boyunca rekabet et ve F1 tutkunlarının topluluğuna katıl.</p>
+              <p className={styles.storyDescription}>Bir yarÄ±ÅŸ hafta sonundan Ã§ok daha fazlasÄ±. Tahminlerini yap, kendi profilini oluÅŸtur, sezon boyunca rekabet et ve F1 tutkunlarÄ±nÄ±n topluluÄŸuna katÄ±l.</p>
               <div className={styles.feature}>
-                <div className={styles.featureHeader}><span>PLATFORM / ÖZELLİKLER</span><span>F1 MEDİPOL</span></div>
+                <div className={styles.featureHeader}><span>PLATFORM / Ã–ZELLÄ°KLER</span><span>F1 MEDÄ°POL</span></div>
                 <div className={styles.featureContent} key={featureIndex}>
                   <div className={styles.featureCode}>{feature.code}</div>
                   <h2>{feature.title}</h2>
                   <p>{feature.description}</p>
                   <div className={styles.featureNumber} aria-hidden="true">0{featureIndex + 1}</div>
                 </div>
-                <div className={styles.featureTabs} aria-label="Platform özellikleri">
+                <div className={styles.featureTabs} aria-label="Platform Ã¶zellikleri">
                   {features.map((entry, index) => (
                     <button type="button" key={entry.tab} className={featureIndex === index ? styles.active : ""} aria-pressed={featureIndex === index} onClick={() => setFeatureIndex(index)}>{entry.tab}</button>
                   ))}
@@ -240,47 +240,47 @@ export default function LoginPage() {
               </div>
             </section>
 
-            <section className={styles.card} aria-label="F1 Medipol üyelik">
+            <section className={styles.card} aria-label="F1 SOCIAL Ã¼yelik">
               <h2 className={styles.cardTitle}>{title}</h2>
               <p className={styles.cardSubtitle}>{subtitle}</p>
               {mode === "login" || register ? (
-                <div className={styles.switcher} role="tablist" aria-label="Üyelik işlemi">
-                  <button type="button" role="tab" aria-selected={!register} className={!register ? styles.selected : ""} onClick={() => switchMode("login")}>OTURUM AÇ</button>
+                <div className={styles.switcher} role="tablist" aria-label="Ãœyelik iÅŸlemi">
+                  <button type="button" role="tab" aria-selected={!register} className={!register ? styles.selected : ""} onClick={() => switchMode("login")}>OTURUM AÃ‡</button>
                   <button type="button" role="tab" aria-selected={register} className={register ? styles.selected : ""} onClick={() => switchMode("register")}>KAYIT OL</button>
                 </div>
               ) : (
-                <button type="button" className={styles.back} onClick={() => switchMode("login")}>← Oturum açma ekranına dön</button>
+                <button type="button" className={styles.back} onClick={() => switchMode("login")}>â† Oturum aÃ§ma ekranÄ±na dÃ¶n</button>
               )}
 
               <form className={styles.form} onSubmit={submit}>
                 {register && <div className={styles.field}>
-                  <label htmlFor="fm-name">GÖRÜNEN AD</label>
-                  <div className={styles.inputBox}><Glyph name="user" /><input id="fm-name" autoComplete="nickname" type="text" placeholder="Paddock'ta görünecek adın" maxLength={60} required value={displayName} onChange={(e) => setDisplayName(e.target.value)} /></div>
+                  <label htmlFor="fm-name">GÃ–RÃœNEN AD</label>
+                  <div className={styles.inputBox}><Glyph name="user" /><input id="fm-name" autoComplete="nickname" type="text" placeholder="Paddock'ta gÃ¶rÃ¼necek adÄ±n" maxLength={60} required value={displayName} onChange={(e) => setDisplayName(e.target.value)} /></div>
                 </div>}
                 {!reset && <div className={styles.field}>
-                  <label htmlFor="fm-email">E-POSTA ADRESİ</label>
+                  <label htmlFor="fm-email">E-POSTA ADRESÄ°</label>
                   <div className={styles.inputBox}><Glyph name="mail" /><input id="fm-email" autoComplete="email" type="email" placeholder="ornek@eposta.com" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
                 </div>}
                 {!forgot && <div className={styles.field}>
                   <div className={styles.labelLine}>
-                    <label htmlFor="fm-password">{reset ? "YENİ ŞİFRE" : "ŞİFRE"}</label>
-                    {mode === "login" && <button type="button" className={styles.forgot} onClick={() => switchMode("forgot")}>Şifremi unuttum</button>}
+                    <label htmlFor="fm-password">{reset ? "YENÄ° ÅÄ°FRE" : "ÅÄ°FRE"}</label>
+                    {mode === "login" && <button type="button" className={styles.forgot} onClick={() => switchMode("forgot")}>Åifremi unuttum</button>}
                   </div>
-                  <div className={styles.inputBox}><Glyph name="lock" /><input id="fm-password" autoComplete={register || reset ? "new-password" : "current-password"} type={passwordVisible ? "text" : "password"} placeholder="En az 6 karakter" minLength={6} required value={password} onChange={(e) => setPassword(e.target.value)} /><button type="button" className={styles.showPassword} onClick={() => setPasswordVisible((x) => !x)} aria-label={passwordVisible ? "Şifreyi gizle" : "Şifreyi göster"}>{passwordVisible ? "GİZLE" : "GÖSTER"}</button></div>
+                  <div className={styles.inputBox}><Glyph name="lock" /><input id="fm-password" autoComplete={register || reset ? "new-password" : "current-password"} type={passwordVisible ? "text" : "password"} placeholder="En az 6 karakter" minLength={6} required value={password} onChange={(e) => setPassword(e.target.value)} /><button type="button" className={styles.showPassword} onClick={() => setPasswordVisible((x) => !x)} aria-label={passwordVisible ? "Åifreyi gizle" : "Åifreyi gÃ¶ster"}>{passwordVisible ? "GÄ°ZLE" : "GÃ–STER"}</button></div>
                 </div>}
                 {(register || reset) && <div className={styles.field}>
-                  <label htmlFor="fm-confirm">ŞİFRE TEKRARI</label>
-                  <div className={styles.inputBox}><Glyph name="lock" /><input id="fm-confirm" autoComplete="new-password" type={passwordVisible ? "text" : "password"} placeholder="Şifreni tekrar gir" minLength={6} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></div>
+                  <label htmlFor="fm-confirm">ÅÄ°FRE TEKRARI</label>
+                  <div className={styles.inputBox}><Glyph name="lock" /><input id="fm-confirm" autoComplete="new-password" type={passwordVisible ? "text" : "password"} placeholder="Åifreni tekrar gir" minLength={6} required value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} /></div>
                 </div>}
-                {register && <p className={styles.terms}>Hesabını oluşturarak F1 Medipol topluluk kurallarını kabul etmiş olursun.</p>}
+                {register && <p className={styles.terms}>HesabÄ±nÄ± oluÅŸturarak F1 SOCIAL topluluk kurallarÄ±nÄ± kabul etmiÅŸ olursun.</p>}
                 {feedback && <div role="status" aria-live="polite" className={`${styles.feedback} ${feedback.type === "success" ? styles.success : ""}`}>{feedback.text}</div>}
                 <button type="submit" className={styles.submit} disabled={busy}>
-                  <span>{busy ? "İŞLEM YAPILIYOR..." : register ? "HESABIMI OLUŞTUR" : forgot ? "SIFIRLAMA BAĞLANTISI GÖNDER" : reset ? "ŞİFREMİ GÜNCELLE" : "PADDOCK'A GİRİŞ YAP"}</span><span aria-hidden="true">↗</span>
+                  <span>{busy ? "Ä°ÅLEM YAPILIYOR..." : register ? "HESABIMI OLUÅTUR" : forgot ? "SIFIRLAMA BAÄLANTISI GÃ–NDER" : reset ? "ÅÄ°FREMÄ° GÃœNCELLE" : "PADDOCK'A GÄ°RÄ°Å YAP"}</span><span aria-hidden="true">â†—</span>
                 </button>
               </form>
             </section>
           </div>
-          <footer className={styles.footer}><span>© F1 MEDİPOL · DIGITAL PADDOCK EXPERIENCE</span></footer>
+          <footer className={styles.footer}><span>Â© F1 MEDÄ°POL Â· DIGITAL PADDOCK EXPERIENCE</span></footer>
         </div>
       </main>
     </>

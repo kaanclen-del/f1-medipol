@@ -35,19 +35,19 @@ function getEventTypeLabel(
 ) {
   switch (type) {
     case "watch_party":
-      return "YARIŞ İZLEME";
+      return "YARIÅ Ä°ZLEME";
 
     case "karting":
       return "KARTING";
 
     case "talk":
-      return "SÖYLEŞİ";
+      return "SÃ–YLEÅÄ°";
 
     case "club":
-      return "KULÜP";
+      return "KULÃœP";
 
     default:
-      return "ETKİNLİK";
+      return "ETKÄ°NLÄ°K";
   }
 }
 
@@ -144,10 +144,10 @@ export default async function EventsPage() {
               "80px",
           }}
         >
-          {/* BAŞLIK */}
+          {/* BAÅLIK */}
 
           <div className="eyebrow">
-            F1 MEDİPOL · EVENTS
+            F1 MEDÄ°POL Â· EVENTS
           </div>
 
           <h1
@@ -162,7 +162,7 @@ export default async function EventsPage() {
                 "-.05em",
             }}
           >
-            ETKİNLİKLER
+            ETKÄ°NLÄ°KLER
           </h1>
 
           <p
@@ -182,14 +182,14 @@ export default async function EventsPage() {
                 1.7,
             }}
           >
-            Yarış izleme
+            YarÄ±ÅŸ izleme
             etkinlikleri,
-            karting buluşmaları,
-            söyleşiler ve kulüp
-            organizasyonları.
+            karting buluÅŸmalarÄ±,
+            sÃ¶yleÅŸiler ve kulÃ¼p
+            organizasyonlarÄ±.
           </p>
 
-          {/* ÖNE ÇIKAN */}
+          {/* Ã–NE Ã‡IKAN */}
 
           {featuredEvent && (
             <section
@@ -223,7 +223,7 @@ export default async function EventsPage() {
                   "linear-gradient(135deg,#2a2025,#18212b)",
               }}
             >
-              {/* FOTOĞRAF */}
+              {/* FOTOÄRAF */}
 
               {featuredEvent.cover_image_url && (
                 <img
@@ -326,7 +326,7 @@ export default async function EventsPage() {
                         1000,
                     }}
                   >
-                    ÖNE ÇIKAN
+                    Ã–NE Ã‡IKAN
                   </span>
 
                   <span
@@ -400,14 +400,14 @@ export default async function EventsPage() {
                   }}
                 >
                   <span>
-                    📅{" "}
+                    ğŸ“…{" "}
                     {formatEventDate(
                       featuredEvent.start_at
                     )}
                   </span>
 
                   <span>
-                    🕒{" "}
+                    ğŸ•’{" "}
                     {formatEventTime(
                       featuredEvent.start_at
                     )}
@@ -415,7 +415,7 @@ export default async function EventsPage() {
 
                   {featuredEvent.location_name && (
                     <span>
-                      📍{" "}
+                      ğŸ“{" "}
                       {
                         featuredEvent.location_name
                       }
@@ -470,14 +470,14 @@ export default async function EventsPage() {
                         "center",
                     }}
                   >
-                    Etkinliğe Katıl →
+                    EtkinliÄŸe KatÄ±l â†’
                   </a>
                 )}
               </div>
             </section>
           )}
 
-          {/* ETKİNLİK YOK */}
+          {/* ETKÄ°NLÄ°K YOK */}
 
           {events.length ===
             0 && (
@@ -542,11 +542,11 @@ export default async function EventsPage() {
                       "30px",
                   }}
                 >
-                  🏁
+                  ğŸ
                 </div>
 
                 <div className="eyebrow">
-                  TAKVİM HAZIRLANIYOR
+                  TAKVÄ°M HAZIRLANIYOR
                 </div>
 
                 <h2
@@ -559,7 +559,7 @@ export default async function EventsPage() {
                   }}
                 >
                   Yeni etkinlikler
-                  yakında burada.
+                  yakÄ±nda burada.
                 </h2>
 
                 <p
@@ -576,17 +576,17 @@ export default async function EventsPage() {
                       1.7,
                   }}
                 >
-                  F1 Medipol
+                  F1 SOCIAL
                   etkinlikleri
-                  yayınlandığında bu
+                  yayÄ±nlandÄ±ÄŸÄ±nda bu
                   sayfada otomatik
-                  olarak görünecek.
+                  olarak gÃ¶rÃ¼necek.
                 </p>
               </div>
             </section>
           )}
 
-          {/* YAKLAŞAN ETKİNLİKLER */}
+          {/* YAKLAÅAN ETKÄ°NLÄ°KLER */}
 
           {regularUpcoming.length >
             0 && (
@@ -609,7 +609,7 @@ export default async function EventsPage() {
                     "30px",
                 }}
               >
-                Yaklaşan Etkinlikler
+                YaklaÅŸan Etkinlikler
               </h2>
 
               <div
@@ -726,7 +726,7 @@ export default async function EventsPage() {
                           {formatEventDate(
                             event.start_at
                           )}{" "}
-                          ·{" "}
+                          Â·{" "}
                           {formatEventTime(
                             event.start_at
                           )}
@@ -759,7 +759,7 @@ export default async function EventsPage() {
                                 "9px",
                             }}
                           >
-                            📍{" "}
+                            ğŸ“{" "}
                             {
                               event.location_name
                             }
@@ -807,7 +807,7 @@ export default async function EventsPage() {
                                 "center",
                             }}
                           >
-                            Detay / Kayıt →
+                            Detay / KayÄ±t â†’
                           </a>
                         )}
                       </div>
@@ -818,7 +818,7 @@ export default async function EventsPage() {
             </section>
           )}
 
-          {/* GEÇMİŞ ETKİNLİKLER */}
+          {/* GEÃ‡MÄ°Å ETKÄ°NLÄ°KLER */}
 
           {pastEvents.length >
             0 && (
@@ -841,7 +841,7 @@ export default async function EventsPage() {
                     "28px",
                 }}
               >
-                Geçmiş Etkinlikler
+                GeÃ§miÅŸ Etkinlikler
               </h2>
 
               <div
@@ -887,7 +887,7 @@ export default async function EventsPage() {
                           <img
                             src={event.cover_image_url}
                             decoding="async"
-                            alt={`${event.title} etkinlik görseli`}
+                            alt={`${event.title} etkinlik gÃ¶rseli`}
                             loading="lazy"
                             style={{
                               width: "104px",
@@ -905,7 +905,7 @@ export default async function EventsPage() {
                             display: "grid", placeItems: "center", fontSize: "27px",
                             background: "linear-gradient(135deg,rgba(225,6,0,.17),rgba(255,255,255,.035))",
                             border: "1px solid rgba(255,255,255,.08)",
-                          }}>🏁</div>
+                          }}>ğŸ</div>
                         )}
                         <div style={{ minWidth: 0 }}>
                         <div
@@ -923,7 +923,7 @@ export default async function EventsPage() {
                           {getEventTypeLabel(
                             event.event_type
                           )}{" "}
-                          ·{" "}
+                          Â·{" "}
                           {formatEventDate(
                             event.start_at
                           )}

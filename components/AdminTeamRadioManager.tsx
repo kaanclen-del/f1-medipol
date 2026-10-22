@@ -6,7 +6,7 @@ import styles from "./AdminTeamRadioManager.module.css";
 
 async function readJson(response: Response) {
   const body = await response.json();
-  if (!response.ok) throw new Error(body.error || `İşlem başarısız (${response.status}).`);
+  if (!response.ok) throw new Error(body.error || `Ä°ÅŸlem baÅŸarÄ±sÄ±z (${response.status}).`);
   return body;
 }
 
@@ -71,7 +71,7 @@ export default function AdminTeamRadioManager() {
     setLoadingList(true);
     fetch("/api/admin/team-radio", { cache: "no-store" }).then(readJson)
       .then((body) => { if (active) setClips(Array.isArray(body.clips) ? body.clips : []); })
-      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "Arşiv okunamadı."); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "ArÅŸiv okunamadÄ±."); })
       .finally(() => { if (active) setLoadingList(false); });
     return () => { active = false; };
   }, []);
@@ -89,7 +89,7 @@ export default function AdminTeamRadioManager() {
     setSelectedUrl("");
     searchArchive<RadioMeeting>("meetings", { year })
       .then((items) => { if (active) setMeetings(items); })
-      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "Yarışlar getirilemedi."); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : "YarÄ±ÅŸlar getirilemedi."); })
       .finally(() => { if (active) setLoadingYears(false); });
     return () => { active = false; };
   }, [year, yearRetry]);
@@ -123,14 +123,14 @@ export default function AdminTeamRadioManager() {
 
   async function findRecordings() {
     setError(""); setMessage(""); setRecordings([]); setSelectedUrl(""); setRecordingFilter(""); setVisibleCount(24);
-    if (!sessionKey || !driverNumber) { setError("Önce seans ve pilot seçmelisin."); return; }
+    if (!sessionKey || !driverNumber) { setError("Ã–nce seans ve pilot seÃ§melisin."); return; }
     setLoadingRecordings(true);
     try {
       const items = await searchArchive<OpenF1Radio>("recordings", { sessionKey, driverNumber });
       setRecordings(items);
-      setMessage(items.length ? `${items.length} telsiz kaydı bulundu. Dinleyip istediğini arşive ekleyebilirsin.` : "Bu pilot ve seans için OpenF1 arşivinde telsiz kaydı bulunamadı.");
+      setMessage(items.length ? `${items.length} telsiz kaydÄ± bulundu. Dinleyip istediÄŸini arÅŸive ekleyebilirsin.` : "Bu pilot ve seans iÃ§in OpenF1 arÅŸivinde telsiz kaydÄ± bulunamadÄ±.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Telsizler aranamadı.");
+      setError(err instanceof Error ? err.message : "Telsizler aranamadÄ±.");
     } finally {
       setLoadingRecordings(false);
     }
@@ -150,9 +150,9 @@ export default function AdminTeamRadioManager() {
         }),
       }));
       await refreshClips();
-      setMessage("Kayıt arşive taslak olarak eklendi. Kullanım hakkını doğruladıktan sonra yayımlayabilirsin.");
+      setMessage("KayÄ±t arÅŸive taslak olarak eklendi. KullanÄ±m hakkÄ±nÄ± doÄŸruladÄ±ktan sonra yayÄ±mlayabilirsin.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Kayıt eklenemedi.");
+      setError(err instanceof Error ? err.message : "KayÄ±t eklenemedi.");
     } finally {
       setBusyId("");
     }
@@ -160,7 +160,7 @@ export default function AdminTeamRadioManager() {
 
   async function togglePublished(clip: TeamRadioRecord) {
     setError(""); setMessage("");
-    if (!clip.is_published && !window.confirm("Bu ses kaydını F1 Medipol'da herkese açık oynatmak için gerekli kullanım haklarına sahip olduğunu onaylıyor musun?")) return;
+    if (!clip.is_published && !window.confirm("Bu ses kaydÄ±nÄ± F1 SOCIAL'da herkese aÃ§Ä±k oynatmak iÃ§in gerekli kullanÄ±m haklarÄ±na sahip olduÄŸunu onaylÄ±yor musun?")) return;
     setBusyId(clip.id);
     try {
       await readJson(await fetch(`/api/admin/team-radio/${clip.id}`, {
@@ -168,19 +168,19 @@ export default function AdminTeamRadioManager() {
         body: JSON.stringify({ isPublished: !clip.is_published, rightsConfirmed: !clip.is_published }),
       }));
       await refreshClips();
-      setMessage(clip.is_published ? "Kayıt yayından kaldırıldı." : "Kayıt yayımlandı. Ana sayfa popup'ında görünecek.");
-    } catch (err) { setError(err instanceof Error ? err.message : "Kayıt durumu değiştirilemedi."); }
+      setMessage(clip.is_published ? "KayÄ±t yayÄ±ndan kaldÄ±rÄ±ldÄ±." : "KayÄ±t yayÄ±mlandÄ±. Ana sayfa popup'Ä±nda gÃ¶rÃ¼necek.");
+    } catch (err) { setError(err instanceof Error ? err.message : "KayÄ±t durumu deÄŸiÅŸtirilemedi."); }
     finally { setBusyId(""); }
   }
 
   async function remove(clip: TeamRadioRecord) {
-    if (!window.confirm(`“${clip.title}” kaydı arşivinden kaldırılsın mı?`)) return;
+    if (!window.confirm(`â€œ${clip.title}â€ kaydÄ± arÅŸivinden kaldÄ±rÄ±lsÄ±n mÄ±?`)) return;
     setError(""); setMessage(""); setBusyId(clip.id);
     try {
       await readJson(await fetch(`/api/admin/team-radio/${clip.id}`, { method: "DELETE" }));
       await refreshClips();
-      setMessage("Kayıt listeden kaldırıldı. OpenF1 üzerindeki ses silinmedi.");
-    } catch (err) { setError(err instanceof Error ? err.message : "Kayıt silinemedi."); }
+      setMessage("KayÄ±t listeden kaldÄ±rÄ±ldÄ±. OpenF1 Ã¼zerindeki ses silinmedi.");
+    } catch (err) { setError(err instanceof Error ? err.message : "KayÄ±t silinemedi."); }
     finally { setBusyId(""); }
   }
 
@@ -188,68 +188,68 @@ export default function AdminTeamRadioManager() {
     <div className={styles.layout}>
       <section className={styles.card}>
         <div className={styles.head}>
-          <span className={styles.kicker}>OPENF1 / TAKIM TELSİZLERİ</span>
-          <h2>Arşivde telsiz ara</h2>
-          <p className={styles.subtitle}>Yıl, Grand Prix, seans ve pilot seç. Yalnızca senin arşive eklediğin kayıtlar listelenir.</p>
+          <span className={styles.kicker}>OPENF1 / TAKIM TELSÄ°ZLERÄ°</span>
+          <h2>ArÅŸivde telsiz ara</h2>
+          <p className={styles.subtitle}>YÄ±l, Grand Prix, seans ve pilot seÃ§. YalnÄ±zca senin arÅŸive eklediÄŸin kayÄ±tlar listelenir.</p>
         </div>
         <div className={styles.form}>
-          <label>01 / Yıl
+          <label>01 / YÄ±l
             <select value={year} onChange={(e) => { setError(""); setYear(e.target.value); }}>
               {[2026, 2025, 2024, 2023].map((value) => <option value={String(value)} key={value}>{value}</option>)}
             </select>
           </label>
           {!loadingYears && meetings.length === 0 && error && (
             <button type="button" className={styles.addButton} onClick={() => { setError(""); setYearRetry((value) => value + 1); }}>
-              Yarış listesini yeniden dene
+              YarÄ±ÅŸ listesini yeniden dene
             </button>
           )}
           <label>02 / Grand Prix
             <select value={meetingKey} disabled={loadingYears || !meetings.length} onChange={(e) => { setError(""); setMeetingKey(e.target.value); setSessionKey(""); setDriverNumber(""); setRecordings([]); setSelectedUrl(""); }}>
-              <option value="">{loadingYears ? "Yarışlar yükleniyor…" : meetings.length ? "Yarış seç" : "Bu yılda yarış bulunamadı"}</option>
+              <option value="">{loadingYears ? "YarÄ±ÅŸlar yÃ¼kleniyorâ€¦" : meetings.length ? "YarÄ±ÅŸ seÃ§" : "Bu yÄ±lda yarÄ±ÅŸ bulunamadÄ±"}</option>
               {meetings.map((item) => <option key={item.meeting_key} value={String(item.meeting_key)}>{item.meeting_name}</option>)}
             </select>
           </label>
           <label>03 / Seans
             <select value={sessionKey} disabled={!meetingKey || loadingMeetings || !sessions.length} onChange={(e) => { setError(""); setSessionKey(e.target.value); setDriverNumber(""); setRecordings([]); setSelectedUrl(""); }}>
-              <option value="">{loadingMeetings ? "Seanslar yükleniyor…" : "Seans seç"}</option>
+              <option value="">{loadingMeetings ? "Seanslar yÃ¼kleniyorâ€¦" : "Seans seÃ§"}</option>
               {sessions.map((item) => <option key={item.session_key} value={String(item.session_key)}>{item.session_name}</option>)}
             </select>
           </label>
-          <label>04 / Pilot adıyla ara
-            <input value={driverFilter} onChange={(e) => { setDriverFilter(e.target.value); setDriverNumber(""); setRecordings([]); setSelectedUrl(""); }} placeholder="Örn: Hamilton, Leclerc, 16..." disabled={!sessionKey} />
+          <label>04 / Pilot adÄ±yla ara
+            <input value={driverFilter} onChange={(e) => { setDriverFilter(e.target.value); setDriverNumber(""); setRecordings([]); setSelectedUrl(""); }} placeholder="Ã–rn: Hamilton, Leclerc, 16..." disabled={!sessionKey} />
           </label>
           <label>05 / Pilot
             <select value={driverNumber} disabled={!sessionKey || loadingSessions || !drivers.length} onChange={(e) => { setDriverNumber(e.target.value); setRecordings([]); setSelectedUrl(""); }}>
-              <option value="">{loadingSessions ? "Pilotlar yükleniyor…" : "Pilot seç"}</option>
-              {filteredDrivers.map((item) => <option key={item.driver_number} value={String(item.driver_number)}>#{item.driver_number} · {item.full_name} – {item.team_name}</option>)}
+              <option value="">{loadingSessions ? "Pilotlar yÃ¼kleniyorâ€¦" : "Pilot seÃ§"}</option>
+              {filteredDrivers.map((item) => <option key={item.driver_number} value={String(item.driver_number)}>#{item.driver_number} Â· {item.full_name} â€“ {item.team_name}</option>)}
             </select>
           </label>
           <button className={styles.primary} type="button" disabled={!sessionKey || !driverNumber || loadingRecordings} onClick={() => void findRecordings()}>
-            {loadingRecordings ? "Arşiv aranıyor…" : "⌕  OpenF1 telsizlerini ara"}
+            {loadingRecordings ? "ArÅŸiv aranÄ±yorâ€¦" : "âŒ•  OpenF1 telsizlerini ara"}
           </button>
-          <p className={styles.help}>OpenF1 arşivi 2023 yılından başlar. 2021 ve 2022 telsizleri bu API üzerinden getirilemez. Bazı seanslarda kayıt bulunmayabilir.</p>
+          <p className={styles.help}>OpenF1 arÅŸivi 2023 yÄ±lÄ±ndan baÅŸlar. 2021 ve 2022 telsizleri bu API Ã¼zerinden getirilemez. BazÄ± seanslarda kayÄ±t bulunmayabilir.</p>
         </div>
       </section>
 
       <section className={styles.card}>
         <div className={styles.head}>
-          <span className={styles.kicker}>F1 MEDIPOL / YÖNETİLEN KAYITLAR</span>
-          <h2>Seçilen telsizler <small>{clips.length}</small></h2>
-          <p className={styles.subtitle}>Listeye eklenenler önce taslak olur. Yayımladıkların sağ alttaki telsiz penceresinde görünür.</p>
+          <span className={styles.kicker}>F1 SOCIAL / YÃ–NETÄ°LEN KAYITLAR</span>
+          <h2>SeÃ§ilen telsizler <small>{clips.length}</small></h2>
+          <p className={styles.subtitle}>Listeye eklenenler Ã¶nce taslak olur. YayÄ±mladÄ±klarÄ±n saÄŸ alttaki telsiz penceresinde gÃ¶rÃ¼nÃ¼r.</p>
         </div>
-        {loadingList && <p className={styles.help}>Liste yükleniyor…</p>}
-        {!loadingList && !clips.length && <p className={styles.empty}>Henüz bir kayıt seçmedin. Soldan arama yapıp beğendiğini listeye ekle.</p>}
+        {loadingList && <p className={styles.help}>Liste yÃ¼kleniyorâ€¦</p>}
+        {!loadingList && !clips.length && <p className={styles.empty}>HenÃ¼z bir kayÄ±t seÃ§medin. Soldan arama yapÄ±p beÄŸendiÄŸini listeye ekle.</p>}
         <div className={styles.list}>
           {clips.map((clip) => (
             <article className={styles.item} key={clip.id}>
               <div className={styles.itemHeader}>
                 <strong>{clip.title}</strong>
-                <span className={clip.is_published ? styles.live : styles.draft}>{clip.is_published ? "Yayında" : "Taslak"}</span>
+                <span className={clip.is_published ? styles.live : styles.draft}>{clip.is_published ? "YayÄ±nda" : "Taslak"}</span>
               </div>
-              <p>{clip.driver_name} · {clip.grand_prix}{clip.season ? ` ${clip.season}` : ""} · {clip.source_type === "openf1" ? "OpenF1 bağlantısı" : "Önceden yüklenmiş"}</p>
+              <p>{clip.driver_name} Â· {clip.grand_prix}{clip.season ? ` ${clip.season}` : ""} Â· {clip.source_type === "openf1" ? "OpenF1 baÄŸlantÄ±sÄ±" : "Ã–nceden yÃ¼klenmiÅŸ"}</p>
               {clip.audio_url && <audio controls preload="none" src={clip.audio_url} className={styles.audio} />}
               <div className={styles.actions}>
-                <button type="button" disabled={busyId === clip.id} onClick={() => void togglePublished(clip)}>{clip.is_published ? "Yayından kaldır" : "Yayımla"}</button>
+                <button type="button" disabled={busyId === clip.id} onClick={() => void togglePublished(clip)}>{clip.is_published ? "YayÄ±ndan kaldÄ±r" : "YayÄ±mla"}</button>
                 <button type="button" className={styles.danger} disabled={busyId === clip.id} onClick={() => void remove(clip)}>Sil</button>
               </div>
             </article>
@@ -260,16 +260,16 @@ export default function AdminTeamRadioManager() {
       {sessionKey && driverNumber && (
         <section className={`${styles.card} ${styles.resultCard}`}>
           <div className={styles.head}>
-            <span className={styles.kicker}>KAYIT SONUÇLARI</span>
-            <h2>{selectedDriver?.full_name || "Pilot"} <small>{recordings.length} kayıt</small></h2>
-            <p className={styles.subtitle}>{selectedMeeting?.meeting_name || "Grand Prix"} · {selectedSession?.session_name || "Seans"} · {year}</p>
+            <span className={styles.kicker}>KAYIT SONUÃ‡LARI</span>
+            <h2>{selectedDriver?.full_name || "Pilot"} <small>{recordings.length} kayÄ±t</small></h2>
+            <p className={styles.subtitle}>{selectedMeeting?.meeting_name || "Grand Prix"} Â· {selectedSession?.session_name || "Seans"} Â· {year}</p>
           </div>
-          {loadingRecordings && <p className={styles.help}>OpenF1 telsiz kayıtları aranıyor…</p>}
-          {!loadingRecordings && recordings.length === 0 && <p className={styles.empty}>Yukarıdaki “OpenF1 telsizlerini ara” düğmesine bas. Kayıt bulunursa burada tek tek dinleyebilirsin.</p>}
+          {loadingRecordings && <p className={styles.help}>OpenF1 telsiz kayÄ±tlarÄ± aranÄ±yorâ€¦</p>}
+          {!loadingRecordings && recordings.length === 0 && <p className={styles.empty}>YukarÄ±daki â€œOpenF1 telsizlerini araâ€ dÃ¼ÄŸmesine bas. KayÄ±t bulunursa burada tek tek dinleyebilirsin.</p>}
           {recordings.length > 0 && (
             <>
-              <label className={styles.filter}>Sonuçlar içinde zaman/sıra ara
-                <input value={recordingFilter} onChange={(e) => { setRecordingFilter(e.target.value); setVisibleCount(24); }} placeholder="Örn: 14:35, 15 Eki veya sıra numarası..." />
+              <label className={styles.filter}>SonuÃ§lar iÃ§inde zaman/sÄ±ra ara
+                <input value={recordingFilter} onChange={(e) => { setRecordingFilter(e.target.value); setVisibleCount(24); }} placeholder="Ã–rn: 14:35, 15 Eki veya sÄ±ra numarasÄ±..." />
               </label>
               <div className={styles.results}>
                 {filteredRecordings.slice(0, visibleCount).map((radio, index) => {
@@ -280,21 +280,21 @@ export default function AdminTeamRadioManager() {
                       <div className={styles.resultLine}>
                         <div className={styles.resultMeta}>
                           <span className={styles.resultIndex}>{String(index + 1).padStart(2, "0")}</span>
-                          <div><strong>{dateLabel(radio.date)}</strong><small>#{radio.driver_number} · {selectedDriver?.full_name} · OpenF1</small></div>
+                          <div><strong>{dateLabel(radio.date)}</strong><small>#{radio.driver_number} Â· {selectedDriver?.full_name} Â· OpenF1</small></div>
                         </div>
-                        <span className={saved ? styles.live : styles.draft}>{saved ? "Listede" : "Önizleme"}</span>
+                        <span className={saved ? styles.live : styles.draft}>{saved ? "Listede" : "Ã–nizleme"}</span>
                       </div>
                       <audio controls preload="none" src={radio.recording_url} className={styles.audio} />
                       {!saved && (
                         <>
-                          {active && <label className={styles.titleInput}>Kayıt başlığı (isteğe bağlı)
-                            <input value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} maxLength={120} placeholder="Örn: Leclerc — unutulmaz telsiz" />
+                          {active && <label className={styles.titleInput}>KayÄ±t baÅŸlÄ±ÄŸÄ± (isteÄŸe baÄŸlÄ±)
+                            <input value={customTitle} onChange={(e) => setCustomTitle(e.target.value)} maxLength={120} placeholder="Ã–rn: Leclerc â€” unutulmaz telsiz" />
                           </label>}
                           <button type="button" disabled={Boolean(busyId)} className={styles.addButton} onClick={() => {
                             if (!active) { setSelectedUrl(radio.recording_url); setCustomTitle(""); }
                             else void addRecording(radio);
                           }}>
-                            {busyId === radio.recording_url ? "Ekleniyor…" : active ? "+ Listeye ekle (taslak)" : "Bu kaydı seç"}
+                            {busyId === radio.recording_url ? "Ekleniyorâ€¦" : active ? "+ Listeye ekle (taslak)" : "Bu kaydÄ± seÃ§"}
                           </button>
                         </>
                       )}
@@ -304,17 +304,17 @@ export default function AdminTeamRadioManager() {
               </div>
               {filteredRecordings.length > visibleCount && (
                 <button type="button" className={styles.addButton} style={{ marginTop: 14 }} onClick={() => setVisibleCount((count) => count + 24)}>
-                  Daha fazla sonuç göster ({filteredRecordings.length - visibleCount} kaldı)
+                  Daha fazla sonuÃ§ gÃ¶ster ({filteredRecordings.length - visibleCount} kaldÄ±)
                 </button>
               )}
-              {!filteredRecordings.length && <p className={styles.empty}>Aramanla eşleşen telsiz kaydı bulunamadı.</p>}
+              {!filteredRecordings.length && <p className={styles.empty}>Aramanla eÅŸleÅŸen telsiz kaydÄ± bulunamadÄ±.</p>}
             </>
           )}
         </section>
       )}
 
       {(error || message) && <div className={`${styles.feedback} ${error ? styles.failure : ""}`} role="status">{error || message}</div>}
-      <p className={styles.legal}>Not: OpenF1 kaynak bağlantısını sunar; seslerin yeniden yayımlanması için ayrıca kullanım hakkı gerekebilir. F1 Medipol yalnızca kaydın bağlantısını saklar, sunucuya ses dosyası indirmez.</p>
+      <p className={styles.legal}>Not: OpenF1 kaynak baÄŸlantÄ±sÄ±nÄ± sunar; seslerin yeniden yayÄ±mlanmasÄ± iÃ§in ayrÄ±ca kullanÄ±m hakkÄ± gerekebilir. F1 SOCIAL yalnÄ±zca kaydÄ±n baÄŸlantÄ±sÄ±nÄ± saklar, sunucuya ses dosyasÄ± indirmez.</p>
     </div>
   );
 }

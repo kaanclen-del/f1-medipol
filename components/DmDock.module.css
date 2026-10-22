@@ -1,4 +1,4 @@
-/* F1 Medipol DM Dock v1 — all rules scoped to the component */
+/* F1 SOCIAL DM Dock v1 â€” all rules scoped to the component */
 .headerButton{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:42px;height:42px;color:#fff;border:1px solid rgba(255,255,255,.17);background:rgba(255,255,255,.065);border-radius:11px;cursor:pointer;transition:.2s}
 .headerButton:hover{background:rgba(235,36,47,.19);border-color:rgba(255,255,255,.29)}
 .headerLight{color:#1c2029;background:rgba(0,0,0,.045);border-color:rgba(0,0,0,.11)}
@@ -83,7 +83,7 @@
   .friendItem{padding:15px 8px}
 }
 
-/* F1 MEDIPOL / DM V2: genisletilmis masaustu + mobil */
+/* F1 SOCIAL / DM V2: genisletilmis masaustu + mobil */
 .panel{width:min(430px,calc(100vw - 28px));height:min(690px,calc(100dvh - 105px));border-radius:20px}
 .panelHead{padding:14px 16px}
 .profileLink{color:inherit;text-decoration:none;display:flex;align-items:center;gap:10px;width:100%;min-width:0}
@@ -119,7 +119,7 @@
 @media(prefers-reduced-motion:reduce){.panel,.composer .attachBtn.recording{animation:none}}
 
 /* F1 DM MOBILE V3 START */
-/* F1 MEDIPOL / MOBILE DM V3 - refahli, okunakli, WhatsApp tarzi sohbet akisi */
+/* F1 SOCIAL / MOBILE DM V3 - refahli, okunakli, WhatsApp tarzi sohbet akisi */
 /* Masaustundeki mevcut acilir pencereyi korur. */
 .panelHead .heading strong {letter-spacing:-.025em}
 .composer .attachBtn svg { display:block; flex-shrink:0; }

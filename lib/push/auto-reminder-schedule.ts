@@ -1,4 +1,4 @@
-/** F1 Medipol otomatik hatırlatma takvimi. Jolpica UTC seans saatleri kullanılır. */
+/** F1 SOCIAL otomatik hatÄ±rlatma takvimi. Jolpica UTC seans saatleri kullanÄ±lÄ±r. */
 export type ReminderKind = "race" | "qualifying" | "sprint" | "race_prediction" | "sprint_prediction";
 
 export type ScheduledReminder = {
@@ -23,7 +23,7 @@ type CalendarResponse = {
   MRData?: { RaceTable?: { Races?: Race[] } };
 };
 
-/** Saat olmayan seanslar için saat uydurmayız. */
+/** Saat olmayan seanslar iÃ§in saat uydurmayÄ±z. */
 function utcTime(date?: string, time?: string): number | null {
   if (!date || !time || !/^\d{4}-\d\d-\d\d$/.test(date)) return null;
   const value = Date.parse(`${date}T${time}`);
@@ -33,16 +33,16 @@ function utcTime(date?: string, time?: string): number | null {
 function buildNotice(race: Race, kind: ReminderKind, when: number, minutesBefore: number): ScheduledReminder {
   const round = Number(race.round);
   const season = Number(race.date.slice(0, 4));
-  const name = race.raceName.trim() || "Formula 1 yarışı";
+  const name = race.raceName.trim() || "Formula 1 yarÄ±ÅŸÄ±";
   const prediction = kind.endsWith("prediction");
-  const title = kind === "race" ? `${name} yaklaşıyor! 🏁`
-    : kind === "qualifying" ? `${name}: Sıralama yaklaşıyor! ⏱️`
-    : kind === "sprint" ? `${name}: Sprint yaklaşıyor! ⚡`
-    : kind === "sprint_prediction" ? "Sprint tahminin kapanmak üzere!"
-    : "Yarış tahminin kapanmak üzere!";
+  const title = kind === "race" ? `${name} yaklaÅŸÄ±yor! ğŸ`
+    : kind === "qualifying" ? `${name}: SÄ±ralama yaklaÅŸÄ±yor! â±ï¸`
+    : kind === "sprint" ? `${name}: Sprint yaklaÅŸÄ±yor! âš¡`
+    : kind === "sprint_prediction" ? "Sprint tahminin kapanmak Ã¼zere!"
+    : "YarÄ±ÅŸ tahminin kapanmak Ã¼zere!";
   const body = prediction
-    ? `${name} için tahminler başlangıçta kapanacak. Son 30 dakika!`
-    : `${name} ${minutesBefore} dakika sonra başlıyor. Yarış heyecanını kaçırma!`;
+    ? `${name} iÃ§in tahminler baÅŸlangÄ±Ã§ta kapanacak. Son 30 dakika!`
+    : `${name} ${minutesBefore} dakika sonra baÅŸlÄ±yor. YarÄ±ÅŸ heyecanÄ±nÄ± kaÃ§Ä±rma!`;
   return {
     key: `f1-${season}-r${round}-${kind}`,
     kind,
@@ -74,7 +74,7 @@ export function remindersForRaces(races: Race[]): ScheduledReminder[] {
 
 export function isDue(item: ScheduledReminder, nowMs: number): boolean {
   const due = Date.parse(item.scheduledFor);
-  // Supabase Cron her iki dakikada bir: 8 dakikalık telafi aralığı.
+  // Supabase Cron her iki dakikada bir: 8 dakikalÄ±k telafi aralÄ±ÄŸÄ±.
   return due <= nowMs && nowMs - due < 8 * 60_000;
 }
 

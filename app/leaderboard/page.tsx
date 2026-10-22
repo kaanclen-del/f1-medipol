@@ -40,7 +40,7 @@ export default async function LeaderboardPage() {
   /*
     NORMAL SUPABASE:
     SADECE MEVCUT KULLANICIYI
-    TANIMAK İÇİN
+    TANIMAK Ä°Ã‡Ä°N
   */
 
   const supabase =
@@ -53,12 +53,12 @@ export default async function LeaderboardPage() {
   /*
     ADMIN CLIENT:
 
-    Liderlik tablosu için tüm
-    kullanıcıların tahminlerini
-    sunucu tarafında okuyoruz.
+    Liderlik tablosu iÃ§in tÃ¼m
+    kullanÄ±cÄ±larÄ±n tahminlerini
+    sunucu tarafÄ±nda okuyoruz.
 
-    Secret key hiçbir zaman
-    tarayıcıya gönderilmez.
+    Secret key hiÃ§bir zaman
+    tarayÄ±cÄ±ya gÃ¶nderilmez.
   */
 
   const admin =
@@ -99,7 +99,7 @@ export default async function LeaderboardPage() {
       []) as Prediction[];
 
   /*
-    USER ID -> PROFİL
+    USER ID -> PROFÄ°L
   */
 
   const profileMap =
@@ -119,7 +119,7 @@ export default async function LeaderboardPage() {
 
   /*
     PUANLARI KULLANICIYA
-    GÖRE TOPLA
+    GÃ–RE TOPLA
   */
 
   const rankingMap =
@@ -156,7 +156,7 @@ export default async function LeaderboardPage() {
             displayName:
               profile?.display_name ||
               profile?.username ||
-              "F1 Medipol Üyesi",
+              "F1 SOCIAL Ãœyesi",
 
             username:
               profile?.username ??
@@ -218,8 +218,8 @@ export default async function LeaderboardPage() {
   );
 
   /*
-    HENÜZ TAHMİN YAPMAMIŞ
-    PROFİLLERİ DE EKLE
+    HENÃœZ TAHMÄ°N YAPMAMIÅ
+    PROFÄ°LLERÄ° DE EKLE
   */
 
   profiles.forEach(
@@ -240,7 +240,7 @@ export default async function LeaderboardPage() {
           displayName:
             profile.display_name ||
             profile.username ||
-            "F1 Medipol Üyesi",
+            "F1 SOCIAL Ãœyesi",
 
           username:
             profile.username,
@@ -263,8 +263,8 @@ export default async function LeaderboardPage() {
     SIRALAMA
 
     1. Toplam puan
-    2. En yüksek tek yarış puanı
-    3. Tahmin sayısı
+    2. En yÃ¼ksek tek yarÄ±ÅŸ puanÄ±
+    3. Tahmin sayÄ±sÄ±
   */
 
   const leaderboard =
@@ -313,7 +313,7 @@ export default async function LeaderboardPage() {
       : 0;
 
   /*
-    TOPLAM İSTATİSTİKLER
+    TOPLAM Ä°STATÄ°STÄ°KLER
   */
 
   const totalPlayers =
@@ -348,10 +348,10 @@ export default async function LeaderboardPage() {
               "80px",
           }}
         >
-          {/* BAŞLIK */}
+          {/* BAÅLIK */}
 
           <div className="eyebrow">
-            F1 MEDİPOL ·
+            F1 MEDÄ°POL Â·
             PREDICTION CHAMPIONSHIP
           </div>
 
@@ -367,7 +367,7 @@ export default async function LeaderboardPage() {
                 "-.05em",
             }}
           >
-            LİDERLİK TABLOSU
+            LÄ°DERLÄ°K TABLOSU
           </h1>
 
           <p
@@ -387,15 +387,15 @@ export default async function LeaderboardPage() {
                 1.6,
             }}
           >
-            Yarış ve Sprint
+            YarÄ±ÅŸ ve Sprint
             tahminlerinden
-            kazandığın puanlarla
-            F1 Medipol Prediction
+            kazandÄ±ÄŸÄ±n puanlarla
+            F1 SOCIAL Prediction
             Championship&apos;te
-            yüksel.
+            yÃ¼ksel.
           </p>
 
-          {/* GENEL İSTATİSTİKLER */}
+          {/* GENEL Ä°STATÄ°STÄ°KLER */}
 
           <section
             style={{
@@ -446,8 +446,8 @@ export default async function LeaderboardPage() {
                     "9px",
                 }}
               >
-                Şampiyonadaki
-                kullanıcı
+                Åampiyonadaki
+                kullanÄ±cÄ±
               </div>
             </div>
 
@@ -459,7 +459,7 @@ export default async function LeaderboardPage() {
               }}
             >
               <div className="eyebrow">
-                TAHMİN
+                TAHMÄ°N
               </div>
 
               <div
@@ -501,7 +501,7 @@ export default async function LeaderboardPage() {
               }}
             >
               <div className="eyebrow">
-                DAĞITILAN PUAN
+                DAÄITILAN PUAN
               </div>
 
               <div
@@ -532,12 +532,12 @@ export default async function LeaderboardPage() {
               >
                 Toplam
                 championship
-                puanı
+                puanÄ±
               </div>
             </div>
           </section>
 
-          {/* İLK 3 */}
+          {/* Ä°LK 3 */}
 
           {podium.length >
             0 && (
@@ -898,7 +898,7 @@ export default async function LeaderboardPage() {
                       "28px",
                   }}
                 >
-                  Genel Sıralama
+                  Genel SÄ±ralama
                 </h2>
               </div>
 
@@ -925,7 +925,7 @@ export default async function LeaderboardPage() {
                       900,
                   }}
                 >
-                  Sıralaman: P
+                  SÄ±ralaman: P
                   {
                     currentUserRank
                   }
@@ -950,7 +950,7 @@ export default async function LeaderboardPage() {
                     "#8994a2",
                 }}
               >
-                Henüz sıralama
+                HenÃ¼z sÄ±ralama
                 verisi yok.
               </div>
             ) : (
@@ -1164,7 +1164,7 @@ export default async function LeaderboardPage() {
                               }
 
                               {isMe &&
-                                " · SEN"}
+                                " Â· SEN"}
                             </div>
 
                             <div
@@ -1182,7 +1182,7 @@ export default async function LeaderboardPage() {
                               {entry.username
                                 ? `@${entry.username}`
                                 : entry.favoriteTeam ||
-                                  "F1 Medipol"}
+                                  "F1 SOCIAL"}
                             </div>
                           </div>
                         </div>
@@ -1237,7 +1237,7 @@ export default async function LeaderboardPage() {
                           </b>
                         </div>
 
-                        {/* TAHMİN */}
+                        {/* TAHMÄ°N */}
 
                         <div>
                           <div
@@ -1252,7 +1252,7 @@ export default async function LeaderboardPage() {
                                 900,
                             }}
                           >
-                            TAHMİN
+                            TAHMÄ°N
                           </div>
 
                           <b>

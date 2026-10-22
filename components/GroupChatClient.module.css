@@ -51,12 +51,12 @@
 .msgRow>div[class*="ChatMessageGesture_shell"]{max-width:84%;min-width:0}
 .msgRow>div[class*="ChatMessageGesture_shell"] .bubble{max-width:100%;min-width:70px}
 
-/* F1 MEDIPOL DM V17 — preserve the last visible group message above the iOS keyboard. */
+/* F1 SOCIAL DM V17 â€” preserve the last visible group message above the iOS keyboard. */
 @media (max-width:1199px), (pointer:coarse) and (max-width:1500px){
   .root .messages{overflow-anchor:none!important;scroll-behavior:auto!important;}
 }
 
-/* DM V16 — same compact keyboard layout and unobtrusive history indicator in groups. */
+/* DM V16 â€” same compact keyboard layout and unobtrusive history indicator in groups. */
 .historyGhost{display:grid;gap:9px;align-content:end;padding:10px 14px;margin:auto 0 14px;opacity:.45;pointer-events:none}
 .historyGhost span{width:140px;height:12px;border-radius:8px;background:var(--edge);animation:f1GroupGhost 1.5s ease-in-out infinite alternate}
 .historyGhost span:nth-child(2){width:100px;animation-delay:.2s}

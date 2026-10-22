@@ -55,7 +55,7 @@ export default function LegendaryTeamRadio() {
     try {
       const response = await fetch("/api/team-radio", { cache: "no-store" });
       const body = await response.json();
-      if (!response.ok) throw new Error(body.error || "Telsiz kayıtları alınamadı.");
+      if (!response.ok) throw new Error(body.error || "Telsiz kayÄ±tlarÄ± alÄ±namadÄ±.");
       if (requestId !== requestIdRef.current) return;
       const incoming = Array.isArray(body.clips) ? body.clips as TeamRadioRecord[] : [];
       setClips(incoming);
@@ -63,7 +63,7 @@ export default function LegendaryTeamRadio() {
       loadedOnce.current = true;
     } catch (err) {
       if (requestId !== requestIdRef.current) return;
-      setError(err instanceof Error ? err.message : "Telsiz kayıtları alınamadı.");
+      setError(err instanceof Error ? err.message : "Telsiz kayÄ±tlarÄ± alÄ±namadÄ±.");
     } finally {
       if (requestId === requestIdRef.current) setLoading(false);
     }
@@ -104,7 +104,7 @@ export default function LegendaryTeamRadio() {
       await audio.play();
       setError("");
     } catch {
-      setError("Ses açılamadı. Kaynağa erişim mümkün olmayabilir.");
+      setError("Ses aÃ§Ä±lamadÄ±. KaynaÄŸa eriÅŸim mÃ¼mkÃ¼n olmayabilir.");
     }
   }
 
@@ -125,16 +125,16 @@ export default function LegendaryTeamRadio() {
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
         onEnded={() => { setPlaying(false); setPosition(0); }}
-        onError={() => { if (selected) setError("Ses kaynağına ulaşılamadı. Yönetici kaydı kontrol etmeli."); }}
+        onError={() => { if (selected) setError("Ses kaynaÄŸÄ±na ulaÅŸÄ±lamadÄ±. YÃ¶netici kaydÄ± kontrol etmeli."); }}
       />
 
       {open && (
-        <section className={styles.popup} role="region" aria-label="F1 takım telsizi oynatıcısı" id="team-radio-panel">
+        <section className={styles.popup} role="region" aria-label="F1 takÄ±m telsizi oynatÄ±cÄ±sÄ±" id="team-radio-panel">
           <div className={styles.topBar}>
-            <span className={styles.topLabel}><span className={styles.dot} /> F1 MEDIPOL <span className={styles.barSeparator}>/</span> TEAM RADIO</span>
+            <span className={styles.topLabel}><span className={styles.dot} /> F1 SOCIAL <span className={styles.barSeparator}>/</span> TEAM RADIO</span>
             <div className={styles.topActions}>
-              <button type="button" className={styles.refreshButton} onClick={() => void loadClips()} disabled={loading} title="Yayınlanan telsizleri yenile" aria-label="Telsizleri yenile">↻</button>
-              <button type="button" className={styles.closeButton} onClick={() => setOpen(false)} aria-label="Telsizi küçült">−</button>
+              <button type="button" className={styles.refreshButton} onClick={() => void loadClips()} disabled={loading} title="YayÄ±nlanan telsizleri yenile" aria-label="Telsizleri yenile">â†»</button>
+              <button type="button" className={styles.closeButton} onClick={() => setOpen(false)} aria-label="Telsizi kÃ¼Ã§Ã¼lt">âˆ’</button>
             </div>
           </div>
 
@@ -142,24 +142,24 @@ export default function LegendaryTeamRadio() {
             <span className={styles.heroIcon}><RadioIcon /></span>
             <div>
               <h2>Legendary <em>Team Radio</em></h2>
-              <p>Seç, dinle, gezinmeye devam et.</p>
+              <p>SeÃ§, dinle, gezinmeye devam et.</p>
             </div>
           </div>
 
           <div className={styles.scrollRegion}>
             <div className={styles.sectionTitle}>
-              <span>SEÇİLMİŞ TELSİZLER</span>
+              <span>SEÃ‡Ä°LMÄ°Å TELSÄ°ZLER</span>
               <span>{clips.length.toString().padStart(2, "0")}</span>
             </div>
-            {loading && clips.length === 0 && <p className={styles.note}>Telsiz kayıtları yükleniyor…</p>}
+            {loading && clips.length === 0 && <p className={styles.note}>Telsiz kayÄ±tlarÄ± yÃ¼kleniyorâ€¦</p>}
             {!loading && !error && clips.length === 0 && (
               <div className={styles.empty}>
-                <strong>Henüz yayımlanmış telsiz yok.</strong>
-                <p>Admin panelinde seçilen OpenF1 kayıtları burada görünecek.</p>
+                <strong>HenÃ¼z yayÄ±mlanmÄ±ÅŸ telsiz yok.</strong>
+                <p>Admin panelinde seÃ§ilen OpenF1 kayÄ±tlarÄ± burada gÃ¶rÃ¼necek.</p>
               </div>
             )}
             {clips.length > 0 && (
-              <div className={styles.clipList} role="group" aria-label="Telsiz seçimi">
+              <div className={styles.clipList} role="group" aria-label="Telsiz seÃ§imi">
                 {clips.map((clip, index) => (
                   <button
                     key={clip.id}
@@ -171,9 +171,9 @@ export default function LegendaryTeamRadio() {
                     <span className={styles.clipNumber}>{String(index + 1).padStart(2, "0")}</span>
                     <span className={styles.clipInfo}>
                       <strong>{clip.title}</strong>
-                      <small>{clip.driver_name} · {clip.grand_prix}{clip.season ? ` ${clip.season}` : ""}</small>
+                      <small>{clip.driver_name} Â· {clip.grand_prix}{clip.season ? ` ${clip.season}` : ""}</small>
                     </span>
-                    <span className={styles.clipArrow} aria-hidden="true">▶</span>
+                    <span className={styles.clipArrow} aria-hidden="true">â–¶</span>
                   </button>
                 ))}
               </div>
@@ -185,9 +185,9 @@ export default function LegendaryTeamRadio() {
             <div className={styles.currentHeader}>
               <span className={styles.dot} />
               <div className={styles.nowText}>
-                <strong title={selected?.title || "Kayıt seçilmedi"}>{selected?.title || "Kayıt seçilmedi"}</strong>
-                <small title={selected ? [selected.driver_name, selected.grand_prix].filter(Boolean).join(" · ") : ""}>
-                  {selected ? [selected.driver_name, selected.grand_prix].filter(Boolean).join(" · ") : "Yayınlanan telsizleri seç"}
+                <strong title={selected?.title || "KayÄ±t seÃ§ilmedi"}>{selected?.title || "KayÄ±t seÃ§ilmedi"}</strong>
+                <small title={selected ? [selected.driver_name, selected.grand_prix].filter(Boolean).join(" Â· ") : ""}>
+                  {selected ? [selected.driver_name, selected.grand_prix].filter(Boolean).join(" Â· ") : "YayÄ±nlanan telsizleri seÃ§"}
                 </small>
               </div>
               <span className={styles.radioCount}>RADIO / {selectedIndex < 0 ? "--" : String(selectedIndex + 1).padStart(2, "0")}</span>
@@ -214,14 +214,14 @@ export default function LegendaryTeamRadio() {
 
             <div className={styles.controls}>
               <div className={styles.transport}>
-                <button type="button" onClick={() => switchClip(-1)} disabled={clips.length < 2} aria-label="Önceki telsiz">‹</button>
+                <button type="button" onClick={() => switchClip(-1)} disabled={clips.length < 2} aria-label="Ã–nceki telsiz">â€¹</button>
                 <button type="button" className={styles.play} onClick={() => void togglePlayback()} disabled={!selected} aria-label={playing ? "Telsizi duraklat" : "Telsizi oynat"}>
-                  {playing ? "Ⅱ" : "▶"}
+                  {playing ? "â…¡" : "â–¶"}
                 </button>
-                <button type="button" onClick={() => switchClip(1)} disabled={clips.length < 2} aria-label="Sonraki telsiz">›</button>
+                <button type="button" onClick={() => switchClip(1)} disabled={clips.length < 2} aria-label="Sonraki telsiz">â€º</button>
               </div>
               <label className={styles.volume}>
-                <span aria-hidden="true">◖))</span>
+                <span aria-hidden="true">â—–))</span>
                 <input aria-label="Telsiz ses seviyesi" type="range" min={0} max={1} step={0.05} value={volume} onChange={(event) => setVolume(Number(event.target.value))} />
               </label>
             </div>
@@ -233,10 +233,10 @@ export default function LegendaryTeamRadio() {
         type="button"
         className={`${styles.launcher} ${open ? styles.launcherOpen : ""} ${playing ? styles.launcherPlaying : ""}`}
         onClick={() => setOpen((previous) => !previous)}
-        aria-label={open ? "Telsiz penceresini küçült" : "Team Radio penceresini aç"}
+        aria-label={open ? "Telsiz penceresini kÃ¼Ã§Ã¼lt" : "Team Radio penceresini aÃ§"}
         aria-expanded={open}
         aria-controls={open ? "team-radio-panel" : undefined}
-        title={playing ? "Telsiz çalıyor – oynatıcıyı aç" : "Team Radio"}
+        title={playing ? "Telsiz Ã§alÄ±yor â€“ oynatÄ±cÄ±yÄ± aÃ§" : "Team Radio"}
       >
         <span className={styles.launcherIcon}><RadioIcon /></span>
         <span className={styles.launcherLabel}>TEAM RADIO</span>

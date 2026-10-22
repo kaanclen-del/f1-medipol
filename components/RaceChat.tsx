@@ -38,7 +38,7 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
     try {
       const response = await fetch(`/api/race-chat?season=${season}&round=${round}`, { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Sohbet yÃ¼klenemedi.");
+      if (!response.ok) throw new Error(data.error || "Sohbet yÃƒÂ¼klenemedi.");
       setMessages(Array.isArray(data.messages) ? data.messages : []);
       setMyUserId(data.myUserId || "");
       setIsAdmin(Boolean(data.isAdmin));
@@ -46,7 +46,7 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
       setError("");
     } catch (err) {
       setConnected(false);
-      if (!quiet) setError(err instanceof Error ? err.message : "Sohbet baÄŸlantÄ±sÄ± kurulamadÄ±.");
+      if (!quiet) setError(err instanceof Error ? err.message : "Sohbet baÃ„Å¸lantÃ„Â±sÃ„Â± kurulamadÃ„Â±.");
     } finally {
       if (!quiet) setLoading(false);
     }
@@ -104,19 +104,19 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
         body: JSON.stringify({ season, round, content }),
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Mesaj gÃ¶nderilemedi.");
+      if (!response.ok) throw new Error(data.error || "Mesaj gÃƒÂ¶nderilemedi.");
       setText("");
       wasAtBottom.current = true;
       await load(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Mesaj gÃ¶nderilemedi.");
+      setError(err instanceof Error ? err.message : "Mesaj gÃƒÂ¶nderilemedi.");
     } finally {
       setSending(false);
     }
   }
 
   async function removeMessage(id: string) {
-    if (!window.confirm("Bu mesajÄ± silmek istiyor musun?")) return;
+    if (!window.confirm("Bu mesajÃ„Â± silmek istiyor musun?")) return;
     try {
       const response = await fetch(`/api/race-chat/${id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Mesaj silinemedi.");
@@ -127,7 +127,7 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
   }
 
   async function reportMessage(id: string) {
-    if (!window.confirm("Bu mesajÄ± moderasyona bildirmek istiyor musun?")) return;
+    if (!window.confirm("Bu mesajÃ„Â± moderasyona bildirmek istiyor musun?")) return;
     try {
       const response = await fetch("/api/race-chat/report", {
         method: "POST",
@@ -135,10 +135,10 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
         body: JSON.stringify({ messageId: id }),
       });
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || "Bildirim gÃ¶nderilemedi.");
-      window.alert("Bildirim alÄ±ndÄ±. YÃ¶netim tarafÄ±ndan incelenebilir.");
+      if (!response.ok) throw new Error(result.error || "Bildirim gÃƒÂ¶nderilemedi.");
+      window.alert("Bildirim alÃ„Â±ndÃ„Â±. YÃƒÂ¶netim tarafÃ„Â±ndan incelenebilir.");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Bildirim gÃ¶nderilemedi.");
+      setError(err instanceof Error ? err.message : "Bildirim gÃƒÂ¶nderilemedi.");
     }
   }
 
@@ -150,17 +150,17 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
   }
 
   return (
-    <section className={styles.root} aria-label="Grand Prix canlÄ± sohbet">
+    <section className={styles.root} aria-label="Grand Prix canlÃ„Â± sohbet">
       <div className={styles.ambience} aria-hidden="true" />
       <div className={styles.head}>
         <div>
-          <p className={styles.eyebrow}><span className={styles.pulse} /> F1 MEDÄ°POL / RACE COMMUNITY</p>
+          <p className={styles.eyebrow}><span className={styles.pulse} /> F1 MEDÃ„Â°POL / RACE COMMUNITY</p>
           <h1 className={styles.title}>GRAND PRIX <span>CHAT</span></h1>
-          <p className={styles.caption}>{raceName} <span>Â·</span> {season} Sezonu {round > 0 ? `Â· Round ${round}` : "Â· Genel Sohbet"}</p>
+          <p className={styles.caption}>{raceName} <span>Ã‚Â·</span> {season} Sezonu {round > 0 ? `Ã‚Â· Round ${round}` : "Ã‚Â· Genel Sohbet"}</p>
         </div>
         <div className={styles.headButtons}>
-          <span className={styles.status}><i className={connected ? styles.online : ""} />{connected ? "BAÄLI" : "SOHBET"}</span>
-          <Link href="/predict" className={styles.back}>â† Tahmine dÃ¶n</Link>
+          <span className={styles.status}><i className={connected ? styles.online : ""} />{connected ? "BAÃ„ÂLI" : "SOHBET"}</span>
+          <Link href="/predict" className={styles.back}>Ã¢â€ Â Tahmine dÃƒÂ¶n</Link>
         </div>
       </div>
 
@@ -176,14 +176,14 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
           }}>
             {!authenticated ? (
               <div className={styles.empty}>
-                <b>Sohbete katÄ±lmak iÃ§in oturum aÃ§.</b>
-                <span>YarÄ±ÅŸ tartÄ±ÅŸmalarÄ± yalnÄ±zca F1 Medipol Ã¼yelerine aÃ§Ä±k.</span>
-                <Link href="/login" className={styles.loginButton}>Oturum AÃ§</Link>
+                <b>Sohbete katÃ„Â±lmak iÃƒÂ§in oturum aÃƒÂ§.</b>
+                <span>YarÃ„Â±Ã…Å¸ tartÃ„Â±Ã…Å¸malarÃ„Â± yalnÃ„Â±zca F1 SOCIAL ÃƒÂ¼yelerine aÃƒÂ§Ã„Â±k.</span>
+                <Link href="/login" className={styles.loginButton}>Oturum AÃƒÂ§</Link>
               </div>
             ) : loading ? (
-              <div className={styles.empty}>Mesajlar yÃ¼kleniyor...</div>
+              <div className={styles.empty}>Mesajlar yÃƒÂ¼kleniyor...</div>
             ) : messages.length === 0 ? (
-              <div className={styles.empty}><b>Ä°lk mesajÄ± sen gÃ¶nder!</b><span>YarÄ±ÅŸ hakkÄ±ndaki ilk fikrini paylaÅŸarak sohbeti baÅŸlat.</span></div>
+              <div className={styles.empty}><b>Ã„Â°lk mesajÃ„Â± sen gÃƒÂ¶nder!</b><span>YarÃ„Â±Ã…Å¸ hakkÃ„Â±ndaki ilk fikrini paylaÃ…Å¸arak sohbeti baÃ…Å¸lat.</span></div>
             ) : messages.map((msg) => {
               const mine = msg.user_id === myUserId;
               return (
@@ -194,8 +194,8 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
                       <strong>{msg.author_name}</strong>
                       {mine && <span className={styles.me}>SEN</span>}
                       <time dateTime={msg.created_at}>{new Date(msg.created_at).toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}</time>
-                      {!mine && <button type="button" className={styles.delete} onClick={() => void reportMessage(msg.id)} aria-label="MesajÄ± bildir">Bildir</button>}
-                      {(mine || isAdmin) && <button type="button" className={styles.delete} onClick={() => void removeMessage(msg.id)} aria-label="MesajÄ± sil">Sil</button>}
+                      {!mine && <button type="button" className={styles.delete} onClick={() => void reportMessage(msg.id)} aria-label="MesajÃ„Â± bildir">Bildir</button>}
+                      {(mine || isAdmin) && <button type="button" className={styles.delete} onClick={() => void removeMessage(msg.id)} aria-label="MesajÃ„Â± sil">Sil</button>}
                     </div>
                     <div className={styles.body}>{msg.content}</div>
                   </div>
@@ -207,18 +207,18 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
           {authenticated ? (
             <form onSubmit={send} className={styles.composer}>
               <textarea
-                aria-label="Sohbet mesajÄ±"
+                aria-label="Sohbet mesajÃ„Â±"
                 value={text}
                 onChange={(e) => setText(e.target.value.slice(0, 400))}
                 onKeyDown={onKeyDown}
                 maxLength={400}
                 rows={2}
-                placeholder="YarÄ±ÅŸ hakkÄ±nda ne dÃ¼ÅŸÃ¼nÃ¼yorsun?"
+                placeholder="YarÃ„Â±Ã…Å¸ hakkÃ„Â±nda ne dÃƒÂ¼Ã…Å¸ÃƒÂ¼nÃƒÂ¼yorsun?"
                 disabled={sending}
               />
               <div className={styles.composeBottom}>
-                <span>Enter: gÃ¶nder Â· Shift+Enter: yeni satÄ±r <b>{text.length}/400</b></span>
-                <button type="submit" disabled={sending || text.trim().length === 0}>{sending ? "GÃ–NDERÄ°LÄ°YOR" : "GÃ–NDER â†—"}</button>
+                <span>Enter: gÃƒÂ¶nder Ã‚Â· Shift+Enter: yeni satÃ„Â±r <b>{text.length}/400</b></span>
+                <button type="submit" disabled={sending || text.trim().length === 0}>{sending ? "GÃƒâ€“NDERÃ„Â°LÃ„Â°YOR" : "GÃƒâ€“NDER Ã¢â€ â€”"}</button>
               </div>
             </form>
           ) : null}
@@ -227,15 +227,15 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
         <aside className={styles.sidebar}>
           <div className={styles.sideTile}>
             <span className={styles.kicker}>PADDOCK / LIVE DISCUSSION</span>
-            <h2>YARIÅI BÄ°RLÄ°KTE YAÅA.</h2>
-            <p>Podyum tahminlerini tartÄ±ÅŸ, pit stop stratejilerini yorumla ve diÄŸer Ã¼yelerin fikirlerini keÅŸfet.</p>
+            <h2>YARIÃ…ÂI BÃ„Â°RLÃ„Â°KTE YAÃ…ÂA.</h2>
+            <p>Podyum tahminlerini tartÃ„Â±Ã…Å¸, pit stop stratejilerini yorumla ve diÃ„Å¸er ÃƒÂ¼yelerin fikirlerini keÃ…Å¸fet.</p>
           </div>
           <div className={styles.sideTile}>
             <span className={styles.kicker}>SOHBET KURALLARI</span>
-            <p>SaygÄ±lÄ± ol. Spam, hakaret ve kiÅŸisel bilgi paylaÅŸÄ±mÄ±ndan kaÃ§Ä±n. Tahminler kapanana kadar diÄŸer Ã¼yelerin kayÄ±tlÄ± tahminlerini sistem otomatik olarak gÃ¶stermez.</p>
-            <div className={styles.note}>Mesajlar yarÄ±ÅŸa Ã¶zeldir ve Supabase Ã¼zerinde saklanÄ±r.</div>
+            <p>SaygÃ„Â±lÃ„Â± ol. Spam, hakaret ve kiÃ…Å¸isel bilgi paylaÃ…Å¸Ã„Â±mÃ„Â±ndan kaÃƒÂ§Ã„Â±n. Tahminler kapanana kadar diÃ„Å¸er ÃƒÂ¼yelerin kayÃ„Â±tlÃ„Â± tahminlerini sistem otomatik olarak gÃƒÂ¶stermez.</p>
+            <div className={styles.note}>Mesajlar yarÃ„Â±Ã…Å¸a ÃƒÂ¶zeldir ve Supabase ÃƒÂ¼zerinde saklanÃ„Â±r.</div>
           </div>
-          <Link href="/paddock" className={styles.paddock}>PADDOCK'A GÄ°T <span>â†—</span></Link>
+          <Link href="/paddock" className={styles.paddock}>PADDOCK'A GÃ„Â°T <span>Ã¢â€ â€”</span></Link>
         </aside>
       </div>
     </section>
