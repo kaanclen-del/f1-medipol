@@ -386,6 +386,32 @@ type LiveResponse = {
     LiveDriver[];
 };
 
+/**
+ * Canlı zamanlama yalnızca oturumun live görünmesiyle hazır sayılmaz.
+ * Timing işaretinin açık olması ve en az dört sürücü için veri bulunması gerekir;
+ * aksi hâlde replay kullanılabilir durumdaysa onu gösteririz.
+ */
+function hasUsableLiveTiming(data: LiveResponse | null): boolean {
+  if (!data?.live || !data.timingAvailable) return false;
+
+  const drivers = data.drivers ?? [];
+  if (drivers.length < 4) return false;
+
+  return drivers.some((driver) => {
+    const position = driver.livePosition ?? driver.position;
+    const lap = driver.lapNumber ?? driver.lap_number;
+    const bestLap = driver.bestLap ?? driver.best_lap;
+    const lastLap = driver.lastLap ?? driver.last_lap;
+
+    return (
+      position != null ||
+      (typeof lap === "number" && lap > 0) ||
+      (typeof bestLap === "number" && bestLap > 0) ||
+      (typeof lastLap === "number" && lastLap > 0)
+    );
+  });
+}
+
 /* =========================================================
    CHAMPIONSHIP
    ========================================================= */
@@ -1073,10 +1099,7 @@ export default function F1LiveReplayCenter() {
     []
   );
 
-  const live =
-    Boolean(
-      liveData?.live
-    );
+  const live = hasUsableLiveTiming(liveData);
 
   /* =======================================================
      CHAMPIONSHIP FETCH
@@ -1274,6 +1297,8 @@ export default function F1LiveReplayCenter() {
   const checkLive =
     useCallback(
       async () => {
+        let liveTimingReady = false;
+
         try {
           const response =
             await fetch(
@@ -1297,13 +1322,11 @@ export default function F1LiveReplayCenter() {
               await response.json()
             ) as LiveResponse;
 
-          setLiveData(
-            data
-          );
+          setLiveData(data);
+          liveTimingReady = hasUsableLiveTiming(data);
 
-          if (
-            !data.live
-          ) {
+          // Seans live görünse bile timing hazır değilse replay'i dene.
+          if (!liveTimingReady) {
             await loadReplay();
           }
         } catch (
@@ -1315,8 +1338,9 @@ export default function F1LiveReplayCenter() {
 
           await loadReplay();
         } finally {
+          // Ne kullanılabilir live timing ne de replay varsa loader ekranda kalır.
           setLoading(
-            false
+            !liveTimingReady && !replayRef.current
           );
         }
       },
@@ -2667,6 +2691,7 @@ export default function F1LiveReplayCenter() {
 
   if (
     loading &&
+    !live &&
     !replay
   ) {
     return (
@@ -3173,15 +3198,11 @@ export default function F1LiveReplayCenter() {
                     }
                   )
                 ) : (
-                  <div className="no-data">
+                  <div className="no-data" aria-live="polite">
+                    <div className="spinner" />
                     <strong>
-                      Timing verisi bekleniyor
+                      {live ? "Canlı timing verisi hazırlanıyor..." : "Replay verisi yükleniyor..."}
                     </strong>
-
-                    <p>
-                      Henüz P4 ve sonrası için anlamlı timing
-                      verisi oluşmadı.
-                    </p>
                   </div>
                 )}
               </div>
