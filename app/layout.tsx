@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import LegendaryTeamRadio from "@/components/LegendaryTeamRadio";
+import RouteTransition from "@/components/RouteTransition";
 import SiteThemeSwitcher from "@/components/SiteThemeSwitcher";
 
 import "./globals.css";
@@ -26,23 +27,15 @@ const themeInitScript = `
 (function () {
   try {
     var saved = localStorage.getItem("f1-site-theme");
-
     var theme =
       saved === "red" ||
       saved === "light" ||
       saved === "gray"
         ? saved
         : "gray";
-
-    document.documentElement.setAttribute(
-      "data-site-theme",
-      theme
-    );
+    document.documentElement.setAttribute("data-site-theme", theme);
   } catch (e) {
-    document.documentElement.setAttribute(
-      "data-site-theme",
-      "gray"
-    );
+    document.documentElement.setAttribute("data-site-theme", "gray");
   }
 })();
 `;
@@ -59,15 +52,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: themeInitScript,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
 
       <body className="min-h-full flex flex-col">
         <SiteThemeSwitcher />
+        <RouteTransition />
         {children}
         <LegendaryTeamRadio />
       </body>
