@@ -1,10 +1,11 @@
-import MessagesClient from "@/components/MessagesClient";
+﻿import MessagesClient from "@/components/MessagesClient";
 
 export const metadata = {
-  title: "Mesajlar | F1 Medipol",
-  description: "F1 Medipol arkadaşlık ve özel mesajlaşma",
+  title: "Mesajlar | F1 SOCIAL",
+  description: "F1 SOCIAL arkadaÅŸlÄ±k ve Ã¶zel mesajlaÅŸma",
 };
 
 export default function MessagesPage() {
   return <MessagesClient />;
 }
+

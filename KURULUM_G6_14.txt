@@ -1,0 +1,29 @@
+F1 MEDIPOL G6.14 - KURULUM
+
+1. ONCE Supabase > SQL Editor alaninda su dosyanin TUMUNU calistirin:
+   supabase/g6-14-gallery-events-achievements.sql
+   Kolonlar ve event_thumbnail_settings tablosu olusmadan deploy ETMEYIN.
+
+2. ZIP icerigini projenin ANA klasorune acin (app/, components/, supabase/ ayni dizinde bulunmali).
+   PowerShell:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_14*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+3. npm.cmd run build
+
+4. Localhost testleri:
+   /admin/gallery  > yeni yukleme sirasinda Yatay/Dikey; mevcut fotografin yonunu degistir.
+   /gallery        > secilen yonlerde fotograflari kontrol et.
+   /admin/events   > etkinlik adinin altindaki Ana sayfa gorsel kadrajini ayarla bolumunden yatay/dikey kaydirici ile onizlemeyi belirle, kaydet.
+   /               > dort arcade karti ve etkinlik gorselinin onizlemesi.
+   /admin/achievements > Kilitli basarimlar arasinda goster secenegini dene.
+   /profile        > kazanilmamis gizli basarim gorunmez; kazanilmis gorunur.
+
+5. Build ve testler basarili olursa:
+   git add app/page.tsx app/gallery/page.tsx app/admin/gallery/page.tsx app/api/admin/gallery app/admin/events/page.tsx app/api/admin/events app/api/admin/achievements app/profile/page.tsx components/AdminGalleryForm.tsx components/GalleryLayoutSelect.tsx components/EventPreviewPositionEditor.tsx components/AdminAchievementManager.tsx components/ProfileAchievements.tsx supabase/g6-14-gallery-events-achievements.sql
+   git commit -m "G6.14 - Gallery layouts, event crops, arcade and achievements"
+   git push origin main
+
+Not: Yeni bir etkinlik olusturulduktan sonra /admin/events ekraninda onizleme kadraji secilir.
+Not: Galeri yatay modunda gorsel 16:9 alanda TAMAMI gorunecek bicimde yerlestirilir (contain).
+Not: Kilitli basarimlar secenegi gorsel listeyi etkiler; avtomatik kazanim kosullarini kapatmaz.

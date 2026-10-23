@@ -1,4 +1,4 @@
-.page{background:radial-gradient(ellipse at 80% 8%,rgba(237,35,61,.17),transparent 49%),linear-gradient(150deg,#120d16 0%,#0a1420 85%);color:#f4f7fb;min-height:100vh;padding:38px max(18px,calc((100vw - 1320px)/2)) 86px;font-family:var(--font-geist-sans),system-ui,sans-serif}
+﻿.page{background:radial-gradient(ellipse at 80% 8%,rgba(237,35,61,.17),transparent 49%),linear-gradient(150deg,#120d16 0%,#0a1420 85%);color:#f4f7fb;min-height:100vh;padding:38px max(18px,calc((100vw - 1320px)/2)) 86px;font-family:var(--font-geist-sans),system-ui,sans-serif}
 .hero{padding:24px 0 38px}.eyebrow,.sectionTag{color:#fd7785;font-size:11px;letter-spacing:.16em;font-weight:900}.heroGrid{display:flex;justify-content:space-between;align-items:center;gap:12px}.hero h1{font-size:clamp(44px,7vw,85px);font-weight:1000;letter-spacing:-.08em;line-height:1.05;margin:13px 0}.hero h1 em{font-style:normal;color:#f52743}.hero h1 span{font-size:.41em;color:#ffd34b;letter-spacing:-.03em}.hero p{color:#b8c4d6;line-height:1.65;font-size:16px;max-width:610px}.heroFlag{font-size:clamp(65px,12vw,148px);line-height:1;transform:rotate(-9deg);filter:drop-shadow(0 22px 40px rgba(249,38,67,.38));position:relative;flex-shrink:0}.heroFlag span{font-size:.39em;position:absolute;right:-18px;top:-15px}
 .hub{display:grid;grid-template-columns:1fr 1fr;gap:18px}.setup,.roomList,.lobbyPanel{border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:26px;background:linear-gradient(155deg,rgba(35,42,55,.8),rgba(19,24,34,.88));box-shadow:0 20px 48px rgba(0,0,0,.16)}.setup{display:flex;flex-direction:column;gap:18px}.setup label{display:flex;flex-direction:column;gap:10px;color:#dfe6f2;font-size:13px;font-weight:750}.setup input:not([type=checkbox]),.joinInput input{width:100%;height:48px;background:#101822;color:#fff;border:1px solid #414957;border-radius:12px;padding:0 14px;font-size:14px;outline:none}.setup input:focus,.joinInput input:focus{border-color:#f52849}.colors{display:flex;gap:9px;flex-wrap:wrap}.colors button{width:41px;height:41px;border-radius:13px;border:2px solid transparent;cursor:pointer}.colors .chosenColor{border:3px solid #fff;outline:2px solid #fa4557;outline-offset:2px}.label{font-size:13px;font-weight:750;margin:0}.practiceBtn{background:linear-gradient(120deg,#f52744,#b91139);color:#fff;border:0;border-radius:15px;padding:20px;text-align:left;font-size:17px;font-weight:1000;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.practiceBtn span{font-size:11px;letter-spacing:.05em}.primaryBtn,.joinInput button{border:0;color:#fff;font-size:14px;font-weight:900;border-radius:12px;padding:14px 17px;background:linear-gradient(120deg,#ef2441,#be1536);cursor:pointer}.secondaryBtn{border:1px solid rgba(255,255,255,.2);background:transparent;color:#fff;border-radius:12px;padding:14px;cursor:pointer}.setup .checkLine{display:flex;align-items:center;flex-direction:row;font-size:13px;font-weight:600}.checkLine input{width:18px;height:18px;accent-color:#ee2845}.joinInput{display:flex;gap:8px}.joinInput input{min-width:0;flex:1;letter-spacing:.15em;text-transform:uppercase}.roomList{grid-column:1/-1}.listTitle{display:flex;align-items:center;justify-content:space-between;gap:12px}.listTitle button{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);padding:8px 10px;border-radius:10px;cursor:pointer}.roomItem{border-top:1px solid rgba(255,255,255,.10);margin-top:16px;padding-top:14px;display:flex;justify-content:space-between;gap:10px;align-items:center}.roomItem div{display:flex;flex-direction:column;gap:5px}.roomItem strong{font-size:15px}.roomItem small{color:#99a6b5;font-size:12px}.roomItem button{background:#ef2d49;color:white;border:0;padding:10px 16px;border-radius:11px;font-weight:800;cursor:pointer}.hint{font-size:12px;line-height:1.6;color:#91a0b2;margin:0}.notice{font-size:12px;color:#f7cf85}.notice a{color:#fff;text-decoration:underline}.error{background:#60202b;border:1px solid #f26b7d;border-radius:12px;color:#fff;padding:12px 15px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}.error button{color:white;border:0;background:transparent;font-size:22px;cursor:pointer}
 .howTo{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-top:23px}.howTo>div{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);border-radius:17px;padding:19px}.howTo strong{display:block;font-size:15px}.howTo p{font-size:12px;line-height:1.5;color:#9db0be}.howTo span{float:right;color:#566577;font-weight:900}
@@ -8,7 +8,7 @@
 
 .results{margin:16px auto;display:grid;gap:7px;max-height:190px;overflow:auto}.results>div{display:flex;justify-content:space-between;gap:15px;text-align:left;background:#273345;padding:9px 12px;border-radius:9px;font-size:13px}.endCard button+button{margin-left:8px;background:#384558}
 
-/* V2 — game-first visual language, isolated from the existing lobby layout. */
+/* V2 â€” game-first visual language, isolated from the existing lobby layout. */
 .difficultyChoices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:-8px}
 .difficultyChoices button{display:flex;flex-direction:column;gap:5px;padding:14px 11px;background:#101923;border:1px solid #3b4556;border-radius:13px;cursor:pointer;color:#d7e0ee;text-align:left;transition:background .15s,border-color .15s,transform .15s}
 .difficultyChoices button:hover{transform:translateY(-1px)}
@@ -83,7 +83,7 @@
 }
 @media(max-width:395px){.hudBlock strong{font-size:16px}.hudBlock small{font-size:8px}.speedHud{bottom:83px}.steerControls button{width:49px}.abilityControls .powerBtn{width:73px}}
 
-/* V3 VISUAL UPDATE — glass cockpit-inspired HUD, readability and in-game settings */
+/* V3 VISUAL UPDATE â€” glass cockpit-inspired HUD, readability and in-game settings */
 .raceScreen{background:linear-gradient(160deg,#8ac3e8,#15365c);overflow:hidden;border:1px solid rgba(224,245,255,.22);box-shadow:0 26px 95px #02071290,0 0 0 1px #ffffff0b}
 .canvas{image-rendering:auto;filter:saturate(1.10) contrast(1.025)}
 .racingVignette{background:radial-gradient(ellipse 83% 68% at 50% 37%,transparent 37%,#010a2080 100%),linear-gradient(180deg,#0315294d,transparent 33%,transparent 63%,#041024bd);z-index:1}
@@ -138,7 +138,7 @@
  .speedHud{width:102px}
 }
 
-/* V5 REFINEMENT — tighter HUD layout, fullscreen support, cleaner color grade */
+/* V5 REFINEMENT â€” tighter HUD layout, fullscreen support, cleaner color grade */
 .raceScreen{background:linear-gradient(180deg,#7fa7c4 0%,#395470 48%,#13253a 100%);border:1px solid rgba(232,246,255,.28);box-shadow:0 32px 120px rgba(0,0,0,.54),inset 0 1px rgba(255,255,255,.06)}
 .racingVignette{background:radial-gradient(circle at 50% 42%,transparent 30%,rgba(3,8,16,.12) 58%,rgba(1,4,11,.56) 100%)}
 .topHud{top:14px;left:14px;right:252px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;z-index:4}
@@ -210,7 +210,7 @@
  .abilityControls .powerBtn{width:74px}
 }
 
-/* Kart Rush DRIVE V6 — landing menu, garage, proper throttle and audio. */
+/* Kart Rush DRIVE V6 â€” landing menu, garage, proper throttle and audio. */
 .mainMenu{border:1px solid rgba(229,238,250,.16);border-radius:26px;background:linear-gradient(150deg,rgba(9,16,29,.98),rgba(15,26,40,.96));overflow:hidden;box-shadow:0 34px 88px #03071085}
 .menuNav{display:flex;flex-wrap:wrap;gap:5px;padding:14px;border-bottom:1px solid #ffffff18;background:linear-gradient(90deg,#1f2838,#111b2b)}
 .menuNav button{flex:1;min-width:135px;white-space:nowrap;background:#ffffff09;border:1px solid #ffffff12;color:#c9d7e5;font-size:12px;font-weight:950;letter-spacing:.05em;border-radius:12px;padding:15px 12px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
@@ -277,7 +277,7 @@
 }
 @media(max-width:395px){.raceActions button{font-size:8px;padding:7px 5px}.topHud{top:5px}.hudBlock{padding:6px 4px}.hudBlock strong{font-size:17px}.abilityControls{gap:4px}.steerControls{gap:4px}.raceBottom{left:5px;right:5px;gap:3px}.steerControls button{width:43px}.abilityControls button{width:45px}.abilityControls .powerBtn{width:62px}.menuCarArt{transform:scale(1)}}
 
-/* RACECRAFT V7 — dusk motorsport palette + resilient HUD */
+/* RACECRAFT V7 â€” dusk motorsport palette + resilient HUD */
 .raceScreen{background:#131b23;border-color:rgba(180,192,201,.28)}
 .canvas{filter:saturate(.77) contrast(1.09) brightness(.99)}
 .racingVignette{background:radial-gradient(ellipse 77% 70% at 52% 34%,transparent 40%,rgba(2,8,13,.37) 100%),linear-gradient(180deg,rgba(4,12,20,.3),transparent 30%,transparent 66%,rgba(4,11,17,.42))}
@@ -327,7 +327,7 @@
 }
 @media(max-width:430px){.hornBtn{min-width:39px;max-width:45px;width:44px!important}.abilityControls .powerBtn{width:66px}.abilityControls .gas,.abilityControls .brake{min-width:39px;max-width:45px;width:44px!important;font-size:10px!important}}
 
-/* V8 CAMERA & RACECRAFT — cinematic angles, technical corners and believable grandstands */
+/* V8 CAMERA & RACECRAFT â€” cinematic angles, technical corners and believable grandstands */
 .raceScreen{background:#101820;border-color:rgba(166,187,201,.25);box-shadow:0 28px 105px #030711b3,inset 0 1px #ffffff14}
 .canvas{filter:saturate(.84) contrast(1.12) brightness(1.025)}
 .racingVignette{background:radial-gradient(ellipse 82% 76% at 50% 39%,transparent 44%,rgba(1,6,11,.37) 100%),linear-gradient(180deg,rgba(3,10,19,.19),transparent 31%,transparent 67%,rgba(4,10,17,.35))}
@@ -364,7 +364,7 @@
 .speedHud{border-left-color:#b43949;background:linear-gradient(145deg,rgba(7,16,26,.95),rgba(16,35,50,.91))}
 @media(max-width:830px){.cameraControls>div{grid-template-columns:1fr}.cameraControls button{min-width:0}}
 
-/* Kart Rush V10 — broadcast-style HUD and visual polish */
+/* Kart Rush V10 â€” broadcast-style HUD and visual polish */
 .raceScreen{background:#5f7da0;box-shadow:0 34px 92px rgba(0,0,0,.50)}
 .broadcastTag{position:absolute;top:12px;left:16px;z-index:6;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,rgba(168,17,39,.96),rgba(78,9,21,.92));border:1px solid rgba(255,255,255,.16);color:#fff;font-size:10px;font-weight:1000;letter-spacing:.16em;box-shadow:0 8px 22px rgba(0,0,0,.30)}
 .topHud{top:42px;left:16px;right:410px;display:grid;grid-template-columns:108px 108px minmax(180px,1fr) 136px;gap:8px}
@@ -406,7 +406,7 @@
  .bestBlock{display:none}
 }
 
-/* Kart Rush V11 — left-side F1-style classification + more grounded palette */
+/* Kart Rush V11 â€” left-side F1-style classification + more grounded palette */
 .raceScreen{background:#6f8dac}
 .qualityMark span{background:linear-gradient(120deg,#8e1e2d,#243341)!important}
 .sideHud{top:108px;right:14px;width:176px;background:transparent;border:none;box-shadow:none}
@@ -449,7 +449,7 @@
  .sideHud{top:88px;right:8px;width:112px}
 }
 
-/* Kart Rush V13 — stronger TV-style leaderboard, better launch overlay */
+/* Kart Rush V13 â€” stronger TV-style leaderboard, better launch overlay */
 .overlayIntro{margin:0 0 10px;padding:9px 12px;border-radius:12px;background:linear-gradient(90deg,rgba(168,17,39,.18),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.10);font-size:11px;font-weight:900;letter-spacing:.14em;color:#eef3f8;text-transform:uppercase}
 .standings{left:14px;top:118px;bottom:104px;width:272px;padding:12px 10px 10px;border-radius:16px;background:linear-gradient(180deg,rgba(6,10,15,.97),rgba(14,20,28,.92));border:1px solid rgba(255,255,255,.14);box-shadow:0 18px 42px rgba(0,0,0,.38)}
 .standings>div{padding:0 6px 10px;font-size:10px;font-weight:1000;letter-spacing:.18em;color:#dce5ef}
@@ -486,7 +486,7 @@
  .startSequence strong{font-size:24px}
 }
 
-/* V14 — actual playable launch menu, not just the race loading overlay */
+/* V14 â€” actual playable launch menu, not just the race loading overlay */
 .hero{padding-top:10px;padding-bottom:22px}
 .hero .eyebrow{color:#aeb9ca;font-size:11px;letter-spacing:.23em}
 .heroGrid{align-items:end}
@@ -623,7 +623,7 @@
 @media(prefers-reduced-motion:reduce){.launchCarArtwork{animation:none}}
 
 
-/* ===== F1 MEDIPOL | SADE ANA MENU (V14 / V15) =====
+/* ===== F1 SOCIAL | SADE ANA MENU (V14 / V15) =====
  * Yalnizca oyun acilis ekrani. Motor, pist, HUD, lobi ve diger sayfalara dokunmaz.
  */
 .hero{padding-top:14px;padding-bottom:24px}
@@ -699,7 +699,7 @@
 @media(max-width:560px){.howTo{grid-template-columns:1fr}.howTo>div{min-height:0}.launchStage{padding:24px 19px}}
 
 
-/* ===== F1 MEDIPOL | HUD KISALTMA + DAVET KARTI ===== */
+/* ===== F1 SOCIAL | HUD KISALTMA + DAVET KARTI ===== */
 .launchActions{display:grid!important;grid-template-columns:minmax(0,1.5fr) minmax(250px,1.1fr) minmax(160px,.85fr);gap:12px;align-items:stretch;margin-top:10px!important}
 .launchInviteCard{display:grid;grid-template-columns:1fr;gap:14px;padding:16px 18px;border-radius:16px;border:1px solid rgba(255,255,255,.14);background:linear-gradient(145deg,rgba(14,23,35,.92),rgba(10,18,29,.84));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 14px 34px rgba(0,0,0,.16);min-height:116px}
 .launchInviteText small{display:block;font-size:10px;letter-spacing:.13em;color:#f26b7d;font-weight:900;margin-bottom:7px}
@@ -733,7 +733,7 @@
  .raceScreen>.standings.boardOpen{display:block!important}
 }
 
-/* ===== F1 MEDIPOL | DAVET ALANI YATAY TASARIM FIX ===== */
+/* ===== F1 SOCIAL | DAVET ALANI YATAY TASARIM FIX ===== */
 .launchActions{
   display:grid !important;
   grid-template-columns:minmax(250px,1.08fr) minmax(390px,1.46fr) minmax(185px,.86fr) !important;
@@ -876,7 +876,7 @@
     font-size:17px !important;
   }
 }
-/* ===== END F1 MEDIPOL | DAVET ALANI YATAY TASARIM FIX ===== */
+/* ===== END F1 SOCIAL | DAVET ALANI YATAY TASARIM FIX ===== */
 
 /* === KART RUSH / YATAY AKSIYON ALANI TASMA FIX v17 === */
 /* Race / Invite share the available space inside the LEFT menu panel. */
@@ -1000,3 +1000,4 @@
   .menuHome .launchInviteActions{grid-template-columns:minmax(0,1fr)!important}
 }
 /* === /KART RUSH / YATAY AKSIYON ALANI TASMA FIX v17 === */
+

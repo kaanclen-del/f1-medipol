@@ -1,0 +1,38 @@
+F1 MEDIPOL G6.16.2 — OpenF1 Telsiz Arşivi / İstek Sınırı İyileştirmesi
+
+BU PAKET SADECE DORT DOSYAYI GUNCELLER:
+- lib/openf1-team-radio.ts
+- app/api/admin/team-radio/openf1/route.ts
+- app/api/admin/team-radio/route.ts
+- components/AdminTeamRadioManager.tsx
+
+G6.16.1 yuklu olmalidir. G6.16 ve G6.16.1'deki SQL islemlerini zaten yaptiysan YENI SQL GEREKMEZ.
+Sag alttaki TEAM RADIO dugmesi, popup ve diger ana sayfa bolumleri degismez.
+
+YENILIKLER:
+- OpenF1 geçmiş sorgularına sunucu önbelleği ve eş zamanlı istek birleştirme.
+- OPENF1_USERNAME ve OPENF1_PASSWORD varsa sunucu taraflı ücretli abonelik kimlik doğrulaması.
+- 429 olursa Retry-After'ı dikkate alan bekleme; tekrar tekrar istek yağdırmama.
+- Yönetici arşiv aramasında hatalı sorguyu elle tekrar deneme.
+- 2023 sezonu kullanılabilir; 2021/2022 verileri OpenF1'de BULUNMAZ.
+
+KURULUM (VS Code'da proje kokunde):
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_16_2*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+npm.cmd run dev
+
+NOT: Vercel'de OPENF1_USERNAME/OPENF1_PASSWORD zaten tanımlıysa bunları değiştirme.
+Localhost'ta abonelikli kimlik doğrulaması için ayni degiskenler .env.local dosyasında olmalidir (gizli; GitHub'a gönderme). Yoksa arama ücretsiz kota ile çalışır.
+
+TEST:
+http://localhost:3000/admin/team-radio
+Yıl: 2023 -> Grand Prix -> Seans -> Pilot -> Kayit ara.
+429 alirsan OpenF1'nin belirttigi sure boyunca bekle.
+
+TEST TAMAMSA:
+npm.cmd run build
+git add lib/openf1-team-radio.ts app/api/admin/team-radio/openf1/route.ts app/api/admin/team-radio/route.ts components/AdminTeamRadioManager.tsx
+git commit -m "G6.16.2 - Reduce OpenF1 team radio rate limits"
+git push origin main
+
+Bu paketin TypeScript sözdizimi kontrol edildi. Tam Next build/gercek API davranisi yerel proje olmadan dogrulanamadi.

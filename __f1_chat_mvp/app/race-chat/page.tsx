@@ -1,12 +1,12 @@
-import Header from "@/components/Header";
+﻿import Header from "@/components/Header";
 import RaceChat from "@/components/RaceChat";
 import { getCurrentRaceWeekend } from "@/lib/race-data";
 import { createClient } from "@/utils/supabase/server";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: "Grand Prix Canlı Sohbet | F1 Medipol",
-  description: "Her yarış hafta sonuna özel F1 Medipol topluluk sohbeti.",
+  title: "Grand Prix CanlÄ± Sohbet | F1 SOCIAL",
+  description: "Her yarÄ±ÅŸ hafta sonuna Ã¶zel F1 SOCIAL topluluk sohbeti.",
 };
 
 export default async function RaceChatPage() {
@@ -31,3 +31,4 @@ export default async function RaceChatPage() {
     </>
   );
 }
+

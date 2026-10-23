@@ -1101,6 +1101,14 @@ export default function F1LiveReplayCenter() {
 
   const live = hasUsableLiveTiming(liveData);
 
+    useEffect(() => {
+    // Canlı timing gerçekten kullanılabiliyorsa veya replay hazırsa
+    // geçiş ekranına içeriğin görüntülenebilir olduğunu bildir.
+    if (live || replay) {
+      window.dispatchEvent(new Event("f1-live-content-ready"));
+    }
+  }, [live, replay]);
+
   /* =======================================================
      CHAMPIONSHIP FETCH
      ======================================================= */

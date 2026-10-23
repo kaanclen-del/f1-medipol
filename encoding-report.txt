@@ -1,0 +1,186 @@
+﻿
+app\page.tsx:113:    // YarÄ±ÅŸ verisindeki saat UTC'dir; ziyaretÃ§iye TÃ¼rki
+ye saatini gÃ¶steriyoruz.
+app\page.tsx:117:      }).format(new Date(`${date}T12:00:00Z`))} Â· Saat aÃ§Ä
+±klanmadÄ±`;
+app\page.tsx:124:    return `${date} Â· Saat aÃ§Ä±klanmadÄ±`;
+app\page.tsx:463:        "MEDÄ°POL",
+app\page.tsx:555:    return "ETKÄ°NLÄ°K";
+app\page.tsx:564:      "YARIÅ Ä°ZLEME",
+app\page.tsx:570:      "SÃ–YLEÅÄ°",
+app\page.tsx:573:      "KULÃœP",
+app\page.tsx:576:      "ETKÄ°NLÄ°K",
+app\page.tsx:582:      "BULUÅMA",
+app\page.tsx:585:      "ATÃ–LYE",
+app\page.tsx:608:  // Bir sonraki yarÄ±ÅŸtan baÅŸlayarak yalnÄ±zca tamamlanma
+mÄ±ÅŸ GP'ler.
+app\page.tsx:618:    // Seans devam ediyor ve henÃ¼z resmÃ® sonuÃ§lar gelmedi
+ÄŸinde aktif GP'yi gÃ¶ster.
+app\page.tsx:634:    // SQL tablo kurulumu tamamlanmamÄ±ÅŸsa ana sayfa Ã§alÄ±
+ÅŸmaya devam eder.
+app\page.tsx:722:  // Ana sayfa etkinlikleri: Ã¶nce yaklaÅŸanlar (erken tarih
+ten geÃ§e),
+app\page.tsx:723:  // sonra geÃ§miÅŸ etkinlikler (en yeniden eskiye). Tek bir
+ dikey liste.
+app\page.tsx:740:  // G6.14.2 â€” Admin panelindeki kaydedilmiÅŸ etkinlik kad
+rajlarÄ±nÄ± ana sayfaya uygula.
+app\page.tsx:741:  // Bu tablo ayrÄ± tutulduÄŸu iÃ§in events sorgusundan otom
+atik gelmez.
+app\page.tsx:800:        <div className="f1-next-race-strip" aria-label="F1 S
+OCIAL kayan duyuru ÅŸeridi">
+app\page.tsx:806:                    <b>â— F1 MEDÄ°POL</b><span aria-hidden=
+"true">â—†</span>
+app\page.tsx:807:                    {tickerMessage ? <strong>{tickerMessage}
+</strong> : <strong>YAKLAÅAN YARIÅ: {race?.raceName}</strong>}
+app\page.tsx:808:                    {!tickerMessage && race && <><span aria-
+hidden="true">â—†</span><span>{formatSessionTimeTR(race.raceDate, race.raceTi
+me)} (TSÄ°)</span></>}
+app\page.tsx:864:              HERO kendi tema yÃ¼zeyine sahip.
+app\page.tsx:865:              BÃ¶ylece sayfa temasÄ± deÄŸiÅŸse bile
+app\page.tsx:866:              fotoÄŸraf + Quick Intel tek parÃ§a kalÄ±yor.
+app\page.tsx:1008:              Light temada sayfa aÃ§Ä±k kalÄ±yor,
+app\page.tsx:1301:            FOTOÄRAFIN SAÄ KENARINI
+app\page.tsx:1302:            QUICK INTEL'E YUMUÅAK BAÄLAR.
+app\page.tsx:2242:             PREDICTION â€” BÃœYÃœK, DÃ–NÃœÅÃœMLÃœ SENARYO
+ KARTI
+app\page.tsx:2396:             PREDICTION â€” LEGACY STYLES (HARÄ°CÄ° ALANLAR
+ Ä°Ã‡Ä°N)
+app\page.tsx:2523:             PADDOCK â€” YATAY ÅERÄ°T
+app\page.tsx:3122:             ETKÄ°NLÄ°K LÄ°STESÄ° Â· Ä°KÄ° OYUN Â· HERO PRO
+GRAMI
+app\page.tsx:3198:             HAFTALIK YORUM / KALAN YARIÅLAR
+app\page.tsx:3213:          /* YarÄ±ÅŸ kartÄ±: baÅŸlÄ±k Ã¶nde, satÄ±ra dokunu
+nca gerÃ§ek seans takvimi aÃ§Ä±lÄ±r. */
+app\page.tsx:3295:          /* 2026 Ana sayfa: yarÄ±ÅŸ bilgileri ve sade anal
+iz kartÄ± */
+app\page.tsx:3332:          /* SaÄŸ sÃ¼tunda kompakt pilot haberleri + haftal
+Ä±k yorum */
+app\page.tsx:3367:          /* G6.14.5: KaydÄ±rÄ±labilir etkinlik listesi ger
+i geldi.
+app\page.tsx:3368:             Offscreen kartlarÄ± geÃ§ Ã§izerek uzun listele
+rde kaydÄ±rma yÃ¼kÃ¼nÃ¼ azalt. */
+app\page.tsx:3393:          /* Pist hakkÄ±nda kÄ±sa ve dÃ¶nÃ¼ÅŸÃ¼mlÃ¼ bilgi k
+artÄ±. */
+app\page.tsx:3540:              Desktop'ta saÄŸa doÄŸru olan geÃ§iÅŸ,
+app\page.tsx:3541:              tek sÃ¼tunda aÅŸaÄŸÄ±ya doÄŸru akar.
+app\page.tsx:3692:                    ? `ROUND ${race.round} Â· ${race.circui
+tName}`
+app\page.tsx:3693:                    : "F1 MEDÄ°POL"}
+app\page.tsx:3715:                      â—{" "}
+app\page.tsx:3784:                  <div className="hero-race-brief" aria-lab
+el="Grand Prix hÄ±zlÄ± yarÄ±ÅŸ bilgileri">
+app\page.tsx:3785:                    <div className="hero-brief-mark" aria-h
+idden="true">âœ¦</div>
+app\page.tsx:3787:                      <span>YARIÅ BAÅLANGICI</span>
+app\page.tsx:3791:                      <span>SIRADAKÄ° SEANS</span>
+app\page.tsx:3792:                      <strong>{isLive ? (currentSession?.sh
+ortLabel ?? "CanlÄ±") : nextSession ? `${nextSession.shortLabel} Â· ${formatF
+1SessionTimeTR(nextSession.startTimestamp)}` : "Program bekleniyor"}</strong>
+app\page.tsx:3804:                <h2>YarÄ±ÅŸa BaÅŸlarken</h2>
+app\page.tsx:3813:                <span>HAFTALIK MAGAZÄ°N</span>
+app\page.tsx:3814:                <strong>Ä°dil BoyalÄ±'dan HaftalÄ±k Yorum</
+strong>
+app\page.tsx:3815:                <small>{weeklyCommentary?.summary || "Hafta
+nÄ±n yarÄ±ÅŸ deÄŸerlendirmesi burada yayÄ±nlanacak."}</small>
+app\page.tsx:3816:                <em>YORUMU OKU â†’</em>
+app\page.tsx:3825:              PRIMARY FEATURES â€” TWO CARDS
+app\page.tsx:3834:                <h3>CanlÄ± YarÄ±ÅŸ Merkezi</h3>
+app\page.tsx:3835:                <div className="feature-icon" aria-hidden="
+true">{isLive ? "â—" : "â—·"}</div>
+app\page.tsx:3839:                <strong>KALAN YARIÅ TAKVÄ°MÄ°</strong>
+app\page.tsx:3851:                          <small>{item.city} Â· {item.count
+ry}</small>
+app\page.tsx:3854:                        <span className="remaining-expand" 
+aria-hidden="true">âŒ„</span>
+app\page.tsx:3859:                          <span>TÃœRKÄ°YE SAATÄ°</span>
+app\page.tsx:3862:                          <div className={`remaining-sessio
+n ${session.name === "YarÄ±ÅŸ" ? "race-session" : ""}`} key={`${session.name}
+-${session.date}`}>
+app\page.tsx:3870:                          <div className="remaining-session
+">Seans programÄ± henÃ¼z aÃ§Ä±klanmadÄ±.</div>
+app\page.tsx:3878:                  Bu sezon iÃ§in yaklaÅŸan baÅŸka Grand Pri
+x bulunmuyor.
+app\page.tsx:3888:                    ? "CANLI MERKEZE GÄ°T"
+app\page.tsx:3889:                    : "YARIÅ MERKEZÄ°NE GÄ°T"}
+app\page.tsx:3893:                  â†’
+app\page.tsx:3898:            {/* PREDICTION â€” DÃ–NÃœÅÃœMLÃœ SENARYO SORUL
+ARI */}
+app\page.tsx:3911:                <span>âš‘ 12 SENARYO</span>
+app\page.tsx:3912:                <span>âš¡ 4 Ã–ZEL SEÃ‡Ä°M</span>
+app\page.tsx:3916:                <span>TAHMÄ°NLERÄ°NÄ° YAP â†’</span>
+app\page.tsx:3917:                <div className="feature-arrow" aria-hidden=
+"true">â†’</div>
+app\page.tsx:3924:              PADDOCK â€” YATAY TOPLULUK ALANI
+app\page.tsx:3927:          <section className="paddock-wide" aria-label="Pad
+dock topluluÄŸu">
+app\page.tsx:3931:                F1 MEDÄ°POL PADDOCK
+app\page.tsx:3933:              <h3>Paddock NabzÄ±</h3>
+app\page.tsx:3934:              <p>YarÄ±ÅŸ heyecanÄ±nÄ±n toplulukla buluÅŸtuÄ
+Ÿu yer.</p>
+app\page.tsx:3936:                PADDOCK'A GÄ°T <span aria-hidden="true">â†’
+</span>
+app\page.tsx:3943:                <strong>YarÄ±ÅŸ Hafta Sonu</strong>
+app\page.tsx:3944:                <small>Tahminler, yorumlar ve tartÄ±ÅŸmalar
+.</small>
+app\page.tsx:3945:                <span className="paddock-wide-tile-arrow" a
+ria-hidden="true">â†—</span>
+app\page.tsx:3951:                <span className="paddock-wide-tile-arrow" a
+ria-hidden="true">â†—</span>
+app\page.tsx:3956:                <small>PaylaÅŸ, takip et ve etkileÅŸime geÃ
+§.</small>
+app\page.tsx:3957:                <span className="paddock-wide-tile-arrow" a
+ria-hidden="true">â†—</span>
+app\page.tsx:3963:              HAFTALIK YORUM â€” ADMÄ°N PANELÄ°NDEN YÃ–NETÄ
+°LÄ°R
+app\page.tsx:3968:              <strong>Ä°dil BoyalÄ±'dan HaftalÄ±k Yorum</st
+rong>
+app\page.tsx:3969:              <small>HAFTALIK MAGAZÄ°N</small>
+app\page.tsx:3974:                  <div className="weekly-edition">{weeklyCo
+mmentary.week_label || "HAFTALIK DEÄERLENDÄ°RME"}</div>
+app\page.tsx:3978:                  <div className="weekly-author">Ä°DÄ°L BOY
+ALI Â· F1 MEDÄ°POL YÃ–NETÄ°M KURULU</div>
+app\page.tsx:3982:                    <img src={weeklyCommentary.image_url} a
+lt={`${weeklyCommentary.title} â€” haftalÄ±k yorum gÃ¶rseli`} loading="lazy" 
+/>
+app\page.tsx:3988:                <span>âœ¦</span>
+app\page.tsx:3989:                <div><strong>Bu haftanÄ±n yorumu hazÄ±rlanÄ
+±yor.</strong>
+app\page.tsx:3990:                <p>Yeni analiz, yÃ¶netim panelinden yayÄ±ml
+andÄ±ÄŸÄ±nda burada gÃ¶rÃ¼necek.</p></div>
+app\page.tsx:4001:              <h2>Åampiyona Form Tablosu</h2>
+app\page.tsx:4014:                  "Son YarÄ±ÅŸ"}
+app\page.tsx:4076:                YÃ¶netim Kurulu Â· 2026/27
+app\page.tsx:4080:                KulÃ¼bÃ¼n yÃ¶netim ekibi.
+app\page.tsx:4088:              TÃœMÃœNÃœ GÃ–R â†’
+app\page.tsx:4113:                            "YÃ¶netim Kurulu"
+app\page.tsx:4139:                KulÃ¼p etkinlikleri.
+app\page.tsx:4147:              TÃœM ETKÄ°NLÄ°KLER â†’
+app\page.tsx:4151:          <section className="events-stack" tabIndex={0} ar
+ia-label="KulÃ¼p etkinlikleri. Daha fazla etkinlik iÃ§in listeyi kaydÄ±rÄ±n">
+app\page.tsx:4159:                      alt={`${event.title} etkinlik gÃ¶rsel
+i`}
+app\page.tsx:4175:                    {upcoming ? "YAKLAÅAN ETKÄ°NLÄ°K" : "G
+EÃ‡MÄ°Å ETKÄ°NLÄ°K"}
+app\page.tsx:4176:                    <i aria-hidden="true">Â·</i>
+app\page.tsx:4180:                  <p>{formatEventDate(event.start_at)}{even
+t.location_name ? ` Â· ${event.location_name}` : ""}</p>
+app\page.tsx:4182:                <span className="event-list-arrow" aria-hid
+den="true">â†—</span>
+app\page.tsx:4185:              <div className="events-stack-empty">HenÃ¼z ya
+yÄ±mlanmÄ±ÅŸ etkinlik bulunmuyor. Yeni etkinlikler burada sÄ±ralanacak.</div>
+app\page.tsx:4191:              ARCADE â€” Ä°KÄ° EÅÄ°T OYUN KARTI
+app\page.tsx:4197:              <p>F1 SOCIAL arcade alanÄ±nda dÃ¶rt farklÄ± d
+eneyime hemen gir.</p>
+app\page.tsx:4201:          <section className="arcade-home-grid" aria-label=
+"F1 Arcade oyunlarÄ±">
+app\page.tsx:4204:              <p>TakÄ±mÄ±nÄ± yÃ¶net, pilot transferlerini p
+lanla ve Ã§ok sezonlu kariyer yapÄ±sÄ±nda pit wall kararlarÄ±nÄ± sen ver.</p>
+app\page.tsx:4208:              <p>Alternatif finiÅŸ sÄ±ralarÄ± kur, ÅŸampiyo
+na puanlarÄ±nÄ± anÄ±nda hesapla ve farklÄ± senaryolarÄ± karÅŸÄ±laÅŸtÄ±r.</p>
+app\page.tsx:4212:              <p>3D pistte sÃ¼r, rakiplerine karÅŸÄ± yarÄ±Å
+Ÿ ve kulÃ¼bÃ¼n arcade bÃ¶lÃ¼mÃ¼ndeki hÄ±zlÄ± aksiyon deneyimine gir.</p>
+app\page.tsx:4216:              <p>GerÃ§ek karting turlarÄ±nÄ± kaydet, sÃ¼rÃ¼
+cÃ¼ ve takÄ±m sÄ±ralamalarÄ±nÄ± takip et, seans sonuÃ§larÄ±nÄ± kolayca yÃ¶net
+.</p>
+
+

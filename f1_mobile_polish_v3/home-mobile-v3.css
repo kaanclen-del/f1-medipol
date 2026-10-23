@@ -1,4 +1,4 @@
-/* F1 MEDIPOL - MOBILE HERO FIT V3
+﻿/* F1 SOCIAL - MOBILE HERO FIT V3
    Site genel renklerini etkilemez. Ana sayfanin grand prix hero alanina ozeldir. */
 @media (max-width: 740px) {
   .hero-main {
@@ -90,3 +90,4 @@
   .hero h1 { font-size: clamp(26px, 7.35vw, 30px) !important; }
   .hero-main { padding-inline: 14px !important; }
 }
+

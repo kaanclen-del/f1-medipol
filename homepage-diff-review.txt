@@ -1,0 +1,79 @@
+﻿diff --git a/app/page.tsx b/app/page.tsx
+index ad3c8a6..4d0d86b 100644
+--- a/app/page.tsx
++++ b/app/page.tsx
+@@ -797,13 +797,13 @@ export default async function HomePage() {
+       <Header />
+ 
+       {(tickerMessage || race) && (
+-        <div className="f1-next-race-strip" aria-label="F1 Medipol kayan duyuru ┼şeridi">
++        <div className="f1-next-race-strip" aria-label="F1 SOCIAL kayan duyuru ┼şeridi">
+           <div className="f1-next-race-track">
+             {[0, 1].map((copy) => (
+               <div className="f1-next-race-group" key={copy} aria-hidden={copy === 1}>
+                 {Array.from({ length: 20 }, (_, index) => (
+                   <span className="f1-next-race-item" key={index}>
+-                    <b>ÔùÅ F1 MED─░POL</b><span aria-hidden="true">Ôùå</span>
++                    <b>ÔùÅ SOCIAL</b><span aria-hidden="true">Ôùå</span>
+                     {tickerMessage ? <strong>{tickerMessage}</strong> : <strong>YAKLA┼ŞAN YARI┼Ş: {race?.raceName}</strong>}
+                     {!tickerMessage && race && <><span aria-hidden="true">Ôùå</span><span>{formatSessionTimeTR(race.raceDate, race.raceTime)} (TS─░)</span></>}
+                   </span>
+@@ -3690,7 +3690,7 @@ export default async function HomePage() {
+                 <div className="eyebrow">
+                   {race
+                     ? `ROUND ${race.round} ┬À ${race.circuitName}`
+-                    : "F1 MED─░POL"}
++                    : "SOCIAL"}
+                 </div>
+ 
+                 <div className="pills">
+@@ -3907,7 +3907,7 @@ export default async function HomePage() {
+               <RotatingPredictionPrompt />
+ 
+               <div className="prediction-summary-line">
+-                <span>­şÅü PODYUM</span>
++                <span>­şÅå PODYUM</span>
+                 <span>ÔÜæ 12 SENARYO</span>
+                 <span>ÔÜí 4 ├ûZEL SE├ç─░M</span>
+               </div>
+@@ -3928,7 +3928,7 @@ export default async function HomePage() {
+             <div className="paddock-wide-intro">
+               <div className="paddock-wide-kicker">
+                 <span className="paddock-wide-pulse" aria-hidden="true" />
+-                F1 MED─░POL PADDOCK
++                SOCIAL PADDOCK
+               </div>
+               <h3>Paddock Nabz─▒</h3>
+               <p>Yar─▒┼ş heyecan─▒n─▒n toplulukla bulu┼ştu─şu yer.</p>
+@@ -3945,7 +3945,7 @@ export default async function HomePage() {
+                 <span className="paddock-wide-tile-arrow" aria-hidden="true">Ôåù</span>
+               </Link>
+               <Link href="/arcade" className="paddock-wide-tile">
+-                <span className="paddock-wide-tile-icon" aria-hidden="true">­şÄ«</span>
++                <span className="paddock-wide-tile-icon" aria-hidden="true">­şÅÄ´©Å</span>
+                 <strong>Paddock Arcade</strong>
+                 <small>Manager, Quiz ve mini oyunlar.</small>
+                 <span className="paddock-wide-tile-arrow" aria-hidden="true">Ôåù</span>
+@@ -3975,7 +3975,7 @@ export default async function HomePage() {
+                   <h2>{weeklyCommentary.title}</h2>
+                   {weeklyCommentary.summary && <p className="weekly-lead">{weeklyCommentary.summary}</p>}
+                   <div className="weekly-longtext">{weeklyCommentary.content}</div>
+-                  <div className="weekly-author">─░D─░L BOYALI ┬À F1 MED─░POL Y├ûNET─░M KURULU</div>
++                  <div className="weekly-author">─░D─░L BOYALI ┬À SOCIAL Y├ûNET─░M EK─░B─░</div>
+                 </div>
+                 {weeklyCommentary.image_url && (
+                   <div className="weekly-image">
+@@ -4194,7 +4194,7 @@ export default async function HomePage() {
+           <div className="section-head">
+             <div className="section-title">
+               <h2>F1 Arcade</h2>
+-              <p>F1 Medipol arcade alan─▒nda d├Ârt farkl─▒ deneyime hemen gir.</p>
++              <p>F1 SOCIAL arcade alan─▒nda d├Ârt farkl─▒ deneyime hemen gir.</p>
+             </div>
+           </div>
+ 
+@@ -4221,3 +4221,4 @@ export default async function HomePage() {
+     </>
+   );
+ }
++

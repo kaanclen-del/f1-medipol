@@ -1,0 +1,43 @@
+F1 MEDIPOL G6.15 — LEGENDARY TEAM RADIO
+
+Bu paket G6.14.5'in calisan ana sayfasi uzerine gelistirilmistir.
+Galeri, etkinlik kaydirma, etkinlik kadraj, F1 Arcade gibi onceki ozellikler korunur.
+
+ICERIK:
+  app/page.tsx
+  app/api/team-radio/route.ts
+  components/LegendaryTeamRadio.tsx
+  components/LegendaryTeamRadio.module.css
+  lib/team-radio-presets.ts
+
+NASIL CALISIR?
+- Ana sayfada gercek F1 telsiz arsivinden pilot/yaris secilebilir.
+- Ilk ziyarette ses yuklenmez, otomatik ses acilmaz.
+- Kullanici kayit isteyince OpenF1 2023+ tarihi arsivinden seans ve kayit listesi gelir.
+- Asil MP3 dosyalarini sitemize kopyalamiyoruz; sesin URL'si resmi zamanlama sunucusundandir.
+- Yayinlanan seslerin kullanimi icin gerekli izin ve lisanslari ayri degerlendirin.
+- 2012 gibi eski sesler bu API kapsaminda olmadigi icin eklenmedi.
+- Bazi yaris/seanslarda hic ses bulunmayabilir; arayuz bunu bildirir.
+
+1. ZIP'i Downloads'a indirip VS Code terminalinde proje kokune gidin.
+2. Asagidaki komutlari calistirin:
+
+  $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_15*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+  Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+  npm.cmd run dev
+
+3. http://localhost:3000 altinda Etkinlikler ile F1 Arcade arasindaki Team Radio alanini deneyin.
+4. Pilot secip kayitlarin yuklenmesini bekleyin. "Telsizi dinle" dugmesine basin.
+5. Supabase SQL veya Vercel Environment Variable EKLEMEYE GEREK YOK.
+
+BUILD VE DEPLOY:
+  npm.cmd run build
+  git add app/page.tsx app/api/team-radio/route.ts components/LegendaryTeamRadio.tsx components/LegendaryTeamRadio.module.css lib/team-radio-presets.ts
+  git commit -m "G6.15 - Legendary team radio player"
+  git push origin main
+
+NOT:
+- 2023+ radyo verisi OpenF1. Kayitlar OpenF1 tarafindan limitli yayinlanir.
+- Tarihi veriler icin mevcut OpenF1 aboneligi gerekmez.
+- Ses kaynaklarinin harici sunucuda erisilebilir olmasi gerekir; erisilemiyorsa bunu hata bildirimi olarak gorursunuz.
+- Tum Next.js projesi elde olmadigi icin tam derleme bu paketi hazirlarken yapilamadi.

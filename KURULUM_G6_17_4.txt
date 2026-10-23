@@ -1,0 +1,33 @@
+F1 MEDIPOL G6.17.4 – Tema uyumu + her tema icin ayri profil duvar kagidi
+
+ONEMLI: SQL ilk once calistirilmali!
+
+1. Supabase Dashboard > SQL Editor > New Query:
+   supabase/g6-17-4-theme-wallpapers.sql dosyasinin tamamini yapistir > Run.
+   Bu islem profiles tablosuna profile_wallpaper_light ve profile_wallpaper_red ekler.
+   Mevcut profile_wallpaper (koyu tema) DEGISMEZ.
+   Light/red alanlari bos olan hesaplar eskisi gibi koyu temanin duvar kagidini kullanir.
+
+2. ZIP'i VS Code proje kokunde cikar:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_4*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+3. npm.cmd run dev
+   http://localhost:3000/profile/edit
+   Tema duvar kagitlari: Koyu / Kirmizi / Acik, degisik veya ayni secim; Profili Kaydet.
+   Ayrica /profile/wallpapers yolunda her tema icin ayri secim yapilabilir.
+   /profile sayfasinda temalari degistir; secilen duvar kagidi ve kart renkleri farkli olmalidir.
+   /paddock, /predict, /bildirimler sayfalarinda acik tema okunurlugunu kontrol et.
+
+4. npm.cmd run build
+   BASARILI olursa:
+   git add app/profile/page.tsx app/profile/edit/page.tsx app/profile/wallpapers/page.tsx app/globals.css components/ProfileAchievements.tsx components/PaddockPoll.tsx supabase/g6-17-4-theme-wallpapers.sql
+   git diff --cached --stat
+   git commit -m "G6.17.4 - Per-theme profile wallpapers and contrast fixes"
+   git push origin main
+
+Ekstra notlar:
+- Yeni SQL yalnizca 2 sutun ekler; mevcut kullanici secimlerini silmez.
+- Tema basina duvar kagidi hesap kullanicisi seviyesinde saklanir. Tum kullanicilar ayri ayri secim yapabilir.
+- Bu ZIP baska sayfalara ve DM/Team Radio sistemine dokunmaz.
+- Paketin TypeScript SOZDIZIMI ve CSS AYRISTIRMA kontrolu yapildi; tam proje derlemesi ve tarayici testi lokal ortamda yapilmali.

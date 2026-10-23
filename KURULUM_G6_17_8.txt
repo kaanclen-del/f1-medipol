@@ -1,0 +1,25 @@
+F1 MEDIPOL G6.17.8 – YONETIM KURULU YATAY ACILIS DUZELTMESI
+
+Bu paket G6.17.7 uzerine kurulur. Yalnizca components/BoardShowcase.tsx dosyasini degistirir.
+
+1) Windows PowerShell – projenin kok klasorunde:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_8*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2) Localhost /board testleri:
+   npm.cmd run dev
+   - Birinci ve ikinci sutun: mevcut yumusak yana acilis
+   - Ucuncu ve dorduncu sutun: AYNI satirda sola dogru yumusak acilis
+   - Ikinci siradaki kartlar ve mobil gorunum
+   - Ac/kapat, onceki/sonraki kisi, genis gorselin kirpilmamasi
+
+3) Derleme:
+   Ctrl+C ile gelistirme sunucusunu durdurun.
+   npm.cmd run build
+
+4) GitHub -> Vercel (basarili derlemeden sonra):
+   git add components/BoardShowcase.tsx
+   git commit -m "G6.17.8 - Keep board expansion within its row"
+   git push origin main
+
+Ek SQL gerekmiyor. Bu paket profil temasini ve diger G6.17.7 dosyalarini degistirmez.

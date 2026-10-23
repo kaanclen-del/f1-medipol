@@ -12,10 +12,15 @@ type TransitionInfo = {
 };
 
 const ROUTES: Record<string, TransitionInfo> = {
-  arcade: {
-    key: "arcade",
-    title: "OYUN MERKEZİNE GİRİLİYOR",
-    caption: "CHOOSE YOUR GAME",
+  home: {
+    key: "home",
+    title: "PİST SENİ BEKLİYOR",
+    caption: "F1 MEDIPOL · RACE · CONNECT · PLAY",
+  },
+  profile: {
+    key: "profile",
+    title: "PİST ÜSTÜ KİMLİĞİN HAZIRLANIYOR",
+    caption: "YOUR PROFILE · YOUR STORY",
   },
   live: {
     key: "live",
@@ -27,10 +32,10 @@ const ROUTES: Record<string, TransitionInfo> = {
     title: "TAHMİN GRİDİ HAZIRLANIYOR",
     caption: "MAKE YOUR CALL",
   },
-  paddock: {
-    key: "paddock",
-    title: "PADDOCK TOPLULUĞU AÇILIYOR",
-    caption: "JOIN THE CONVERSATION",
+  member: {
+    key: "member",
+    title: "ÜYE PROFİLİ HAZIRLANIYOR",
+    caption: "F1 SOCIAL · YOUR PROFILE · YOUR STORY",
   },
 };
 
@@ -41,7 +46,17 @@ const INTRO: TransitionInfo = {
 };
 
 function getTransition(path: string): TransitionInfo | null {
+  // Ana sayfanın adresi "/" olduğu için ayrıca kontrol edilmeli.
+  if (path === "/") return ROUTES.home;
+
+  // Ziyaret edilen üyelerin profilleri.
+  if (path === "/members" || path.startsWith("/members/")) {
+    return ROUTES.member;
+  }
+
   for (const [route, info] of Object.entries(ROUTES)) {
+    if (route === "home" || route === "member") continue;
+
     if (path === `/${route}` || path.startsWith(`/${route}/`)) {
       return info;
     }
@@ -73,6 +88,7 @@ export default function RouteTransition() {
 
   const [visible, setVisible] = useState(true);
   const [transition, setTransition] = useState<TransitionInfo>(INTRO);
+  const [logoFailed, setLogoFailed] = useState(false);
 
   const clearNavigationTimer = useCallback(() => {
     if (navigationTimer.current !== null) {
@@ -101,9 +117,10 @@ export default function RouteTransition() {
     [clearNavigationTimer],
   );
 
-  // Giriş ekranı: load olayını beklemeden kesin olarak kapanır.
+  // İlk açılış animasyonu.
   useEffect(() => {
     setTransition(INTRO);
+    setLogoFailed(false);
     setVisible(true);
 
     introTimer.current = setTimeout(() => {
@@ -111,12 +128,10 @@ export default function RouteTransition() {
       introTimer.current = null;
     }, 1500);
 
-    return () => {
-      clearIntroTimer();
-    };
+    return () => clearIntroTimer();
   }, [clearIntroTimer]);
 
-  // Yalnızca Arcade, Canlı, Tahmin ve Paddock geçişleri.
+  // Site içi bağlantılarda geçiş ekranını aç.
   useEffect(() => {
     function handleClick(event: MouseEvent) {
       if (
@@ -155,13 +170,17 @@ export default function RouteTransition() {
 
       pendingPath.current = destination;
       setTransition(info);
+      setLogoFailed(false);
       setVisible(true);
+
+      // Canlı yayın için mevcut 45 saniyelik güvenlik süresini koru.
+      const timeout = info.key === "live" ? 45000 : 12000;
 
       navigationTimer.current = setTimeout(() => {
         setVisible(false);
         pendingPath.current = null;
         navigationTimer.current = null;
-      }, 5000);
+      }, timeout);
     }
 
     document.addEventListener("click", handleClick, true);
@@ -171,7 +190,7 @@ export default function RouteTransition() {
     };
   }, [pathname, clearNavigationTimer, clearIntroTimer]);
 
-  // Hedef sayfa açılınca geçişi kapat.
+  // URL değiştiğinde hedef sayfanın geçişini tamamla.
   useEffect(() => {
     if (previousPath.current === pathname) return;
 
@@ -179,7 +198,11 @@ export default function RouteTransition() {
 
     if (pendingPath.current === pathname) {
       const info = getTransition(pathname);
+
       if (info) setTransition(info);
+
+      // Canlı yayın hazır sinyalini beklemeye devam eder.
+      if (info?.key === "live") return;
 
       closeNavigation(250);
       return;
@@ -190,7 +213,21 @@ export default function RouteTransition() {
     setVisible(false);
   }, [pathname, closeNavigation, clearNavigationTimer]);
 
-  // Overlay açıkken arka plan kaymasını engelle.
+  // Canlı yayın hazır olduğunda geçiş ekranını kapat.
+  useEffect(() => {
+    function handleLiveReady() {
+      if (pendingPath.current !== "/live") return;
+      closeNavigation(250);
+    }
+
+    window.addEventListener("f1-live-content-ready", handleLiveReady);
+
+    return () => {
+      window.removeEventListener("f1-live-content-ready", handleLiveReady);
+    };
+  }, [closeNavigation]);
+
+  // Geçiş sırasında arka plan kaymasını engelle.
   useEffect(() => {
     if (!visible) return;
 
@@ -202,6 +239,7 @@ export default function RouteTransition() {
     };
   }, [visible]);
 
+  // Zamanlayıcı temizliği.
   useEffect(() => {
     return () => {
       clearNavigationTimer();
@@ -226,11 +264,18 @@ export default function RouteTransition() {
       </div>
 
       <div className={styles.center}>
-        <img
-          className={styles.logo}
-          src="/f1-social-transition-logo.png"
-          alt="F1 SOCIAL"
-        />
+        {!logoFailed ? (
+          <img
+            className={styles.logo}
+            src="/f1-social-transition-logo.png"
+            alt="F1 SOCIAL"
+            onError={() => setLogoFailed(true)}
+          />
+        ) : (
+          <div className={styles.logoFallback} aria-label="F1 SOCIAL">
+            <span>F1</span> SOCIAL
+          </div>
+        )}
 
         <div className={styles.loadingLine} aria-hidden="true">
           <span />

@@ -1,0 +1,41 @@
+F1 MEDIPOL — G6.17.2 AÇIK TEMA + ARKADAŞ PANELİ
+
+GÜNCELLEMELER:
+- Açık temada Canlı Race Hub / şampiyona kartı renkleri.
+- Tahmin sayfasında pilot seçimi, kartlar, adım menüsü ve skor paneli okunurluğu.
+- Arcade sayfasında açık temaya uygun beyaz yüzeyler / koyu başlıklar; oyun görselleri korunur.
+- Paddock gönderi ve sağ sütun kartları, metin alanları için açık tema.
+- Bildirimlerin açılır menüsü ve Gelen Bildirimler kartlarında kontrast.
+- Profil sağ sütunundaki Profil ve Profile Background kutuları yerine Arkadaşlar.
+- Kabul edilmiş DM arkadaşları, avatar, ad, kullanıcı adı ve profil seviyesine göre liste.
+- Arkadaş ekle simgesi /messages?dm=find adresine gider; mevcut Kişi bul menüsünü açar.
+- Arkadaşa tıklayınca /members/[id] profilini ziyaret eder.
+
+KURULUM (VS CODE TERMINALİ, PROJE KÖKÜ)
+1. ZIP'i Downloads klasörüne indir:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_2*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2. Yerel test: npm.cmd run dev
+   Açık temayı seç ve /live /predict /arcade /paddock /bildirimler /profile adreslerine bak.
+   Profilde arkadaş eklemeyi ve arkadaş profiline geçişi dene.
+
+3. Derleme kontrolü: npm.cmd run build
+
+4. Derleme ve test başarılıysa:
+   git add app/globals.css app/profile/page.tsx app/paddock/page.tsx app/arcade/arcade.module.css
+   git add components/MessagesClient.tsx components/PaddockComposer.tsx
+   git add components/NotificationBell.module.css components/NotificationInbox.module.css
+   git diff --cached --stat
+   git commit -m "G6.17.2 - Light theme and profile friends"
+   git push origin main
+
+NOTLAR:
+- Supabase'de yeni SQL yoktur. Mevcut dm_list_friends RPC ve profiles tablosu kullanılır.
+- Aday kullanıcı arama ve arkadaş ekleme, mevcut DM Kişi bul ve dm_add_friend akışını kullanır.
+- Veritabanı arşivi/üye verisi değişmez.
+- Bu ZIP'te sadece 8 dosya bulunur; diğer dosyalara dokunmaz.
+- Paylaşılan kaynak ZIP'te /app/bildirimler/notifications.module.css bulunmadığından o sayfaya
+  ait CSS module üzerinde doğrudan güncelleme yapılmadı; genel light-theme seçicileri
+  ile görünüm iyileştirildi. Bildirim ekranında kalan bir sorun görülürse o dosya da gerekli.
+- Tam Next.js build ancak kullanıcının projesinde yapılabilir.

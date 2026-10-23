@@ -1,0 +1,35 @@
+F1 MEDIPOL G6.17.1 - ACIK TEMA OKUNURLUK DUZELTMESI
+
+Kapsam:
+- Header tema acilir menusu: acik temada beyaz yuzey, koyu baslik/aciklama ve kirmizi secili tema.
+- Ana sayfada Quick Intel: acik zemin ustundeki beyaz metinlerin koyu renge alinmasi.
+- Haber, haftalik yorum, pist bilgisi, yon dugmeleri ve soluk yazi kontrasti.
+
+Degisen tam dosyalar:
+app/globals.css
+components/HeaderThemeMenu.tsx
+
+DOKUNULMAYANLAR: app/page.tsx, app/layout.tsx, Team Radio, etkinlik/kadraj, galeri, Arcade, Supabase.
+Ekstra SQL gerekmiyor.
+
+KURULUM: Proje kok klasorunde PowerShell:
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_1*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+npm.cmd run dev
+
+Tarayicida http://localhost:3000 acin ve acik tema secin.
+- Tema secim menusu beyaz/okunakli olmali.
+- Hero sag Quick Intel haber ve bilgi karti metinleri koyu olmali.
+- Sol koyu hero uzerindeki beyaz metinler ayni kalmali.
+- Koyu ve F1 kirmizi temada degisiklik olmamali.
+
+Derleme ve yayin:
+Ctrl+C ile dev server'i durdurun (gerekliyse), sonra:
+npm.cmd run build
+
+git add app/globals.css components/HeaderThemeMenu.tsx
+git commit -m "G6.17.1 - Improve light theme text contrast"
+git push origin main
+
+NOT: Tam proje kopyasi yuklenmedigi icin npm build veya gercek tarayici testi burada yapilamadi;
+TSX soz dizimi ve CSS parser kontrolleri basarili.

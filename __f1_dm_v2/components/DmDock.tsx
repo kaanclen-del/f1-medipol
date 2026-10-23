@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { createPortal } from "react-dom";
 import Link from "next/link";
@@ -19,13 +19,13 @@ function readTheme(): Theme {
   if (typeof document === "undefined") return "gray";
   const html = document.documentElement;
   const v = (html.getAttribute("data-theme") || html.getAttribute("data-site-theme") || "").toLowerCase();
-  if (["light", "white", "açık", "acik"].includes(v)) return "light";
-  if (["red", "f1-red", "kırmızı", "kirmizi"].includes(v)) return "red";
+  if (["light", "white", "aÃ§Ä±k", "acik"].includes(v)) return "light";
+  if (["red", "f1-red", "kÄ±rmÄ±zÄ±", "kirmizi"].includes(v)) return "red";
   try {
     for (const key of ["f1-site-theme", "site-theme", "siteTheme", "theme"]) {
       const stored = (localStorage.getItem(key) || "").toLowerCase();
-      if (["light", "white", "açık", "acik"].includes(stored)) return "light";
-      if (["red", "f1-red", "kırmızı", "kirmizi"].includes(stored)) return "red";
+      if (["light", "white", "aÃ§Ä±k", "acik"].includes(stored)) return "light";
+      if (["red", "f1-red", "kÄ±rmÄ±zÄ±", "kirmizi"].includes(stored)) return "red";
     }
   } catch {}
   return "gray";
@@ -89,7 +89,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
     if (!userId) return;
     const [f, r] = await Promise.all([supabase.rpc("dm_list_friends"), supabase.rpc("dm_list_requests")]);
     if (f.error || r.error) {
-      setStatus("Mesajlaşma verileri alınamadı. DM_FRIENDS_SETUP.sql kurulumunu kontrol et.");
+      setStatus("MesajlaÅŸma verileri alÄ±namadÄ±. DM_FRIENDS_SETUP.sql kurulumunu kontrol et.");
       return;
     }
     friendsRef.current = (f.data || []) as Friend[];
@@ -161,7 +161,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
           void loadMessages(next.sender_id);
         } else if (next.sender_id) {
           const body = String(next.body || "Yeni mesaj").slice(0, 65);
-          const senderName = friendsRef.current.find(f => f.user_id === next.sender_id)?.display_name || "Bir arkadaşın";
+          const senderName = friendsRef.current.find(f => f.user_id === next.sender_id)?.display_name || "Bir arkadaÅŸÄ±n";
           setToast({ text: body, from: next.sender_id, name: senderName });
           if (toastTimer.current) clearTimeout(toastTimer.current);
           toastTimer.current = setTimeout(() => setToast(null), 6500);
@@ -255,7 +255,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
         setFound((data || []) as Person[]);
       }
       window.dispatchEvent(new Event("f1-notifications-updated"));
-    } catch (e) { setStatus(e instanceof Error ? e.message : "İşlem başarısız oldu."); }
+    } catch (e) { setStatus(e instanceof Error ? e.message : "Ä°ÅŸlem baÅŸarÄ±sÄ±z oldu."); }
     finally { setBusy(false); }
   }
 
@@ -285,10 +285,10 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
     if (!userId || !active || busy) return;
     const mime = file.type.toLowerCase().split(";")[0];
     const kind = mime.startsWith("image/") ? "image" : mime.startsWith("video/") ? "video" : mime.startsWith("audio/") ? "audio" : "";
-    if (!ALLOWED.has(mime) || !kind) {setStatus("Desteklenmeyen dosya türü."); return;}
+    if (!ALLOWED.has(mime) || !kind) {setStatus("Desteklenmeyen dosya tÃ¼rÃ¼."); return;}
     const maxSize = kind === "audio" ? 8 * 1024 * 1024 : kind === "video" ? 25 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {setStatus(`Dosya çok büyük. En fazla ${Math.round(maxSize/1024/1024)} MB yükleyebilirsin.`);return;}
-    setBusy(true); setStatus("Dosya yükleniyor...");
+    if (file.size > maxSize) {setStatus(`Dosya Ã§ok bÃ¼yÃ¼k. En fazla ${Math.round(maxSize/1024/1024)} MB yÃ¼kleyebilirsin.`);return;}
+    setBusy(true); setStatus("Dosya yÃ¼kleniyor...");
     const recipient = active;
     const extension = mime.split("/")[1]?.replace("quicktime","mov").replace("jpeg","jpg") || "bin";
     const path = `${userId}/${crypto.randomUUID()}.${extension}`;
@@ -305,7 +305,7 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
       await loadMessages(recipient);
       await refresh();
     } catch (err) {
-      setStatus(err instanceof Error ? err.message : "Dosya gönderilemedi. SQL yükseltmesini kontrol et.");
+      setStatus(err instanceof Error ? err.message : "Dosya gÃ¶nderilemedi. SQL yÃ¼kseltmesini kontrol et.");
     } finally { setBusy(false); if (fileInputRef.current) fileInputRef.current.value=""; }
   }
 
@@ -316,13 +316,13 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
       return;
     }
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-      setStatus("Tarayıcın mikrofonla ses kaydını desteklemiyor.");return;
+      setStatus("TarayÄ±cÄ±n mikrofonla ses kaydÄ±nÄ± desteklemiyor.");return;
     }
     try {
       const stream=await navigator.mediaDevices.getUserMedia({audio:true});
       const supported=["audio/webm;codecs=opus","audio/mp4","audio/webm","audio/ogg"]
         .find(t=>MediaRecorder.isTypeSupported(t));
-      if (!supported) {stream.getTracks().forEach(t=>t.stop());setStatus("Tarayıcı uygun ses formatı sunmuyor.");return;}
+      if (!supported) {stream.getTracks().forEach(t=>t.stop());setStatus("TarayÄ±cÄ± uygun ses formatÄ± sunmuyor.");return;}
       const recorder=new MediaRecorder(stream,{mimeType:supported});
       const pieces:BlobPart[]=[];
       recorderRef.current=recorder; microphoneRef.current=stream;
@@ -334,8 +334,8 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
         const file=new File(pieces,`ses-kaydi-${Date.now()}.${mime==="audio/mp4"?"m4a":"webm"}`,{type:mime});
         void uploadFile(file);
       };
-      recorder.start();setRecording(true);setStatus("Kayıt sürüyor. Bitirmek için tekrar mikrofona bas.");
-    } catch {setStatus("Mikrofon izni verilmedi veya cihaz kullanılamıyor.");}
+      recorder.start();setRecording(true);setStatus("KayÄ±t sÃ¼rÃ¼yor. Bitirmek iÃ§in tekrar mikrofona bas.");
+    } catch {setStatus("Mikrofon izni verilmedi veya cihaz kullanÄ±lamÄ±yor.");}
   }
 
   useEffect(() => () => {
@@ -372,109 +372,110 @@ export default function DmDock({ isLight = false }: { isLight?: boolean }) {
 
   const dialog = (
     <div className={`${styles.portal} ${styles[theme] || ""}`}>
-      {!open && <button className={styles.floating} onClick={() => { setOpen(true); setActive(null); setView("chats"); }} title="Mesajlarını aç" aria-label={`Mesajlarını aç, ${total} okunmamış`}>
+      {!open && <button className={styles.floating} onClick={() => { setOpen(true); setActive(null); setView("chats"); }} title="MesajlarÄ±nÄ± aÃ§" aria-label={`MesajlarÄ±nÄ± aÃ§, ${total} okunmamÄ±ÅŸ`}>
         <Icon name="chat" size={23}/>{total > 0 && <b className={styles.counter}>{total > 99 ? "99+" : total}</b>}
       </button>}
       {toast && !open && <button className={styles.toast} onClick={() => { setOpen(true); setView("chats"); setActive(toast.from); setToast(null); }}>
-        <b>{toast.name} · Yeni mesaj</b><span>{toast.text}</span>
+        <b>{toast.name} Â· Yeni mesaj</b><span>{toast.text}</span>
       </button>}
       {open && <>
-        <button type="button" className={styles.backdrop} aria-label="Mesajlaşmayı kapat" onClick={closePanel}/>
-        <section className={styles.panel} role="dialog" aria-modal="false" aria-label="F1 Medipol özel mesajlar">
+        <button type="button" className={styles.backdrop} aria-label="MesajlaÅŸmayÄ± kapat" onClick={closePanel}/>
+        <section className={styles.panel} role="dialog" aria-modal="false" aria-label="F1 SOCIAL Ã¶zel mesajlar">
           <header className={styles.panelHead}>
-            {active ? <button className={styles.iconBtn} onClick={() => { setActive(null); setMessages([]); }} aria-label="Konuşmalara dön"><Icon name="back"/></button> : <span className={styles.headIcon}><Icon name="chat" size={21}/></span>}
-            <div className={styles.heading}>{active && partner ? <Link className={styles.profileLink} href={`/members/${partner.user_id}`} onClick={closePanel} title="Profilini ziyaret et"><Avatar small name={partner.display_name} src={partner.avatar_url}/><span><strong>{partner.display_name}</strong><small>Profili gör ↗</small></span></Link> : <><strong>Mesajlar</strong><small>{unread} okunmamış mesaj · {waiting} istek</small></>}</div>
-            {active && canChat && <button className={styles.iconBtn} title="Arkadaşlığı kaldır" aria-label="Arkadaşlığı kaldır" disabled={busy} onClick={() => {
-              if (confirm(`${partner?.display_name || "Bu kişi"} ile arkadaşlığını kaldırmak istiyor musun? Konuşma geçmişi de silinir.`)) {
-                void act(() => supabase.rpc("dm_remove_friend", { p_target: active }), "Arkadaşlık kaldırıldı.").then(() => setActive(null));
+            {active ? <button className={styles.iconBtn} onClick={() => { setActive(null); setMessages([]); }} aria-label="KonuÅŸmalara dÃ¶n"><Icon name="back"/></button> : <span className={styles.headIcon}><Icon name="chat" size={21}/></span>}
+            <div className={styles.heading}>{active && partner ? <Link className={styles.profileLink} href={`/members/${partner.user_id}`} onClick={closePanel} title="Profilini ziyaret et"><Avatar small name={partner.display_name} src={partner.avatar_url}/><span><strong>{partner.display_name}</strong><small>Profili gÃ¶r â†—</small></span></Link> : <><strong>Mesajlar</strong><small>{unread} okunmamÄ±ÅŸ mesaj Â· {waiting} istek</small></>}</div>
+            {active && canChat && <button className={styles.iconBtn} title="ArkadaÅŸlÄ±ÄŸÄ± kaldÄ±r" aria-label="ArkadaÅŸlÄ±ÄŸÄ± kaldÄ±r" disabled={busy} onClick={() => {
+              if (confirm(`${partner?.display_name || "Bu kiÅŸi"} ile arkadaÅŸlÄ±ÄŸÄ±nÄ± kaldÄ±rmak istiyor musun? KonuÅŸma geÃ§miÅŸi de silinir.`)) {
+                void act(() => supabase.rpc("dm_remove_friend", { p_target: active }), "ArkadaÅŸlÄ±k kaldÄ±rÄ±ldÄ±.").then(() => setActive(null));
               }
             }}><Icon name="users" size={18}/></button>}
-            <button className={styles.iconBtn} onClick={closePanel} aria-label="Mesajlaşmayı kapat"><Icon name="close"/></button>
+            <button className={styles.iconBtn} onClick={closePanel} aria-label="MesajlaÅŸmayÄ± kapat"><Icon name="close"/></button>
           </header>
           {active ? (
             <>
               <div className={styles.chatMessages}>
-                {!canChat && <div className={styles.empty}>Bu kullanıcıyla konuşmak için arkadaş olmanız gerekiyor. Arkadaşlarını veya isteklerini kontrol et.</div>}
-                {canChat && messages.length === 0 && <div className={styles.empty}>Henüz mesajınız yok. İlk mesajı sen gönder!</div>}
+                {!canChat && <div className={styles.empty}>Bu kullanÄ±cÄ±yla konuÅŸmak iÃ§in arkadaÅŸ olmanÄ±z gerekiyor. ArkadaÅŸlarÄ±nÄ± veya isteklerini kontrol et.</div>}
+                {canChat && messages.length === 0 && <div className={styles.empty}>HenÃ¼z mesajÄ±nÄ±z yok. Ä°lk mesajÄ± sen gÃ¶nder!</div>}
                 {canChat && messages.map(m => <div key={m.id} className={`${styles.bubbleRow} ${m.sender_id === userId ? styles.mine : ""}`}>
                   <div className={styles.bubble}>
-                    {m.media_url && m.media_kind === "image" ? <a href={m.media_url} target="_blank" rel="noopener noreferrer" aria-label="Fotoğrafı aç"><img className={styles.mediaImage} src={m.media_url} alt={m.media_name || "Gönderilen fotoğraf"}/></a>
+                    {m.media_url && m.media_kind === "image" ? <a href={m.media_url} target="_blank" rel="noopener noreferrer" aria-label="FotoÄŸrafÄ± aÃ§"><img className={styles.mediaImage} src={m.media_url} alt={m.media_name || "GÃ¶nderilen fotoÄŸraf"}/></a>
                       : m.media_url && m.media_kind === "video" ? <video className={styles.mediaVideo} src={m.media_url} controls playsInline preload="metadata" />
                       : m.media_url && m.media_kind === "audio" ? <audio className={styles.mediaAudio} src={m.media_url} controls preload="metadata" />
                       : <p>{m.body}</p>}
-                    <small>{formatTime(m.created_at)} {m.sender_id === userId ? (m.read_at ? "· Görüldü" : "· Gönderildi") : ""}</small>
+                    <small>{formatTime(m.created_at)} {m.sender_id === userId ? (m.read_at ? "Â· GÃ¶rÃ¼ldÃ¼" : "Â· GÃ¶nderildi") : ""}</small>
                   </div>
-                  {m.sender_id !== userId && <button title="Mesajı bildir" className={styles.report} onClick={() => {
-                    if (confirm("Bu mesajı moderatörlere bildirilsin mi?")) void act(() => supabase.rpc("dm_report_message", { p_message: m.id, p_reason: "Uygunsuz mesaj" }), "Mesaj bildirildi.");
+                  {m.sender_id !== userId && <button title="MesajÄ± bildir" className={styles.report} onClick={() => {
+                    if (confirm("Bu mesajÄ± moderatÃ¶rlere bildirilsin mi?")) void act(() => supabase.rpc("dm_report_message", { p_message: m.id, p_reason: "Uygunsuz mesaj" }), "Mesaj bildirildi.");
                   }}>Bildir</button>}
                 </div>)}
                 <div ref={bottomRef}/>
               </div>
               {canChat && <form onSubmit={send} className={styles.composer}>
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className={styles.fileHidden} aria-label="Fotoğraf veya video ekle" onChange={event=>{const f=event.target.files?.[0];if(f)void uploadFile(f);}}/>
-                <button type="button" onClick={()=>fileInputRef.current?.click()} disabled={busy||recording} title="Fotoğraf veya video gönder" aria-label="Fotoğraf veya video ekle" className={styles.attachBtn}>＋</button>
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" className={styles.fileHidden} aria-label="FotoÄŸraf veya video ekle" onChange={event=>{const f=event.target.files?.[0];if(f)void uploadFile(f);}}/>
+                <button type="button" onClick={()=>fileInputRef.current?.click()} disabled={busy||recording} title="FotoÄŸraf veya video gÃ¶nder" aria-label="FotoÄŸraf veya video ekle" className={styles.attachBtn}>ï¼‹</button>
                 <input value={draft} onChange={e => setDraft(e.target.value)} maxLength={1000} placeholder="Mesaj yaz..." aria-label="Yeni mesaj"/>
-                <button type="button" disabled={busy} onClick={()=>void toggleRecording()} aria-label={recording?"Ses kaydını bitir":"Ses kaydet"} title={recording?"Kaydı bitir":"Ses kaydet"} className={`${styles.attachBtn} ${recording?styles.recording:""}`}>{recording?"■":"🎤"}</button>
-                <button type="submit" disabled={!draft.trim() || busy || recording} aria-label="Mesaj gönder"><Icon name="send"/></button>
+                <button type="button" disabled={busy} onClick={()=>void toggleRecording()} aria-label={recording?"Ses kaydÄ±nÄ± bitir":"Ses kaydet"} title={recording?"KaydÄ± bitir":"Ses kaydet"} className={`${styles.attachBtn} ${recording?styles.recording:""}`}>{recording?"â– ":"ğŸ¤"}</button>
+                <button type="submit" disabled={!draft.trim() || busy || recording} aria-label="Mesaj gÃ¶nder"><Icon name="send"/></button>
               </form>}
               {canChat && <div className={styles.chatSafety}><button onClick={() => {
-                if (confirm("Bu kullanıcıyı engellemek istiyor musun? Arkadaşlık ve konuşma geçmişi silinir.")) {
-                  void act(() => supabase.rpc("dm_block_user", { p_target: active, p_block: true }), "Kullanıcı engellendi.").then(() => setActive(null));
+                if (confirm("Bu kullanÄ±cÄ±yÄ± engellemek istiyor musun? ArkadaÅŸlÄ±k ve konuÅŸma geÃ§miÅŸi silinir.")) {
+                  void act(() => supabase.rpc("dm_block_user", { p_target: active, p_block: true }), "KullanÄ±cÄ± engellendi.").then(() => setActive(null));
                 }
-              }}>Kullanıcıyı engelle</button></div>}
+              }}>KullanÄ±cÄ±yÄ± engelle</button></div>}
             </>
           ) : (
             <>
               <div className={styles.tabs}>
                 <button className={view === "chats" ? styles.selected : ""} onClick={() => setView("chats")}><Icon name="chat" size={16}/> Sohbetler</button>
-                <button className={view === "find" ? styles.selected : ""} onClick={() => setView("find")}><Icon name="search" size={16}/> Kişi bul</button>
-                <button className={view === "requests" ? styles.selected : ""} onClick={() => setView("requests")}><Icon name="users" size={16}/> İstekler {waiting > 0 && <em>{waiting}</em>}</button>
+                <button className={view === "find" ? styles.selected : ""} onClick={() => setView("find")}><Icon name="search" size={16}/> KiÅŸi bul</button>
+                <button className={view === "requests" ? styles.selected : ""} onClick={() => setView("requests")}><Icon name="users" size={16}/> Ä°stekler {waiting > 0 && <em>{waiting}</em>}</button>
               </div>
               <div className={styles.listBody}>
                 {view === "chats" && <>
-                  {friends.length === 0 && <div className={styles.empty}>Henüz arkadaşın yok. “Kişi bul” sekmesinden kullanıcı arayıp arkadaşlık isteği gönder.</div>}
+                  {friends.length === 0 && <div className={styles.empty}>HenÃ¼z arkadaÅŸÄ±n yok. â€œKiÅŸi bulâ€ sekmesinden kullanÄ±cÄ± arayÄ±p arkadaÅŸlÄ±k isteÄŸi gÃ¶nder.</div>}
                   {friends.map(friend => <button className={styles.friendItem} key={friend.user_id} onClick={() => { setActive(friend.user_id); setMessages([]); setDraft(""); }}>
-                    <Avatar name={friend.display_name} src={friend.avatar_url}/><span className={styles.friendCopy}><strong>{friend.display_name}</strong><small>{friend.last_message || "Sohbeti başlat"}</small></span>
+                    <Avatar name={friend.display_name} src={friend.avatar_url}/><span className={styles.friendCopy}><strong>{friend.display_name}</strong><small>{friend.last_message || "Sohbeti baÅŸlat"}</small></span>
                     <span className={styles.meta}>{friend.unread_count > 0 ? <b>{friend.unread_count}</b> : <small>{formatTime(friend.last_at)}</small>}</span>
                   </button>)}
                 </>}
                 {view === "find" && <>
-                  <label className={styles.searchBox}><Icon name="search" size={18}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="Kullanıcı adı veya görünen ad (en az 2 harf)" maxLength={40}/></label>
-                  {search.trim().length < 2 && <div className={styles.empty}>Arkadaş eklemek için en az iki karakter yaz.</div>}
-                  {search.trim().length >= 2 && found.length === 0 && <div className={styles.empty}>Bu aramayla eşleşen kullanıcı bulunamadı.</div>}
+                  <label className={styles.searchBox}><Icon name="search" size={18}/><input value={search} onChange={e => setSearch(e.target.value)} placeholder="KullanÄ±cÄ± adÄ± veya gÃ¶rÃ¼nen ad (en az 2 harf)" maxLength={40}/></label>
+                  {search.trim().length < 2 && <div className={styles.empty}>ArkadaÅŸ eklemek iÃ§in en az iki karakter yaz.</div>}
+                  {search.trim().length >= 2 && found.length === 0 && <div className={styles.empty}>Bu aramayla eÅŸleÅŸen kullanÄ±cÄ± bulunamadÄ±.</div>}
                   {found.map(person => <div className={styles.personItem} key={person.user_id}>
                     <Avatar small name={person.display_name} src={person.avatar_url}/><strong>{person.display_name}</strong>
-                    {person.relationship === "accepted" ? <button disabled className={styles.secondary}>Arkadaşın</button>
-                      : person.relationship === "pending" ? <button className={styles.secondary} onClick={() => setView("requests")}>İstek var</button>
-                      : person.relationship === "declined" ? <span className={styles.muted}>İstek reddedildi</span>
-                      : <button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_add_friend", { p_target: person.user_id }), "Arkadaşlık isteği gönderildi.")}><Icon name="plus" size={15}/> Ekle</button>}
+                    {person.relationship === "accepted" ? <button disabled className={styles.secondary}>ArkadaÅŸÄ±n</button>
+                      : person.relationship === "pending" ? <button className={styles.secondary} onClick={() => setView("requests")}>Ä°stek var</button>
+                      : person.relationship === "declined" ? <span className={styles.muted}>Ä°stek reddedildi</span>
+                      : <button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_add_friend", { p_target: person.user_id }), "ArkadaÅŸlÄ±k isteÄŸi gÃ¶nderildi.")}><Icon name="plus" size={15}/> Ekle</button>}
                   </div>)}
                 </>}
                 {view === "requests" && <>
-                  {requests.length === 0 && <div className={styles.empty}>Bekleyen arkadaşlık isteğin yok.</div>}
+                  {requests.length === 0 && <div className={styles.empty}>Bekleyen arkadaÅŸlÄ±k isteÄŸin yok.</div>}
                   {incoming.map(r => <div className={styles.personItem} key={r.friendship_id}>
-                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>Sana istek gönderdi</small></span>
-                    <div className={styles.requestButtons}><button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: true }), "Arkadaşlık isteği kabul edildi.")}><Icon name="check" size={15}/></button><button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: false }), "İstek reddedildi.")}><Icon name="close" size={15}/></button></div>
+                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>Sana istek gÃ¶nderdi</small></span>
+                    <div className={styles.requestButtons}><button className={styles.action} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: true }), "ArkadaÅŸlÄ±k isteÄŸi kabul edildi.")}><Icon name="check" size={15}/></button><button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_respond_friend", { p_friendship: r.friendship_id, p_accept: false }), "Ä°stek reddedildi.")}><Icon name="close" size={15}/></button></div>
                   </div>)}
                   {outgoing.map(r => <div className={styles.personItem} key={r.friendship_id}>
-                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>Yanıt bekleniyor</small></span>
-                    <button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_remove_friend", { p_target: r.user_id }), "İstek iptal edildi.")}>İptal</button>
+                    <Avatar small name={r.display_name} src={r.avatar_url}/><span className={styles.friendCopy}><strong>{r.display_name}</strong><small>YanÄ±t bekleniyor</small></span>
+                    <button className={styles.secondary} disabled={busy} onClick={() => void act(() => supabase.rpc("dm_remove_friend", { p_target: r.user_id }), "Ä°stek iptal edildi.")}>Ä°ptal</button>
                   </div>)}
                 </>}
               </div>
             </>
           )}
           {status && <div className={styles.status} role="status">{status}</div>}
-          <footer className={styles.panelFoot}><span>F1 MEDİPOL · ÖZEL MESAJLAR</span><span>Arkadaşlar arasında</span></footer>
+          <footer className={styles.panelFoot}><span>F1 MEDÄ°POL Â· Ã–ZEL MESAJLAR</span><span>ArkadaÅŸlar arasÄ±nda</span></footer>
         </section>
       </>}
     </div>
   );
 
   return <>
-    <button className={`${styles.headerButton} ${isLight ? styles.headerLight : ""}`} type="button" aria-label={`Mesajlar: ${unread} okunmamış mesaj, ${waiting} arkadaşlık isteği`} title="Mesajlar" onClick={() => { setOpen(o => !o); setActive(null); setView("chats"); }}>
+    <button className={`${styles.headerButton} ${isLight ? styles.headerLight : ""}`} type="button" aria-label={`Mesajlar: ${unread} okunmamÄ±ÅŸ mesaj, ${waiting} arkadaÅŸlÄ±k isteÄŸi`} title="Mesajlar" onClick={() => { setOpen(o => !o); setActive(null); setView("chats"); }}>
       <Icon name="chat" size={21}/>{total > 0 && <span className={styles.headerBadge}>{total > 99 ? "99+" : total}</span>}
     </button>
     {mounted ? createPortal(dialog, document.body) : null}
   </>;
 }
+

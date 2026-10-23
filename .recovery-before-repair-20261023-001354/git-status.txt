@@ -1,0 +1,283 @@
+﻿ M .arcade-backups/gokart-v6-2026-10-15T19-58-42-995Z/page.tsx
+ M .arcade-backups/header-onarimi-2026-10-15T18-52-04-901Z/page.tsx
+ M .arcade-backups/hero-clean-2026-10-15T19-00-43-341Z/page.tsx
+ M .arcade-backups/hero-refine-2026-10-15T18-56-58-749Z/page.tsx
+ M .kart-rush-backups/build-fix-v17-2026-10-15T20-33-14-531Z/KartRushTrack.tsx
+ M .kart-rush-backups/g25-f1-takim-v8-2026-10-15T23-07-15-126Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/g25-f1-takim-v8-2026-10-15T23-07-15-126Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g26-v8-sampiyona-2026-10-15T23-18-34-886Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/g26-v8-sampiyona-2026-10-15T23-18-34-886Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g27-gercek-v8-2026-10-15T23-31-35-778Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/g28-motor-flas-start-2026-10-15T23-40-46-729Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g28-motor-flas-start-2026-10-15T23-40-46-729Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g28-motor-flas-start-2026-10-15T23-40-46-729Z/components/kart-rush/venueAudio.ts
+ M .kart-rush-backups/g30-manuel-yaris-2026-10-16T07-36-45-885Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g30-manuel-yaris-2026-10-16T07-36-45-885Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g31-uyumluluk-duzeltmesi-2026-10-16T08-02-43-753Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/g31-uyumluluk-duzeltmesi-2026-10-16T08-02-43-753Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g31-uyumluluk-duzeltmesi-2026-10-16T08-02-43-753Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g32-cesur-ai-2026-10-16T08-12-48-127Z/engine.ts
+ M .kart-rush-backups/g33-race-director-2026-10-16T08-29-58-535Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g33-race-director-2026-10-16T08-29-58-535Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g34-final-2026-10-16T08-53-44-894Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g34-final-2026-10-16T08-53-44-894Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g34-final-2026-10-16T08-53-44-894Z/components/kart-rush/venueAudio.ts
+ M .kart-rush-backups/g35-1-kokpit-fix-2026-10-16T09-25-40-251Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g35-kokpit-kol-2026-10-16T09-09-25-555Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g35-kokpit-kol-2026-10-16T09-09-25-555Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g36-ic-kamera-v2-2026-10-16T09-43-43-335Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g37-1-cockpit-2026-10-16T10-06-28-515Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g37-2-cockpit-fix-2026-10-16T10-15-37-015Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g37-3-final-cockpit-2026-10-16T10-25-21-313Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g37-3-final-cockpit-2026-10-16T10-25-21-313Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g37-3-final-cockpit-2026-10-16T10-25-21-313Z/manifest.json
+ M .kart-rush-backups/g37-cockpit-2026-10-16T09-56-29-193Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g38-1-build-fix-2026-10-16T10-44-20-449Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g38-sky-steer-crowd-2026-10-16T10-41-22-779Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g38-sky-steer-crowd-2026-10-16T10-41-22-779Z/manifest.json
+ M .kart-rush-backups/g39-bayrak-direksiyon-2026-10-16T11-00-27-072Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g391-steering-2026-10-16T11-12-17-106Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g392-steering-2026-10-16T11-24-19-526Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g393-hiz-ai-tribun-2026-10-16T11-37-38-640Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g393-hiz-ai-tribun-2026-10-16T11-37-38-640Z/components/kart-rush/venueAudio.ts
+ M .kart-rush-backups/g40-ai-atmosfer-yagmur-2026-10-16T11-49-26-817Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g401-lighting-2026-10-16T12-06-18-395Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g402-stadium-daylight-2026-10-16T12-20-16-054Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g403-asfalt-wet-texture-2026-10-16T12-24-49-147Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g404-wet-asphalt-tone-fix-2026-10-16T12-28-48-999Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g410-doku-paketi-gunduz-fix-2026-10-16T12-34-19-210Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g420-mega-grafik-2026-10-16T12-52-58-056Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g421-ultra-grafik-2026-10-16T13-13-43-137Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/g421-ultra-grafik-2026-10-16T13-13-43-137Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g421-ultra-grafik-2026-10-16T13-13-43-137Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g421-ultra-grafik-2026-10-16T13-15-27-604Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/g421-ultra-grafik-2026-10-16T13-15-27-604Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g421-ultra-grafik-2026-10-16T13-15-27-604Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g422-hiz-kokpit-asfalt-2026-10-16T13-31-46-344Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g423-kokpit-solid-fix-2026-10-16T13-41-01-230Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g424-ai-race-balance-2026-10-16T13-52-53-387Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g425-crowd-optimization-2026-10-16T14-18-15-185Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g500-cinematic-showcase-2026-10-16T14-30-00-312Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g510-overdrive-showcase-2026-10-16T14-37-29-248Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g600-mega-overhaul-2026-10-16T21-45-01-183Z/files/components/kart-rush/engine.ts
+ M .kart-rush-backups/g610-world-rain-2026-10-16T21-57-37-257Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/g622-iphone-exact-2026-10-17T11-09-28-271Z-QYt7lY/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g622-iphone-exact-2026-10-17T11-09-28-271Z-QYt7lY/components/kart-rush/engine.ts
+ M .kart-rush-backups/g622-iphone-exact-2026-10-17T11-09-28-271Z-QYt7lY/components/kart-rush/kartRush.module.css
+ M .kart-rush-backups/g623-landscape-2026-10-17T12-01-57-888Z-mWopEJ/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g623-landscape-2026-10-17T12-01-57-888Z-mWopEJ/components/kart-rush/kartRush.module.css
+ M .kart-rush-backups/g624-iphone-full-2026-10-17T12-38-12-616Z-sEQgOe/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g624-iphone-full-2026-10-17T12-38-12-616Z-sEQgOe/components/kart-rush/kartRush.module.css
+ M .kart-rush-backups/g625-hud-cleanup-2026-10-17T12-52-20-885Z-n3pVPI/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g626-iphone-mobile-2026-10-17T13-11-43-683Z/components/Header.tsx
+ M .kart-rush-backups/g626-iphone-mobile-2026-10-17T13-11-43-683Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/g626-iphone-mobile-2026-10-17T13-11-43-683Z/components/kart-rush/kartRush.module.css
+ M .kart-rush-backups/graphics2-arac-gokyuzu-v2-4-2026-10-15T22-55-17-959Z/engine.ts
+ M .kart-rush-backups/graphics2-env-v2-1-2026-10-15T22-15-45-662Z/engine.ts
+ M .kart-rush-backups/graphics2-shader-2026-10-15T22-05-33-707Z/engine.ts
+ M .kart-rush-backups/graphics2-stadyum-v2-3-2026-10-15T22-39-09-656Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/graphics2-stadyum-v2-3-2026-10-15T22-39-09-656Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/graphics2-stage1-2026-10-15T22-00-44-544Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/graphics2-stage1-2026-10-15T22-00-44-544Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/hud-invite-2026-10-15T17-11-15-951Z/KartRushClient.tsx
+ M .kart-rush-backups/hud-invite-2026-10-15T17-11-15-951Z/kartRush.module.css
+ M .kart-rush-backups/invite-layout-fix-2026-10-15T17-14-22-597Z/kartRush.module.css
+ M .kart-rush-backups/menu-grid6-v16-2026-10-15T17-04-30-700Z/KartRushClient.tsx
+ M .kart-rush-backups/menu-grid6-v16-2026-10-15T17-04-30-700Z/kartRush.module.css
+ M .kart-rush-backups/mobile-audio-v18-1-2026-10-15T20-56-35-476Z/KartRushTrack.tsx
+ M .kart-rush-backups/mobile-audio-v18-1-2026-10-15T20-56-35-476Z/kartRush.module.css
+ M .kart-rush-backups/sade-menu-2026-10-15T16-49-56-473Z/KartRushClient.tsx
+ M .kart-rush-backups/tasma-fix-2026-10-15T17-18-04-972Z/kartRush.module.css
+ M .kart-rush-backups/v14-2026-10-15T14-19-24-345Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/v14-2026-10-15T14-19-24-345Z/components/kart-rush/KartRushTrack.tsx
+ M .kart-rush-backups/v19-1-2026-10-15T21-15-09-958Z/KartRushTrack.tsx
+ M .kart-rush-backups/v19-1-2026-10-15T21-15-09-958Z/engine.ts
+ M .kart-rush-backups/v19-1-2026-10-15T21-15-09-958Z/kartRush.module.css
+ M .kart-rush-backups/v20-1-2026-10-15T21-32-39-613Z/KartRushTrack.tsx
+ M .kart-rush-backups/v20-1-2026-10-15T21-32-39-613Z/engine.ts
+ M .kart-rush-backups/v20-1-2026-10-15T21-32-39-613Z/kartRush.module.css
+ M .kart-rush-backups/v6-2026-10-15T11-51-50-268Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/v6-2026-10-15T11-51-50-268Z/components/kart-rush/engine.ts
+ M .kart-rush-backups/v7-2026-10-15T12-16-36-087Z/components/kart-rush/KartRushClient.tsx
+ M .kart-rush-backups/v7-2026-10-15T12-16-36-087Z/components/kart-rush/engine.ts
+ M __f1_chat_mvp/app/race-chat/page.tsx
+ M __f1_chat_mvp/components/RaceChat.tsx
+ M __f1_dm/components/DmDock.module.css
+ M __f1_dm/components/DmDock.tsx
+ M __f1_dm_v2/app/api/dm/push/route.ts
+ M __f1_dm_v2/components/DmDock.module.css
+ M __f1_dm_v2/components/DmDock.tsx
+ M __f1_dm_v2/components/WelcomeTour.tsx
+ M __f1_dm_v2_backups/2026-10-13T22-59-44-716Z/app/login/page.tsx
+ M __f1_dm_v2_backups/2026-10-13T22-59-44-716Z/components/DmDock.module.css
+ M __f1_dm_v2_backups/2026-10-13T22-59-44-716Z/components/DmDock.tsx
+ M __f1_dm_v2_backups/2026-10-13T22-59-44-716Z/components/Header.tsx
+ M __f1_dm_v4/app/messages/page.tsx
+ M __f1_dm_v4/components/MessagesClient.module.css
+ M __f1_dm_v4/components/MessagesClient.tsx
+ M __f1_dm_v4_yedek/2026-10-14T07-36-52-295Z/app/login/login.module.css
+ M __f1_dm_v4_yedek/2026-10-14T07-36-52-295Z/app/login/page.tsx
+ M __f1_dm_v4_yedek/2026-10-14T07-36-52-295Z/components/DmDock.tsx
+ M __f1_dm_v5/components/MessagesClient.module.css
+ M __f1_dm_v5/components/MessagesClient.tsx
+ M __f1_dm_v5_yedek/2026-10-14T07-50-02-199Z/components/MessagesClient.module.css
+ M __f1_dm_v5_yedek/2026-10-14T07-50-02-199Z/components/MessagesClient.tsx
+ M __f1_dm_v6_yedek/2026-10-14T08-12-32-103Z/app/globals.css
+ M __f1_dm_v6_yedek/2026-10-14T08-12-32-103Z/components/Header.tsx
+ M __f1_dm_v6_yedek/2026-10-14T08-12-32-103Z/components/MessagesClient.module.css
+ M __f1_dm_v6_yedek/2026-10-14T08-12-32-103Z/components/MessagesClient.tsx
+ M __f1_login_patch/payload/page.tsx
+ M app/admin/page.tsx
+ M app/admin/team-radio/page.tsx
+ M app/arcade/gokart-zamanlama/page.tsx
+ M app/arcade/kart-rush/page.tsx
+ M app/bildirimler/page.tsx
+ M app/leaderboard/page.tsx
+ M app/login/page.tsx
+ M app/members/[id]/page.tsx
+ M app/messages/page.tsx
+ M app/profile/edit/page.tsx
+ M app/profile/page.tsx
+ M app/race-chat/page.tsx
+ M arcade-gokart-v6/app/arcade/gokart-zamanlama/page.tsx
+ M arcade-hero-clean-v5/app/arcade/page.tsx
+ M arcade-hero-refine-v4/app/arcade/page.tsx
+ M arcade-vitrin-v2/app/arcade/page.tsx
+ M components/PredictionSelector.tsx
+ M components/ProfileActions.tsx
+ M components/kart-rush/KartRushClient.tsx
+ M components/kart-rush/KartRushTrack.tsx
+ M f1-medipol-kart-rush-g37-3-son-kokpit/manifest.json
+ M f1-medipol-kart-rush-g38-gokyuzu-direksiyon-tribun/manifest.json
+ M f1_dm_theme_v6/components/MessagesClient.module.css
+ M f1_dm_theme_v6/components/MessagesClient.tsx
+ M f1_kart_rush_v6/components/kart-rush/KartRushClient.tsx
+ M f1_kart_rush_v6/components/kart-rush/engine.ts
+ M f1_mobile_polish_v3/dm-mobile-v3.css
+ M f1_mobile_polish_v3/home-mobile-v3.css
+ M f1_mobile_v3_yedek/2026-10-13T23-18-21-796Z/app/globals.css
+ M f1_mobile_v3_yedek/2026-10-13T23-18-21-796Z/components/DmDock.module.css
+ M f1_mobile_v3_yedek/2026-10-13T23-18-21-796Z/components/DmDock.tsx
+ M f1_profile_layout_yedek/2026-10-13T21-32-28-310Z/app/profile/page.tsx
+ M f1_wallpaper_admin_backups/2026-10-13T21-14-23-868Z/app/profile/page.tsx
+ M kart-rush-g30-manuel-surus-yaris-zekasi/manifest.json
+ M kart-rush-g34-final-paketi/manifest.json
+ M kart-rush-g35-1-kokpit-fix/manifest.json
+ M kart-rush-g35-kokpit-kol/manifest.json
+ M kart-rush-g36-ic-kamera-v2/manifest.json
+ M kart-rush-g401-isik-ve-yansima/manifest.json
+ M kart-rush-g402-stadyum-aydinlatma-gunes/manifest.json
+ M kart-rush-g42-mega-grafik/payload/components/kart-rush/engine.ts
+ M kart-rush-g421-ultra-grafik/payload/components/kart-rush/engine.ts
+ M kart-rush-g422-hiz-kokpit-asfalt/payload/components/kart-rush/engine.ts
+ M kart-rush-g423-kokpit-solid-fix/manifest.json
+ M kart-rush-g620-iphone-rescue/payload/client-rules.json
+ M kart-rush-g626-mobile-controls-header/manifest.json
+ M kart-rush-graphics2-circuit-v2-2/payload/engine.ts
+ M kart-rush-graphics2-env-v2-1/payload/engine.ts
+ M kart-rush-mobile-audio-v18-1/raceAmbience.ts
+ M kart-rush-mobile-audio-v18/raceAmbience.ts
+ M kart-rush-sade-menu/surumler/v14/KartRushClient.tsx
+ M kart-rush-sade-menu/surumler/v14/kartRush.module.css
+ M kart-rush-sade-menu/surumler/v15/KartRushClient.tsx
+ M kart-rush-sade-menu/surumler/v15/kartRush.module.css
+ M lib/race-data.ts
+ M tsconfig.json
+?? .brand-backup-20261022-121326/
+?? .kart-rush-backups/build-fix-v17-2026-10-15T20-33-14-531Z/KartRushTrack.tsx.bak
+?? .recovery-before-repair-20261023-001354/
+?? .recovery-safety-20261022-144350/
+?? .recovery-safety-before-restore-20261022-144829/
+?? .recovery-safety-remaining-20261022-144457/
+?? G6_16_3_Admin_Telsiz_Kartini_Ekle.ps1
+?? G6_17_5_Etkinlik_Optimizasyon.mjs
+?? G6_17_9_Uye_Profil_Arkadaslarini_Ekle.mjs
+?? G6_17_Radyo_Her_Sayfada_Ekle.ps1
+?? KURULUM.txt
+?? KURULUM_G6_14.txt
+?? KURULUM_G6_14_1.txt
+?? KURULUM_G6_14_2.txt
+?? KURULUM_G6_14_3.txt
+?? KURULUM_G6_14_4.txt
+?? KURULUM_G6_14_5.txt
+?? KURULUM_G6_15.txt
+?? KURULUM_G6_16_1.txt
+?? KURULUM_G6_16_2.txt
+?? KURULUM_G6_16_3.txt
+?? KURULUM_G6_17.txt
+?? KURULUM_G6_17_1.txt
+?? KURULUM_G6_17_2.txt
+?? KURULUM_G6_17_3.txt
+?? KURULUM_G6_17_4.txt
+?? KURULUM_G6_17_5.txt
+?? KURULUM_G6_17_7.txt
+?? KURULUM_G6_17_8.txt
+?? KURULUM_G6_17_9.txt
+?? admin-serit.zip
+?? anasayfa-performans.zip
+?? anasayfa-son.zip
+?? app/admin/page.tsx.bak
+?? app/admin/team-radio/page.tsx.bak
+?? app/apple-icon.png.backup
+?? app/events/page.tsx.before-encoding-fix-20261022.bak
+?? app/events/page.tsx.before-encoding-fix-retry-20261022.bak
+?? app/events/page.tsx.before-g6175.bak
+?? app/events/page.tsx.before-safe-encoding-fix.bak
+?? app/events/page.tsx.encoding-backup
+?? app/events/page.tsx.manual-fix-backup
+?? app/globals.css.before-bom-fix
+?? app/icon.png.backup
+?? app/login/page.tsx.before-encoding-fix-20261022
+?? app/manifest.ts.before-text-fix.bak
+?? app/members/[id]/page.module.css.before-g6179.bak
+?? app/members/[id]/page.tsx.before-g6179.bak
+?? app/page.tsx.before-text-fix.bak
+?? app/page.tsx.encoding-safety.bak
+?? app/page.tsx.pre-encoding-fix-20261022-120553.bak
+?? app/profile/page.tsx.before-encoding-fix.bak
+?? app/profile/page.tsx.before-logout.bak
+?? app/profile/page.tsx.before-mojibake-repair-20261022-161910.bak
+?? app/profile/page.tsx.before-mojibake-repair-20261022-162123.bak
+?? app/profile/page.tsx.before-recovery.bak
+?? app/profile/page.tsx.before-text-repair-20261022-172651
+?? app/profile/page.tsx.pre-targeted-fix-20261022-161816.bak
+?? build-debug-2.txt
+?? build-debug.txt
+?? components/Header.tsx.backup-20261021-233859
+?? components/kart-rush/KartRushTrack.tsx.before-encoding-fix.bak
+?? components/kart-rush/KartRushTrack.tsx.before-final-repair.bak
+?? components/kart-rush/KartRushTrack.tsx.before-final-text-fix.bak
+?? components/kart-rush/KartRushTrack.tsx.before-final-turkish-fix.bak
+?? components/kart-rush/KartRushTrack.tsx.before-gamepad-text-repair.bak
+?? components/kart-rush/KartRushTrack.tsx.before-jsx-repair.bak
+?? components/kart-rush/KartRushTrack.tsx.before-last-text-cleanup.bak
+?? components/kart-rush/KartRushTrack.tsx.before-line-repair.bak
+?? components/kart-rush/KartRushTrack.tsx.before-targeted-turkish-fix.bak
+?? components/kart-rush/KartRushTrack.tsx.before-unicode-text-fix.bak
+?? encoding-backup-20261022-164048/
+?? encoding-report.txt
+?? encoding-scan.csv
+?? etkinlikler.zip
+?? f1-medipol-beyaz-tema.zip
+?? f1-medipol-g6-14.zip
+?? f1-medipol-g6-17-2-kaynak.zip
+?? f1-medipol-guncelleme.zip
+?? gokart-zamanlama.zip
+?? header-duzeltme.zip
+?? homepage-diff-review.txt
+?? logo-beyaz.png
+?? logo-siyah.png
+?? page-encoding-preview.txt
+?? page.tsx-head-inceleme
+?? page.tsx.zip-inceleme
+?? public/f1-social-logo.png
+?? recovery-20261021-235733/
+?? social-marka-tarama.txt
+?? team-radio-debug.txt
+?? tsc-recovery-check.txt
+?? tsconfig-diff-review.txt
+?? tsconfig.json.before-bom-fix
+?? tsconfig.json.before-encoding-backup-fix
+?? tsconfig.json.before-safe-bom-repair
+?? tsconfig.json.bom-backup-20261022-153316
+?? uye_tema_ek.css

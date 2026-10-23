@@ -15,7 +15,7 @@ type Props={
 };
 const LABEL:Record<KartPower,string>={turbo:'TURBO',shield:'KALKAN',emp:'EMP DARBESİ',repair:'ONARIM',pulse:'ŞOK DALGASI',magnet:'MIKNATIS'};
 const DETAILS:Record<KartPower,string>={turbo:'Hız patlaması · 3,5 sn',shield:'Darbe koruması · 7 sn',emp:'Rakipleri yavaşlat',repair:'Aracın hasarını azalt',pulse:'Yakındaki rakiplere şok',magnet:'8 sn uzaktan güç toplama'};
-const POWER_ICON:Record<KartPower,string>={turbo:'⚡',shield:'⬡',emp:'✺',repair:'✚',pulse:'◉',magnet:'⊕'};
+const POWER_ICON:Record<KartPower,string>={turbo:'âš¡',shield:'â¬¡',emp:'âœº',repair:'âœš',pulse:'â—‰',magnet:'âŠ•'};
 const POWER_COLORS:Record<KartPower,string>={turbo:'#ffbc4e',shield:'#52e4ff',emp:'#cc8fff',repair:'#6ed5a1',pulse:'#e78bff',magnet:'#e0cf8d'};
 function trackXY(progress:number){
  const {x,z}=trackPosition(progress);
@@ -152,7 +152,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   <canvas ref={canvas} className={s.canvas} aria-label="Kart Rush 3D yarış pisti" />
   <div className={s.qualityMark}>KART RUSH <span>WORLD FEED V13</span></div>
   <div className={s.racingVignette} aria-hidden="true" />
-  <div className={s.broadcastTag}>F1 MEDIPOL · RACE CONTROL</div>
+  <div className={s.broadcastTag}>F1 SOCIAL · RACE CONTROL</div>
   <div className={s.topHud}>
    <div className={`${s.hudBlock} ${s.hudPosition}`}><span>POS</span><strong>{hud.rank}<small> / {hud.total}</small></strong></div>
    <div className={`${s.hudBlock} ${s.hudLap}`}><span>LAP</span><strong>{hud.lap}<small> / {hud.totalLaps}</small></strong></div>
@@ -161,16 +161,16 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   </div>
   <div className={s.raceActions}>
    <button type="button" onClick={()=>setShowGraphics(v=>!v)} className={s.graphicsToggle} aria-label="Grafik ve ses ayarları" aria-expanded={showGraphics}>⚙ AYARLAR <span>{graphics==='high'?'YÜKSEK':graphics==='low'?'DÜŞÜK':'DENGELİ'}</span></button>
-   <button type="button" onClick={()=>void toggleFullscreen()} className={s.fullscreenBtn}>{isFullscreen?'🡼 ÇIK':'⛶ TAM'}</button>
-   {!roomId&&<button type="button" className={s.fullscreenBtn} onClick={togglePause}>{paused?'▶ DEVAM':'Ⅱ DURAKLAT'}</button>}
+   <button type="button" onClick={()=>void toggleFullscreen()} className={s.fullscreenBtn}>{isFullscreen?'ğŸ¡¼ ÇIK':'â›¶ TAM'}</button>
+   {!roomId&&<button type="button" className={s.fullscreenBtn} onClick={togglePause}>{paused?'▶ DEVAM':'â…¡ DURAKLAT'}</button>}
    <button className={s.exitBtn} onClick={onExit}>← Çıkış</button>
   </div>
   {showGraphics&&<div className={s.graphicsOverlay}>
    <div className={s.graphicsOverlayTitle}><strong>GÖRÜNTÜ + SES</strong><span>{hud.fps||'--'} FPS</span></div>
-   <div className={s.overlayIntro}>F1 MEDIPOL KART RUSH · 22 ARAÇLIK GRID · GECE GRAND PRIX</div>
+   <div className={s.overlayIntro}>F1 SOCIAL KART RUSH · 22 ARAÇLIK GRID · GECE GRAND PRIX</div>
    <div className={s.graphicsOptions}>{([{id:'low',name:'DÜŞÜK',desc:'Performans'},{id:'balanced',name:'DENGELİ',desc:'Normal'},{id:'high',name:'YÜKSEK',desc:'Ultra detay'}] as const).map(q=><button type="button" key={q.id} className={graphics===q.id?s.selectedGraphics:''} onClick={()=>onGraphicsChange?.(q.id)}><strong>{q.name}</strong><small>{q.desc}</small></button>)}</div>
    <label className={s.volumeLabel}>SES DÜZEYİ <strong>{Math.round(volume*100)}%</strong><input type="range" min="0" max="100" value={Math.round(volume*100)} onChange={e=>{const v=Number(e.target.value)/100;onVolumeChange?.(v);sound.current?.activate();}}/></label>
-   <button type="button" className={s.muteBtn} onClick={()=>onVolumeChange?.(volume>0?0:.45)}>{volume>0?'♬ SESİ KAPAT':'♬ SESİ AÇ'}</button>
+   <button type="button" className={s.muteBtn} onClick={()=>onVolumeChange?.(volume>0?0:.45)}>{volume>0?'â™¬ SESİ KAPAT':'â™¬ SESİ AÇ'}</button>
    <p>W gaz · S fren · A/D yön · V kamera değiştir · C basılı tut: arkaya bak · E güç · H korna · F tam ekran.</p>
   </div>}
   {paused&&!roomId&&ended===null&&<div className={s.pauseOverlay}><div className={s.pauseCard}><small>F1 MEDİPOL</small><h2>YARIŞ DURAKLATILDI</h2><p>Ayarları değiştirebilir veya ana menüye dönebilirsin.</p><button onClick={togglePause}>▶ Yarışa devam</button><button onClick={onExit}>← Ana menü</button></div></div>}
@@ -187,26 +187,26 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
    </div>
    <TrackMiniMap hud={hud} id={userId}/>
   </div>
-  <button type="button" className={s.leaderboardToggle} onClick={()=>setShowLeaderboard(v=>!v)} aria-expanded={showLeaderboard}>{showLeaderboard?'✕ KAPAT':'☰ SIRALAMA'} <span>{hud.rank}/{hud.total}</span></button>
+  <button type="button" className={s.leaderboardToggle} onClick={()=>setShowLeaderboard(v=>!v)} aria-expanded={showLeaderboard}>{showLeaderboard?'✕ KAPAT':'â˜° SIRALAMA'} <span>{hud.rank}/{hud.total}</span></button>
   <div className={`${s.standings} ${showLeaderboard?s.boardOpen:''}`} aria-label="Canlı yarış sıralaması">
    <div className={s.standingsTitle}><strong>LIVE CLASSIFICATION</strong><small>GAP TO LEADER</small></div>
    {classification.map((p)=><p key={p.id} className={p.id===userId?s.isMe:''}><i>{p.pos}</i><span style={{background:p.color}}/><b>{p.id===userId?'SEN':p.name}</b><small>{p.gapLabel}</small></p>)}
   </div>
   <div className={s.damageHud}><span>ARAÇ DURUMU</span><strong>{hud.health}%</strong><div><i style={{width:`${hud.health}%`,background:hud.health>50?'#65bc91':hud.health>25?'#e1ab54':'#d95757'}}/></div></div>
   {hud.pit&&<div className={s.pitIndicator}>PIT ALANI · {hud.pitProgress>0?`SERVİS %${Math.round(hud.pitProgress*100)}`:'GAZI BIRAK VE DUR'}<div><i style={{width:`${hud.pitProgress*100}%`}}/></div></div>}
-  {hud.magnet&&<div className={s.magnetIndicator}>⊕ MIKNATIS AKTİF</div>}
+  {hud.magnet&&<div className={s.magnetIndicator}>âŠ• MIKNATIS AKTİF</div>}
   <div className={s.speedHud}><small>SPEED {hud.contact?' · TEMAS!':''}</small><b>{hud.speed}</b><span>KM/SA</span><div className={s.speedBar}><i style={{width:Math.min(100,hud.speed/285*100)+'%'}}/></div></div>
   <div className={s.progressLine}><span style={{width:`${Math.max(0,Math.min(100,(hud.progress||0)/hud.totalLaps*100))}%`}}/></div>
-  {hud.cornerSpeed&&hud.speed>hud.cornerSpeed+18&&<div className={s.cornerAlert}>⚠ SERT VİRAJ · FREN · {hud.cornerSpeed} KM/SA</div>}
-  {hud.offroad&&<div className={s.offroad}>⚠ PİSTE GERİ DÖN · ÇİMDE HIZ KAYBI</div>}
-  {hud.shield&&<span className={s.activeShield}>⬡ KALKAN AKTİF</span>}
-  {hud.turbo&&<span className={s.activeTurbo}>⚡ TURBO AKTİF</span>}
+  {hud.cornerSpeed&&hud.speed>hud.cornerSpeed+18&&<div className={s.cornerAlert}>âš  SERT VİRAJ · FREN · {hud.cornerSpeed} KM/SA</div>}
+  {hud.offroad&&<div className={s.offroad}>âš  PİSTE GERİ DÖN · ÇİMDE HIZ KAYBI</div>}
+  {hud.shield&&<span className={s.activeShield}>â¬¡ KALKAN AKTİF</span>}
+  {hud.turbo&&<span className={s.activeTurbo}>âš¡ TURBO AKTİF</span>}
   {!hud.started&&!ended&&<div className={s.countdown}><div className={s.startSequence}><small>F1 MEDİPOL · NIGHT GRAND PRIX</small><em>22 ARAÇ · {hud.totalLaps} TUR · ANA GRID</em><div className={s.startLights}>{[0,1,2,3,4].map(i=><span key={i} className={i<hud.lights?s.lightOn:''}/>)}</div><strong>{hud.lights>0?'LIGHTS ON':'READY TO LAUNCH'}</strong><small>BEŞ KIRMIZI IŞIK · SAKIN ERKEN ÇIKMA</small></div></div>}
   {error&&<p role="alert" className={s.raceError}>{error}</p>}
   <div className={s.raceBottom}>
-   <div className={s.steerControls}><button {...pressProps('left')} aria-label="Sola dön">◀</button><button {...pressProps('right')} aria-label="Sağa dön">▶</button></div>
+   <div className={s.steerControls}><button {...pressProps('left')} aria-label="Sola dön">â—€</button><button {...pressProps('right')} aria-label="Sağa dön">▶</button></div>
    <div className={s.controlsCenter}><span>W · GAZ &nbsp; S · FREN &nbsp; A/D · YÖN &nbsp; V · KAMERA &nbsp; C · ARKA BAKIŞ &nbsp; E · GÜÇ</span><small>{roomId?'ÇEVRİM İÇİ GRAND PRIX':`ANTRENMAN · ${difficulty==='easy'?'KOLAY':difficulty==='hard'?'UZMAN':'ORTA'}`}</small></div>
-   <div className={s.abilityControls}><button type="button" className={s.hornBtn} onPointerDown={e=>{e.preventDefault();horn();}}>♫ KORNA</button><button {...pressProps('throttle')} className={s.gas}>GAZ</button><button {...pressProps('brake')} className={s.brake}>FREN</button>
+   <div className={s.abilityControls}><button type="button" className={s.hornBtn} onPointerDown={e=>{e.preventDefault();horn();}}>â™« KORNA</button><button {...pressProps('throttle')} className={s.gas}>GAZ</button><button {...pressProps('brake')} className={s.brake}>FREN</button>
     <button onPointerDown={e=>{e.preventDefault();fire();}} onClick={fire} disabled={!ability} className={`${s.powerBtn} ${ability? s.powerReady:''}`} style={ability?{'--ability-color':POWER_COLORS[ability]} as CSSProperties:undefined}>
       <span>{ability?POWER_ICON[ability]:'✦'}</span><small>{ability?LABEL[ability]:'GÜÇ TOPLA'}</small>
      </button>
@@ -214,13 +214,14 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
   </div>
   {ability&&<div className={s.powerDescription}>{POWER_ICON[ability]} {DETAILS[ability]} · BOŞLUK / E</div>}
   {ended!==null&&<div className={s.endOverlay}><div className={s.endCard}>
-   <span>🏁 DAMALI BAYRAK</span><h2>{roomId?'Yarış tamamlandı!':`P${hud.rank} · FİNİŞ!`}</h2>
+   <span>ğŸ DAMALI BAYRAK</span><h2>{roomId?'Yarış tamamlandı!':`P${hud.rank} · FİNİŞ!`}</h2>
    <div className={s.finalTime}>{(ended/1000).toFixed(2)} <small>sn</small></div>
    <p>{roomId?'Sonucun lobiye kaydedildi. Diğer yarışçıları bekleyebilirsin.':`Zorluk: ${difficulty==='easy'?'Kolay':difficulty==='hard'?'Uzman':'Orta'} · En iyi tur: ${(hud.bestLapMs||ended)/1000} sn`}</p>
    {roomId&&<div className={s.results}>{members.filter(m=>m.finish_ms!==null).sort((a,b)=>(a.finish_ms||0)-(b.finish_ms||0)).map((m,i)=><div key={m.user_id}><b>{i+1}. {m.nickname}</b><span>{((m.finish_ms||0)/1000).toFixed(2)} sn</span></div>)}</div>}
    {!roomId&&onRetry&&<button onClick={onRetry}>↻ Tekrar yarış</button>}
    {roomId&&isHost&&onReset&&<button onClick={onReset}>↻ Yeni yarış başlat</button>}
-   <button onClick={onExit}>{roomId?'Lobiden ayrıl':'Arcade’e dön'}</button>
+   <button onClick={onExit}>{roomId?'Lobiden ayrıl':'Arcadeâ€™e dön'}</button>
   </div></div>}
  </section>;
 }
+

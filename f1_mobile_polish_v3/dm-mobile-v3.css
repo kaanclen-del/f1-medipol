@@ -1,4 +1,4 @@
-/* F1 MEDIPOL / MOBILE DM V3 - refahli, okunakli, WhatsApp tarzi sohbet akisi */
+﻿/* F1 SOCIAL / MOBILE DM V3 - refahli, okunakli, WhatsApp tarzi sohbet akisi */
 /* Masaustundeki mevcut acilir pencereyi korur. */
 .panelHead .heading strong {letter-spacing:-.025em}
 .composer .attachBtn svg { display:block; flex-shrink:0; }
@@ -117,3 +117,4 @@
   .composer .attachBtn {width:35px!important;min-width:35px!important}
   .composer button[type="submit"] {width:41px!important;min-width:41px!important;height:41px!important}
 }
+

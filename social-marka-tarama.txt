@@ -1,0 +1,257 @@
+﻿C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\globals.css:386: .medipol-header-inner { width: calc(100% - 18px) !important; gap: 7px !important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\globals.css:387: .medipol-header-right { gap: 5px !important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\globals.css:388: .medipol-header-logo { min-width: 105px !important; width: 105px !important; max-width: 105px !important; flex: 0 0 105px !important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\globals.css:389: .medipol-header-logo-art { width: 105px !important; min-width: 105px !important; max-width: 105px !important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\layout.tsx:22: description: "İstanbul Medipol Üniversitesi F1 Kulübü",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\page.tsx:463: "MEDİPOL",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\page.tsx:806: <b>● F1 MEDİPOL</b><span aria-hidden="true">◆</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\page.tsx:3693: : "F1 MEDİPOL"}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\page.tsx:3931: F1 MEDİPOL PADDOCK
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\page.tsx:3978: <div className="weekly-author">İDİL BOYALI · F1 MEDİPOL YÖNETİM KURULU</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\page.tsx:27: <span>F1 MEDİPOL · ADMIN</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\page.tsx:61: <span>F1 MEDİPOL · ADMIN</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\page.tsx:145: F1 MEDİPOL · CONTROL CENTER
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\achievements\page.tsx:36: F1 MEDİPOL · ADMIN
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\achievements\page.tsx:91: F1 MEDİPOL · ADMIN
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\achievements\page.tsx:128: F1 MEDİPOL · CONTROL CENTER
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\events\page.tsx:95: <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\events\page.tsx:157: <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\notifications\page.tsx:32: <div className={styles.kicker}>F1 MEDİPOL / ADMİN ARAÇLARI</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\permissions\page.tsx:34: <div><div style={{color:"#ff675f",fontSize:12,fontWeight:800,letterSpacing:2}}>F1 MEDİPOL · ANA YÖNETİCİ</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\admin\race-hero-images\page.tsx:585: F1 MEDİPOL · MEDIA CONTROL
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\api\live\championship\route.ts:103: "User-Agent": "F1Medipol/1.0 NextJS",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\api\push\test\route.ts:63: tag: "f1-medipol-test",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\api\score-predictions\route.ts:136: "User-Agent": "F1-Medipol-Website/1.0",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\arcade\page.tsx:63: <span className={styles.heroEyebrow}>F1 MEDİPOL / OYUN MERKEZİ</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\arcade\gokart-zamanlama\TimingClient.tsx:9: const STORAGE_KEY = "f1-medipol-gokart-timing-v1";
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\arcade\gokart-zamanlama\TimingClient.tsx:424: <span className={s.overline}>F1 MEDİPOL / KARTING RACE CONTROL</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\arcade\manager\page.tsx:232: F1 MEDİPOL · ARCADE
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\board\page.tsx:77: MEDİPOL F1 KULÜBÜ
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\board\page.tsx:101: İstanbul Medipol Üniversitesi F1 Kulübü yönetim ekibini keşfet.
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\gallery\page.tsx:59: MEDİPOL F1 KULÜBÜ
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\paddock\page.tsx:453: MEDİPOL F1 KULÜBÜ
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\paddock\page.tsx:598: "Medipol F1"}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\predict\page.tsx:254: {/* F1_MEDIPOL_RACE_CHAT_LINK_V1 */}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\predict\page.tsx:786: F1 MEDİPOL · PREDICTION CENTER
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\profile\wallpapers\page.tsx:92: <div className={styles.eyebrow}>F1 MEDİPOL / DRIVER CUSTOMIZATION</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\app\profile\wallpapers\page.tsx:110: <span className={styles.previewEyebrow}>F1 MEDİPOL / PROFILE DESIGN</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\F1LiveReplayCenter.tsx:2743: F1 MEDİPOL · RACE CONTROL
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\F1LiveReplayCenter.tsx:3199: F1 MEDİPOL
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\GalleryLightboxGrid.tsx:71: alt={image.title || "Medipol F1 Kulübü galeri görseli"}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:585: <header className="medipol-header" data-scroll-hidden={mobileHeaderHidden && !menuOpen ? "true" : "false"}>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:592: .medipol-header {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:628: .medipol-header-inner {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:655: .medipol-header-logo {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:720: .medipol-header-logo:hover,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:721: .medipol-header-logo:focus,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:722: .medipol-header-logo:active {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:736: .medipol-header-logo-art {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:784: .medipol-header-nav {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:804: .medipol-header-nav-link {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:833: .medipol-header-nav-link:hover {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:842: .medipol-header-right {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:860: .medipol-header-profile {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:896: .medipol-header-profile:hover {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:901: .medipol-header-avatar {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:941: .medipol-header-avatar img {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:964: .medipol-header-profile-name {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:991: .medipol-mobile-menu-button {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1030: .medipol-hamburger {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1044: .medipol-hamburger span {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1069: .medipol-hamburger span:nth-child(1) {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1074: .medipol-hamburger span:nth-child(2) {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1079: .medipol-hamburger span:nth-child(3) {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1084: .medipol-mobile-menu-button.open
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1085: .medipol-hamburger
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1094: .medipol-mobile-menu-button.open
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1095: .medipol-hamburger
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1101: .medipol-mobile-menu-button.open
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1102: .medipol-hamburger
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1115: .medipol-mobile-drawer {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1152: .medipol-mobile-drawer.open {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1157: .medipol-mobile-nav {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1180: .medipol-mobile-nav-link {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1222: .medipol-mobile-nav-link span:last-child {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1230: .medipol-mobile-profile-link {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1266: .medipol-mobile-profile-copy {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1274: .medipol-mobile-profile-copy strong {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1294: .medipol-mobile-profile-copy span {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1313: .medipol-header-inner {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1318: .medipol-header-logo {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1332: .medipol-header-logo-art {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1352: .medipol-header-nav-link {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1366: .medipol-header {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1371: .medipol-header-inner {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1379: .medipol-header-nav {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1384: .medipol-header-logo {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1401: .medipol-header-logo-art {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1421: .medipol-header-right {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1426: .medipol-header-profile {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1446: .medipol-header-profile-name,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1447: .medipol-profile-arrow {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1452: .medipol-header-avatar {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1463: .medipol-mobile-menu-button {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1474: .medipol-header-logo {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1488: .medipol-header-logo-art {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1508: .medipol-mobile-nav {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1513: .medipol-mobile-profile-link {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1519: .medipol-mobile-header-spacer { display:none; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1521: .medipol-header {position:fixed!important;top:0!important;left:0!important;right:0!important;width:100%!important;z-index:1900!important;transition:transform .22s ease-out!important;will-change:transform;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1522: .medipol-header[data-scroll-hidden="true"] {transform:translate3d(0,-105%,0)!important;pointer-events:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1523: .medipol-mobile-header-spacer {display:block;height:68px;min-height:68px;flex:none;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1528: .medipol-header {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1535: .medipol-header-inner {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1542: .medipol-header[data-scroll-hidden="true"] {transform:translate3d(0,-105%,0)!important;pointer-events:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1543: .medipol-header-nav { display:none!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1544: .medipol-header-logo {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1548: .medipol-header-logo-art {width:118px!important;min-width:0!important;max-width:118px!important;height:31px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1549: .medipol-header-right {margin-left:auto!important;min-width:44px!important;width:44px!important;flex:none!important;gap:0!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1550: .medipol-header-right > .medipol-header-profile { display:none!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1551: .medipol-mobile-menu-button {display:flex!important;min-width:44px!important;min-height:44px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1552: .medipol-mobile-drawer {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1559: .medipol-mobile-drawer:not(.open){display:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1560: .medipol-mobile-drawer.open{display:block!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1561: .medipol-mobile-nav {grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1562: .medipol-mobile-header-spacer {height:64px!important;min-height:64px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1565: .medipol-mobile-nav{grid-template-columns:1fr!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1569: .medipol-header-right{width:auto!important;min-width:0!important;gap:5px!important;flex:0 1 auto!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1570: .medipol-header-right>.medipol-header-profile{display:flex!important;width:auto!important;min-width:0!important;height:38px!important;min-height:38px!important;padding:3px 7px!important;gap:5px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1571: .medipol-header-profile-name{display:block!important;max-width:94px!important;font-size:10px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1572: .medipol-profile-arrow{display:none!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1573: .medipol-header-avatar{width:28px!important;height:28px!important;min-width:28px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1574: .medipol-mobile-menu-button{min-width:38px!important;width:38px!important;height:38px!important;min-height:38px!important;flex:0 0 38px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1575: .medipol-landscape-quick{display:flex!important;align-items:center;gap:3px;flex:0 0 auto}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1576: .medipol-landscape-quick>*{flex:0 0 auto}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1577: .medipol-header-logo{width:110px!important;min-width:96px!important;max-width:110px!important;flex-basis:110px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1578: .medipol-header-logo-art{width:106px!important;max-width:106px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1580: .medipol-landscape-quick{display:none}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1583: .medipol-header-right{display:flex!important;width:auto!important;min-width:0!important;flex:0 1 auto!important;gap:4px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1584: .medipol-header-right>.medipol-header-profile{display:flex!important;width:auto!important;min-width:0!important;max-width:110px!important;min-height:36px!important;height:36px!important;padding:3px 5px!important;gap:5px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1585: .medipol-header-profile-name{display:block!important;max-width:66px!important;font-size:9px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1586: .medipol-profile-arrow{display:none!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1587: .medipol-header-avatar{width:27px!important;height:27px!important;min-width:27px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1588: .medipol-landscape-quick{display:flex!important;align-items:center!important;gap:2px!important;flex:0 0 auto!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1589: .medipol-landscape-quick>*{flex:0 0 auto!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1590: .medipol-mobile-menu-button{width:36px!important;min-width:36px!important;flex:0 0 36px!important;min-height:36px!important;height:36px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1591: .medipol-header-logo{width:105px!important;min-width:76px!important;max-width:105px!important;flex-basis:105px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1592: .medipol-header-logo-art{width:98px!important;max-width:98px!important;min-width:0!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1593: .medipol-header-inner{gap:4px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1596: .medipol-header-logo{width:84px!important;min-width:72px!important;max-width:84px!important;flex-basis:84px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1597: .medipol-header-logo-art{width:80px!important;max-width:80px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1598: .medipol-header-profile-name{max-width:40px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1599: .medipol-header-right{gap:2px!important}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1604: .medipol-header-login-icon { display:none; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1606: .medipol-header-inner {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1612: .medipol-header-logo {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1618: .medipol-header-logo-art {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1626: .medipol-header-right {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1635: .medipol-header-right > .medipol-header-profile,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1636: .medipol-header-right > .medipol-mobile-menu-button {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1652: .medipol-header-profile-name,.medipol-profile-arrow {display:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1653: .medipol-header-avatar {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1662: .medipol-landscape-quick {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1668: .medipol-quick-control {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1681: .medipol-quick-control > button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1682: .medipol-quick-control > a,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1683: .medipol-quick-control > div > button:first-child,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1684: .medipol-quick-control > div > a:first-child {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1698: .medipol-quick-control > div:first-child { min-width:0!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1699: .medipol-header-login-icon {display:block!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1700: .medipol-header-login-label {display:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1703: .medipol-header-inner {gap:2px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1704: .medipol-header-right,.medipol-landscape-quick {gap:2px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1705: .medipol-header-logo {width:70px!important;flex-basis:70px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1706: .medipol-header-right > .medipol-header-profile,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1707: .medipol-header-right > .medipol-mobile-menu-button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1708: .medipol-quick-control {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;flex-basis:36px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1709: .medipol-quick-control > button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1710: .medipol-quick-control > a,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1711: .medipol-quick-control > div > button:first-child,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1712: .medipol-quick-control > div > a:first-child {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1716: .medipol-header-profile-loading {visibility:visible!important;opacity:.60;pointer-events:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1718: .medipol-header-right > .medipol-header-profile {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1722: .medipol-header-profile-name {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1726: .medipol-header-avatar {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1733: .medipol-header-right > .medipol-header-profile-guest {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1739: .medipol-header-profile-guest .medipol-header-login-label {
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1745: .medipol-header {height:86px!important;min-height:86px!important;max-height:86px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1746: .medipol-header-inner {gap:18px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1747: .medipol-header-logo {width:205px!important;min-width:205px!important;max-width:205px!important;flex:0 0 205px!important;height:68px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1748: .medipol-header-logo-art {width:190px!important;min-width:190px!important;max-width:190px!important;height:48px!important;min-height:48px!important;max-height:48px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1749: .medipol-header-nav {gap:2px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1750: .medipol-header-nav-link {font-size:12.6px!important;font-weight:650!important;padding:11px 8px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1751: .medipol-header-right {gap:9px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1752: .medipol-header-profile {min-height:48px!important;padding:5px 12px 5px 6px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1753: .medipol-header-avatar {width:37px!important;height:37px!important;min-width:37px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1754: .medipol-header-profile-name {font-size:12px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1755: .medipol-quick-control {min-width:44px!important;min-height:44px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1758: .medipol-header-profile-loading {pointer-events:none!important;visibility:hidden!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1760: .medipol-header {height:86px!important;min-height:86px!important;max-height:86px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1763: .medipol-header {height:70px!important;min-height:70px!important;max-height:70px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1764: .medipol-mobile-header-spacer {height:70px!important;min-height:70px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1765: .medipol-header-inner {height:70px!important;min-height:70px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1766: .medipol-header-right {min-width:220px!important;min-height:42px!important;justify-content:flex-end!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1767: .medipol-header-right > .medipol-header-profile,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1768: .medipol-header-right > .medipol-mobile-menu-button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1769: .medipol-quick-control {width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;flex-basis:42px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1770: .medipol-quick-control > button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1771: .medipol-quick-control > a,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1772: .medipol-quick-control > div > button:first-child,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1773: .medipol-quick-control > div > a:first-child {width:42px!important;min-width:42px!important;max-width:42px!important;height:42px!important;min-height:42px!important;max-height:42px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1774: .medipol-header-avatar {width:32px!important;height:32px!important;min-width:32px!important;min-height:32px!important;max-width:32px!important;max-height:32px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1777: .medipol-header-right {min-width:190px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1778: .medipol-header-right > .medipol-header-profile,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1779: .medipol-header-right > .medipol-mobile-menu-button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1780: .medipol-quick-control {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;flex-basis:36px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1781: .medipol-quick-control > button,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1782: .medipol-quick-control > a,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1783: .medipol-quick-control > div > button:first-child,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1784: .medipol-quick-control > div > a:first-child {width:36px!important;min-width:36px!important;max-width:36px!important;height:36px!important;min-height:36px!important;max-height:36px!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1788: .medipol-mobile-drawer { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; box-shadow:0 12px 24px rgba(0,0,0,.20)!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1789: .medipol-mobile-nav { gap:5px!important; padding:4px!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1790: .medipol-mobile-nav-link { min-height:45px!important; padding:0 12px!important; font-size:12px!important; font-weight:600!important; letter-spacing:0!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1791: .medipol-mobile-nav-link span:last-child { font-size:14px!important; font-weight:400!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1792: .medipol-header-profile-name { font-weight:650!important; }
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1795: .medipol-header-profile-loading {visibility:visible!important;opacity:.65!important;pointer-events:none!important;}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1796: @media (prefers-reduced-motion:reduce){.medipol-header{transition:none!important;}}
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1800: <div className="medipol-header-inner">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1808: className="medipol-header-logo"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1815: className="medipol-header-logo-art"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1827: <nav className="medipol-header-nav">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1839: className="medipol-header-nav-link"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1853: <div className="medipol-header-right">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1864: <span className="medipol-header-profile medipol-header-profile-loading" aria-label="Profil yükleniyor">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1865: <span className="medipol-header-avatar" aria-hidden="true" />
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1866: <span className="medipol-header-profile-name" aria-hidden="true">Profil</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1867: <span className="medipol-profile-arrow" aria-hidden="true">›</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1872: className="medipol-header-profile"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1878: className="medipol-header-avatar"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1902: <span className="medipol-header-profile-name">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1908: <span className="medipol-profile-arrow">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1915: className="medipol-header-profile medipol-header-profile-guest"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1921: <span className="medipol-header-login-label">Giriş Yap</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1922: <svg className="medipol-header-login-icon" viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1930: <div className="medipol-landscape-quick" aria-label="Hızlı işlemler">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1931: <div className="medipol-quick-control medipol-quick-dm" aria-label="Mesajlar">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1934: <div className="medipol-quick-control medipol-quick-notifications" aria-label="Bildirimler">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1937: <div className="medipol-quick-control medipol-quick-theme" aria-label="Tema seçimi">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1947: "medipol-mobile-menu-button",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1972: <span className="medipol-hamburger">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1987: "medipol-mobile-drawer",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:1996: <nav className="medipol-mobile-nav">
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:2011: className="medipol-mobile-nav-link"
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\Header.tsx:2033: <div className="medipol-mobile-header-spacer" aria-hidden="true" />
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\NotificationInbox.tsx:47: <div><span>F1 MEDİPOL</span><h2>Gelen Bildirimler</h2></div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\PaddockShareButton.tsx:29: title: "Medipol F1 Paddock",
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\ProfileFriendManager.tsx:112: <div><span className={styles.eyebrow}>F1 MEDİPOL · SOCIAL PADDOCK</span><h2>Arkadaşlar</h2><p>Kullanıcı adıyla ara, istek gönder veya gelenleri yanıtla.</p></div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\useChatGalleryWallpaper.ts:7: const DATABASE = "f1-medipol-chat-wallpapers";
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\WallpaperAdminClient.tsx:122: <div><span className={styles.eyebrow}>F1 MEDİPOL · CUSTOMIZATION CONTROL</span><h1>PROFİL ARKA PLANLARI</h1><p>Üyelerin kullanabileceği koleksiyona yeni tasarımlar ekle, yayına al ve yönet.</p></div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\WeeklyCommentaryEditor.tsx:111: <div className="wa-intro"><span>F1 MEDİPOL / CONTENT STUDIO</span>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\WhatIfSimulator.tsx:80: `F1 MEDİPOL · WHAT IF · ${season} ${selectedRace?.name || "Grand Prix"}`,
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\WhatIfSimulator.tsx:96: window.localStorage.setItem("f1medipol-whatif-latest", JSON.stringify({
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\WhatIfSimulator.tsx:107: const saved = JSON.parse(window.localStorage.getItem("f1medipol-whatif-latest") || "null") as
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\WhatIfSimulator.tsx:178: <div className="wi-eyebrow">F1 MEDİPOL · ARCADE / WHAT IF</div>
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\kart-rush\engine.ts:1827: img.src='/kart-rush-f1medipol-logo.png';
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\kart-rush\KartRushClient.tsx:13: const SOLO_CAREER_KEY='f1-medipol-kart-rush-career-v1';
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\components\kart-rush\KartRushClient.tsx:95: const [lobbyName,setLobbyName]=useState('Medipol Grand Prix');const [privateRoom,setPrivateRoom]=useState(false);const [code,setCode]=useState('');
+C:\Users\kaanc\OneDrive\Belgeler\f1-medipol\public\push-sw.js:24: tag: typeof payload.tag === "string" ? payload.tag.slice(0, 100) : "f1-medipol-push",

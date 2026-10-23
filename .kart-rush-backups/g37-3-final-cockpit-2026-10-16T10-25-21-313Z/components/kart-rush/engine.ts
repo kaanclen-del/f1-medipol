@@ -1,4 +1,4 @@
-/* F1 Medipol Kart Rush Graphics 2.0 Stage 1: textured WebGL material pipeline.
+﻿/* F1 SOCIAL Kart Rush Graphics 2.0 Stage 1: textured WebGL material pipeline.
  * Dependency-free WebGL; no Supabase calls in the animation/render loop.
  * V11 visuals: fuller F1-style 22-car field, cleaner broadcast HUD, richer environment and reduced auto-assist feel.
  */
@@ -462,12 +462,12 @@ function billboardGeometry(quality:KartGraphics):Float32Array{
 }
 function makeSponsorAtlas():HTMLCanvasElement{
  const cvs=document.createElement('canvas');cvs.width=512;cvs.height=512;
- const ctx=cvs.getContext('2d');if(!ctx)throw Error('Pist tabela çizimi desteklenmiyor');
+ const ctx=cvs.getContext('2d');if(!ctx)throw Error('Pist tabela Ã§izimi desteklenmiyor');
  const rows:[string,string,string,string,string][]=[
-  ['#140f16','#ffffff','F1 MEDIPOL','OFFICIAL TRACKSIDE PARTNER','#ef304c'],
+  ['#140f16','#ffffff','F1 SOCIAL','OFFICIAL TRACKSIDE PARTNER','#ef304c'],
   ['#131c2a','#f4f7fb','KART RUSH 3D','NIGHT GRAND PRIX','#71c8ff'],
   ['#1e232b','#fff3c2','PIT ENTRY','PRECISION + CONTROL','#f1c15d'],
-  ['#edf1f4','#182432','APEX CLUB','FULL SEND · NO LIFT','#ef304c']
+  ['#edf1f4','#182432','APEX CLUB','FULL SEND Â· NO LIFT','#ef304c']
  ];
  rows.forEach((r,i)=>{
   const y=i*128;
@@ -626,7 +626,7 @@ void main(){
  col+=vec3(.27,.34,.43)*rainLine*uRain*.56;
  gl_FragColor=vec4(col,1.);
 }`;
-function shader(gl:WebGLRenderingContext,type:number,src:string){const s=gl.createShader(type);if(!s)throw Error('Shader oluşturulamadı');gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s)||'Shader derlenemedi');return s;}
+function shader(gl:WebGLRenderingContext,type:number,src:string){const s=gl.createShader(type);if(!s)throw Error('Shader oluÅŸturulamadÄ±');gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s)||'Shader derlenemedi');return s;}
 function projection(fov:number,aspect:number,near:number,far:number){const m=new Float32Array(16),f=1/Math.tan(fov/2);m[0]=f/aspect;m[5]=f;m[10]=(far+near)/(near-far);m[11]=-1;m[14]=2*far*near/(near-far);return m;}
 function lookAt(eye:Vec,target:Vec):Float32Array{
  const sub=(a:Vec,b:Vec)=>({x:a.x-b.x,y:a.y-b.y,z:a.z-b.z});const norm=(a:Vec)=>{const d=Math.hypot(a.x,a.y,a.z)||1;return{x:a.x/d,y:a.y/d,z:a.z/d}};
@@ -1167,17 +1167,17 @@ export class KartRushEngine{
   this.currentProgress=GRID_FIRST-GRID_STEP*gridSlot;this.lane=gridSlot%2===0?-GRID_LANE:GRID_LANE;
   this.headingYaw=yawFor(this.currentProgress);
   const gl=canvas.getContext('webgl',{antialias:true,alpha:false,powerPreference:'high-performance'})||canvas.getContext('experimental-webgl');
-  if(!gl)throw Error('Bu tarayıcı WebGL desteklemiyor.');this.gl=gl as WebGLRenderingContext;
+  if(!gl)throw Error('Bu tarayÄ±cÄ± WebGL desteklemiyor.');this.gl=gl as WebGLRenderingContext;
   const vs=shader(this.gl,this.gl.VERTEX_SHADER,VERT),fs=shader(this.gl,this.gl.FRAGMENT_SHADER,FRAG);
-  const program=this.gl.createProgram();if(!program)throw Error('WebGL programı oluşturulamadı');this.gl.attachShader(program,vs);this.gl.attachShader(program,fs);this.gl.linkProgram(program);if(!this.gl.getProgramParameter(program,this.gl.LINK_STATUS))throw Error('WebGL bağlantı hatası');this.program=program;
+  const program=this.gl.createProgram();if(!program)throw Error('WebGL programÄ± oluÅŸturulamadÄ±');this.gl.attachShader(program,vs);this.gl.attachShader(program,fs);this.gl.linkProgram(program);if(!this.gl.getProgramParameter(program,this.gl.LINK_STATUS))throw Error('WebGL baÄŸlantÄ± hatasÄ±');this.program=program;
   this.gl.deleteShader(vs);this.gl.deleteShader(fs);
-  this.attribPos=this.gl.getAttribLocation(program,'aPos');this.attribColor=this.gl.getAttribLocation(program,'aColor');this.attribNormal=this.gl.getAttribLocation(program,'aNormal');this.attribMat=this.gl.getAttribLocation(program,'aMat');this.uniformTime=this.gl.getUniformLocation(program,'uTime');this.uniformDetail=this.gl.getUniformLocation(program,'uDetail');this.uniformAlbedo=this.gl.getUniformLocation(program,'uAlbedoAtlas');this.uniformNormal=this.gl.getUniformLocation(program,'uNormalRoughAtlas');this.uniformAtlasReady=this.gl.getUniformLocation(program,'uAtlasReady');this.uniformCamera=this.gl.getUniformLocation(program,'uCameraPos');this.uniformRain=this.gl.getUniformLocation(program,'uRain');const uniform=this.gl.getUniformLocation(program,'uViewProj');if(!uniform)throw Error('Kamera oluşturulamadı');this.uniformMat=uniform;
+  this.attribPos=this.gl.getAttribLocation(program,'aPos');this.attribColor=this.gl.getAttribLocation(program,'aColor');this.attribNormal=this.gl.getAttribLocation(program,'aNormal');this.attribMat=this.gl.getAttribLocation(program,'aMat');this.uniformTime=this.gl.getUniformLocation(program,'uTime');this.uniformDetail=this.gl.getUniformLocation(program,'uDetail');this.uniformAlbedo=this.gl.getUniformLocation(program,'uAlbedoAtlas');this.uniformNormal=this.gl.getUniformLocation(program,'uNormalRoughAtlas');this.uniformAtlasReady=this.gl.getUniformLocation(program,'uAtlasReady');this.uniformCamera=this.gl.getUniformLocation(program,'uCameraPos');this.uniformRain=this.gl.getUniformLocation(program,'uRain');const uniform=this.gl.getUniformLocation(program,'uViewProj');if(!uniform)throw Error('Kamera oluÅŸturulamadÄ±');this.uniformMat=uniform;
   const sv=shader(this.gl,this.gl.VERTEX_SHADER,SKY_VERT),sf=shader(this.gl,this.gl.FRAGMENT_SHADER,SKY_FRAG);
-  const sp=this.gl.createProgram();if(!sp)throw Error('Atmosfer başlatılamadı');this.gl.attachShader(sp,sv);this.gl.attachShader(sp,sf);this.gl.linkProgram(sp);if(!this.gl.getProgramParameter(sp,this.gl.LINK_STATUS))throw Error('Atmosfer derlenemedi');this.skyProgram=sp;
+  const sp=this.gl.createProgram();if(!sp)throw Error('Atmosfer baÅŸlatÄ±lamadÄ±');this.gl.attachShader(sp,sv);this.gl.attachShader(sp,sf);this.gl.linkProgram(sp);if(!this.gl.getProgramParameter(sp,this.gl.LINK_STATUS))throw Error('Atmosfer derlenemedi');this.skyProgram=sp;
   this.gl.deleteShader(sv);this.gl.deleteShader(sf);this.skyPos=this.gl.getAttribLocation(sp,'aPosition');this.skyTime=this.gl.getUniformLocation(sp,'uTime');this.skyYaw=this.gl.getUniformLocation(sp,'uYaw');this.skyWeather=this.gl.getUniformLocation(sp,'uRain');
-  const skyBuffer=this.gl.createBuffer();if(!skyBuffer)throw Error('Atmosfer belleği oluşturulamadı');this.skyBuffer=skyBuffer;
+  const skyBuffer=this.gl.createBuffer();if(!skyBuffer)throw Error('Atmosfer belleÄŸi oluÅŸturulamadÄ±');this.skyBuffer=skyBuffer;
   this.gl.bindBuffer(this.gl.ARRAY_BUFFER,skyBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),this.gl.STATIC_DRAW);
-  const sb=this.gl.createBuffer(),db=this.gl.createBuffer();if(!sb||!db)throw Error('WebGL belleği oluşturulamadı');this.staticBuffer=sb;this.dynamicBuffer=db;
+  const sb=this.gl.createBuffer(),db=this.gl.createBuffer();if(!sb||!db)throw Error('WebGL belleÄŸi oluÅŸturulamadÄ±');this.staticBuffer=sb;this.dynamicBuffer=db;
   const verts=buildWorld(this.graphics);this.worldCount=verts.length/STRIDE;this.gl.bindBuffer(this.gl.ARRAY_BUFFER,this.staticBuffer);this.gl.bufferData(this.gl.ARRAY_BUFFER,new Float32Array(verts),this.gl.STATIC_DRAW);
   // G2 textures load asynchronously; shaded procedural fallbacks remain while pending.
   if(typeof Image!=='undefined')this.loadMaterialAtlases();
@@ -1241,11 +1241,11 @@ export class KartRushEngine{
  }
  private prepareBillboards(){
   const gl=this.gl,vs=shader(gl,gl.VERTEX_SHADER,SIGN_VERT),fs=shader(gl,gl.FRAGMENT_SHADER,SIGN_FRAG);
-  const pr=gl.createProgram();if(!pr)throw Error('Pist tabelaları başlatılamadı');
+  const pr=gl.createProgram();if(!pr)throw Error('Pist tabelalarÄ± baÅŸlatÄ±lamadÄ±');
   gl.attachShader(pr,vs);gl.attachShader(pr,fs);gl.linkProgram(pr);
-  if(!gl.getProgramParameter(pr,gl.LINK_STATUS))throw Error('Pist tabelaları GPU hatası');
+  if(!gl.getProgramParameter(pr,gl.LINK_STATUS))throw Error('Pist tabelalarÄ± GPU hatasÄ±');
   gl.deleteShader(vs);gl.deleteShader(fs);
-  const tex=gl.createTexture(),buffer=gl.createBuffer();if(!tex||!buffer){gl.deleteProgram(pr);throw Error('Pist tabelaları bellek hatası');}
+  const tex=gl.createTexture(),buffer=gl.createBuffer();if(!tex||!buffer){gl.deleteProgram(pr);throw Error('Pist tabelalarÄ± bellek hatasÄ±');}
   gl.bindTexture(gl.TEXTURE_2D,tex);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,0);
   gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,makeSponsorAtlas());
   gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
@@ -1275,11 +1275,11 @@ export class KartRushEngine{
   img.onerror=()=>{}; // Typography fallback remains visible on the billboards.
   img.src='/kart-rush-f1medipol-logo.png';
  }
- private readonly cameraLabels=['TAKİP','YAKIN TAKİP','HALO YAKIN','TV KAMERASI','BURUN','HALO KOKPİT','SÜRÜCÜ KOKPİTİ'] as const;
+ private readonly cameraLabels=['TAKÄ°P','YAKIN TAKÄ°P','HALO YAKIN','TV KAMERASI','BURUN','HALO KOKPÄ°T','SÃœRÃœCÃœ KOKPÄ°TÄ°'] as const;
  private cockpitSteer=0;
  cycleCamera(){this.cameraMode=(this.cameraMode+1)%this.cameraLabels.length;this.eye=null;this.target=null;return this.cameraLabels[this.cameraMode];}
  setLookBack(value:boolean){if(this.lookBack===value)return;this.lookBack=value;this.eye=null;this.target=null;}
- getCameraLabel(){return this.lookBack?'ARKA BAKIŞ':this.cameraLabels[this.cameraMode];}
+ getCameraLabel(){return this.lookBack?'ARKA BAKIÅ':this.cameraLabels[this.cameraMode];}
   setKeys(keys:Partial<typeof this.keys>){this.keys={...this.keys,...keys};}
  rollStartEvent(): 'boost'|'penalty'|null{
   if(this.preRaceEvent!==null || this.elapsed<=-20 || this.elapsed>=-5 || this.finished)return null;
@@ -1802,3 +1802,4 @@ export class KartRushEngine{
   gl.bindBuffer(gl.ARRAY_BUFFER,this.dynamicBuffer);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(dyn),gl.DYNAMIC_DRAW);drawBuffer(this.dynamicBuffer,dyn.length/STRIDE);
  }
 }
+

@@ -177,7 +177,7 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
             {!authenticated ? (
               <div className={styles.empty}>
                 <b>Sohbete katÄ±lmak iÃ§in oturum aÃ§.</b>
-                <span>YarÄ±ÅŸ tartÄ±ÅŸmalarÄ± yalnÄ±zca F1 Medipol Ã¼yelerine aÃ§Ä±k.</span>
+                <span>YarÄ±ÅŸ tartÄ±ÅŸmalarÄ± yalnÄ±zca F1 SOCIAL Ã¼yelerine aÃ§Ä±k.</span>
                 <Link href="/login" className={styles.loginButton}>Oturum AÃ§</Link>
               </div>
             ) : loading ? (
@@ -241,4 +241,5 @@ export default function RaceChat({ season, round, raceName, authenticated }: Pro
     </section>
   );
 }
+
 

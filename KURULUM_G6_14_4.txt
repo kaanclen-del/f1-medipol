@@ -1,0 +1,20 @@
+G6.14.4 — Ana sayfa etkinlik kaydırma performansı
+
+G6.14.3 üzerine kurulmalıdır. Yalnızca app/page.tsx değiştirir.
+
+Değişiklikler:
+- Ana sayfada ilk dört etkinlik gösterilir; kalanlarına “Tüm Etkinlikler” bağlantısından erişilir.
+- Etkinlik alanının ayrı iç kaydırması kaldırılır; ana sayfa tek bir akışta kayar.
+- Daha az etkinlik görseli yüklenir, görüntü çözümlemesi asenkron yapılır.
+- Admin panelinden ayarlanan kadraj değerleri ve diğer bölümler korunur.
+
+Kurulum (PowerShell, proje kökünde):
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_14_4*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+Test: npm.cmd run dev
+Derleme: npm.cmd run build
+Yayın:
+git add app/page.tsx
+git commit -m "G6.14.4 - Smooth homepage event scrolling"
+git push origin main

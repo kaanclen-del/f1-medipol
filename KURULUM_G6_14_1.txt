@@ -1,0 +1,20 @@
+F1 Medipol G6.14.1 - Galeri ve Arcade dengeleme
+
+1) ZIP'i proje kök klasörüne çıkar:
+   Expand-Archive -LiteralPath <zip_yolu> -DestinationPath "." -Force
+
+2) Localhost kontrolü:
+   npm.cmd run dev
+
+Kontrol edilecekler:
+- /gallery sayfasında tüm kartlar tekrar 3:4 görünmeli.
+- Yatay ya da dikey fark etmeksizin karta tıklayınca görsel büyük açılmalı.
+- Ana sayfada F1 Arcade bölümü 4 kartlı ve daha canlı görünmeli.
+
+3) Derleme:
+   npm.cmd run build
+
+4) Vercel:
+   git add app/page.tsx app/gallery/page.tsx components/GalleryLightboxGrid.tsx
+   git commit -m "G6.14.1 - Rebalance gallery and arcade section"
+   git push origin main

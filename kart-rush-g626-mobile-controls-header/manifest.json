@@ -1,6 +1,6 @@
-{
+﻿{
   "id": "g626-mobile-controls-header",
-  "target": "F1 Medipol G6.2.5 race files + Header from user 17 Oct 2026",
+  "target": "F1 SOCIAL G6.2.5 race files + Header from user 17 Oct 2026",
   "files": {
     "components/Header.tsx": {
       "original": "93c69f4c84e0f2bfd93bf23224c177ee30e338665e09b421451932f70b0be88b",

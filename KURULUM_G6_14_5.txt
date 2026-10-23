@@ -1,0 +1,16 @@
+G6.14.5 — Etkinlik listesi kaydırmasını geri getirir.
+Kaydırılabilir ilk 16 etkinlik; daha fazlası için Tüm Etkinlikler bağlantısı.
+Etkinlik görsellerinin admin kadraj ayarları korunur.
+
+Kurulum (proje kökünde):
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_14_5*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+Güncelleme G6.14.4'ün kurulu olduğu projeye yöneliktir.
+Kontrol: Ana sayfa > Etkinlikler (liste içinde kaydır), kadraj, Arcade.
+
+npm.cmd run build
+
+git add app/page.tsx
+git commit -m "G6.14.5 - Restore smooth scrollable event list"
+git push origin main

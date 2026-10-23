@@ -1,0 +1,21 @@
+F1 Medipol G6.14.3 - Etkinlik kadrajı görsel yerleşim düzeltmesi
+
+KURULUM (proje kök klasöründe PowerShell):
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_14_3*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+Dosyalar:
+- app/page.tsx
+- components/EventPreviewPositionEditor.tsx
+
+Admin /admin/events: kadrajı seç, Kadrajı Kaydet'e bas.
+Ana sayfada masaüstü/mobil önizlemede aynı kırpma davranışı.
+Yenilemek için Ctrl+F5.
+
+Sonra:
+npm.cmd run build
+git add app/page.tsx components/EventPreviewPositionEditor.tsx
+git commit -m "G6.14.3 - Fix homepage event crop positioning"
+git push origin main
+
+Not: SQL değişikliği yok. Bu paket, G6.14.2 ana sayfa ve G6.14 admin kodu üzerine hazırlanmıştır.

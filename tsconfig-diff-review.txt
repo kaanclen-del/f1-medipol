@@ -1,0 +1,82 @@
+﻿diff --git a/tsconfig.json b/tsconfig.json
+index abfb814..a1e6e46 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -1,35 +1,44 @@
+ {
+-  "compilerOptions": {
+-    "target": "ES2017",
+-    "lib": ["dom", "dom.iterable", "esnext"],
+-    "allowJs": true,
+-    "skipLibCheck": true,
+-    "strict": true,
+-    "noEmit": true,
+-    "esModuleInterop": true,
+-    "module": "esnext",
+-    "moduleResolution": "bundler",
+-    "resolveJsonModule": true,
+-    "isolatedModules": true,
+-    "jsx": "react-jsx",
+-    "incremental": true,
+-    "plugins": [
+-      {
+-        "name": "next"
+-      }
+-    ],
+-    "paths": {
+-      "@/*": ["./*"]
+-    }
+-  },
+-  "include": [
+-    "next-env.d.ts",
+-    "**/*.ts",
+-    "**/*.tsx",
+-    ".next/types/**/*.ts",
+-    ".next/dev/types/**/*.ts",
+-    "**/*.mts"
+-  ],
+-  "exclude": ["node_modules",
+-    "kart-rush-sade-menu"]
++    "compilerOptions":  {
++                            "target":  "ES2017",
++                            "lib":  [
++                                        "dom",
++                                        "dom.iterable",
++                                        "esnext"
++                                    ],
++                            "allowJs":  true,
++                            "skipLibCheck":  true,
++                            "strict":  true,
++                            "noEmit":  true,
++                            "esModuleInterop":  true,
++                            "module":  "esnext",
++                            "moduleResolution":  "bundler",
++                            "resolveJsonModule":  true,
++                            "isolatedModules":  true,
++                            "jsx":  "react-jsx",
++                            "incremental":  true,
++                            "plugins":  [
++                                            {
++                                                "name":  "next"
++                                            }
++                                        ],
++                            "paths":  {
++                                          "@/*":  [
++                                                      "./*"
++                                                  ]
++                                      }
++                        },
++    "include":  [
++                    "next-env.d.ts",
++                    "**/*.ts",
++                    "**/*.tsx",
++                    ".next/types/**/*.ts",
++                    ".next/dev/types/**/*.ts",
++                    "**/*.mts"
++                ],
++    "exclude":  [
++                    "node_modules",
++                    "kart-rush-sade-menu",
++                    "recovery-20261021-235733"
++                ]
+ }

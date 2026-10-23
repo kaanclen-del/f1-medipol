@@ -1,4 +1,4 @@
-/* F1 Medipol DM Dock v1 — all rules scoped to the component */
+﻿/* F1 SOCIAL DM Dock v1 â€” all rules scoped to the component */
 .headerButton{position:relative;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:42px;height:42px;color:#fff;border:1px solid rgba(255,255,255,.17);background:rgba(255,255,255,.065);border-radius:11px;cursor:pointer;transition:.2s}
 .headerButton:hover{background:rgba(235,36,47,.19);border-color:rgba(255,255,255,.29)}
 .headerLight{color:#1c2029;background:rgba(0,0,0,.045);border-color:rgba(0,0,0,.11)}
@@ -82,3 +82,4 @@
   .composer{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   .friendItem{padding:15px 8px}
 }
+

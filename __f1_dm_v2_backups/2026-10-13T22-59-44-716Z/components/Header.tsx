@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import DmDock from "@/components/DmDock";
 
 import Link from "next/link";
@@ -38,7 +38,7 @@ function normalizeTheme(
     theme === "light" ||
     theme === "white" ||
     theme === "acik" ||
-    theme === "açık"
+    theme === "aÃ§Ä±k"
   ) {
     return "light";
   }
@@ -49,7 +49,7 @@ function normalizeTheme(
     theme === "f1red" ||
     theme === "f1" ||
     theme === "kirmizi" ||
-    theme === "kırmızı"
+    theme === "kÄ±rmÄ±zÄ±"
   ) {
     return "red";
   }
@@ -198,7 +198,7 @@ export default function Header() {
             user.email?.split(
               "@"
             )[0] ||
-            "F1 Medipol Üyesi";
+            "F1 SOCIAL Ãœyesi";
 
           const {
             data:
@@ -514,7 +514,7 @@ export default function Header() {
       href: "/",
     },
     {
-      label: "Canlı",
+      label: "CanlÄ±",
       href: "/live",
     },
     {
@@ -535,7 +535,7 @@ export default function Header() {
     },
     {
       label:
-        "Yönetim Kurulu",
+        "YÃ¶netim Kurulu",
       href: "/board",
     },
     {
@@ -1498,7 +1498,7 @@ export default function Header() {
         <Link
           href="/"
           className="medipol-header-logo"
-          aria-label="F1 Medipol Ana Sayfa"
+          aria-label="F1 SOCIAL Ana Sayfa"
           onClick={() =>
             setMenuOpen(false)
           }
@@ -1600,7 +1600,7 @@ export default function Header() {
               </span>
 
               <span className="medipol-profile-arrow">
-                ›
+                â€º
               </span>
             </Link>
           ) : (
@@ -1611,7 +1611,7 @@ export default function Header() {
                 setMenuOpen(false)
               }
             >
-              Giriş
+              GiriÅŸ
             </Link>
           )}
 
@@ -1630,8 +1630,8 @@ export default function Header() {
             )}
             aria-label={
               menuOpen
-                ? "Menüyü kapat"
-                : "Menüyü aç"
+                ? "MenÃ¼yÃ¼ kapat"
+                : "MenÃ¼yÃ¼ aÃ§"
             }
             aria-expanded={
               menuOpen
@@ -1714,12 +1714,12 @@ export default function Header() {
                 </strong>
 
                 <span>
-                  PROFİLİ GÖR
+                  PROFÄ°LÄ° GÃ–R
                 </span>
               </div>
 
               <span>
-                →
+                â†’
               </span>
             </Link>
           )}
@@ -1751,7 +1751,7 @@ export default function Header() {
                 </span>
 
                 <span>
-                  →
+                  â†’
                 </span>
               </Link>
             )

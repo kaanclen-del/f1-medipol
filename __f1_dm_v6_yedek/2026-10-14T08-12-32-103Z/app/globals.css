@@ -1,4 +1,4 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 /* =========================================
    GLOBAL THEME SYSTEM
@@ -124,7 +124,7 @@
 }
 
 /* =========================================
-   AÇIK
+   AÃ‡IK
    ========================================= */
 
 :root[data-site-theme="light"] {
@@ -601,7 +601,7 @@ body > nav {
 
 /*
   Ana sayfadaki eski switch
-  artık gereksiz.
+  artÄ±k gereksiz.
 */
 
 .home
@@ -626,8 +626,8 @@ main {
 
 /*
   Inline koyu arka plan kullanan
-  mevcut sayfalarda ana arka planı
-  tema sistemine bağlıyoruz.
+  mevcut sayfalarda ana arka planÄ±
+  tema sistemine baÄŸlÄ±yoruz.
 */
 
 :root[data-site-theme="red"]
@@ -944,8 +944,8 @@ main
 }
 
 /*
-  Kırmızı butonlarda yazı
-  her zaman beyaz kalmalı.
+  KÄ±rmÄ±zÄ± butonlarda yazÄ±
+  her zaman beyaz kalmalÄ±.
 */
 
 .btn-red,
@@ -1103,7 +1103,7 @@ select {
 
 /* =========================================
    RACE COUNTDOWN
-   YENİ TASARIM
+   YENÄ° TASARIM
    ========================================= */
 
 .race-countdown {
@@ -1207,7 +1207,7 @@ select {
 
 /* =========================================
    HOME COUNTDOWN
-   DIŞ DİKDÖRTGENİ KALDIR
+   DIÅ DÄ°KDÃ–RTGENÄ° KALDIR
    ========================================= */
 
 .home
@@ -1299,7 +1299,7 @@ select {
 
 /* =========================================
    QUICK INTEL
-   TAMAMEN YENİ GÖRÜNÜM
+   TAMAMEN YENÄ° GÃ–RÃœNÃœM
    ========================================= */
 
 .home
@@ -1378,7 +1378,7 @@ select {
 }
 
 /*
-  ESKİ YATAY TRACK ANİMASYONUNU
+  ESKÄ° YATAY TRACK ANÄ°MASYONUNU
   KAPATIYORUZ
 */
 
@@ -1411,7 +1411,7 @@ select {
 
 /*
   HER INTEL AYNI ALANDA
-  FADE + HAFİF SLIDE
+  FADE + HAFÄ°F SLIDE
 */
 
 .home
@@ -1522,7 +1522,7 @@ select {
 }
 
 /*
-  ESKİ SAHTE BAR GRAFİĞİ YOK
+  ESKÄ° SAHTE BAR GRAFÄ°ÄÄ° YOK
 */
 
 .home
@@ -1533,7 +1533,7 @@ select {
 }
 
 /*
-  KART İÇİ DEV 01 / 02 / 03
+  KART Ä°Ã‡Ä° DEV 01 / 02 / 03
 */
 
 .home
@@ -1570,7 +1570,7 @@ select {
 }
 
 /*
-  KATEGORİ
+  KATEGORÄ°
 */
 
 .home
@@ -1612,7 +1612,7 @@ select {
 }
 
 /*
-  BAŞLIK
+  BAÅLIK
 */
 
 .home
@@ -1649,7 +1649,7 @@ select {
 }
 
 /*
-  AÇIKLAMA
+  AÃ‡IKLAMA
 */
 
 .home
@@ -1681,7 +1681,7 @@ select {
 }
 
 /*
-  ARKA PLANDA BÜYÜK SAYI
+  ARKA PLANDA BÃœYÃœK SAYI
 */
 
 .home
@@ -1727,8 +1727,8 @@ select {
 }
 
 /*
-  ESKİ DAİRESEL DEKORASYONU
-  SADELEŞTİR
+  ESKÄ° DAÄ°RESEL DEKORASYONU
+  SADELEÅTÄ°R
 */
 
 .home
@@ -1829,8 +1829,8 @@ select {
 }
 
 /* =========================================
-   QUICK INTEL ALT ŞERİT
-   ARTIK BOŞ BİR ALAN DEĞİL
+   QUICK INTEL ALT ÅERÄ°T
+   ARTIK BOÅ BÄ°R ALAN DEÄÄ°L
    ========================================= */
 
 .home
@@ -2183,7 +2183,7 @@ strong {
     !important;
 }
 
-/* HEADER LOGO - HAFİF KÜÇÜLT */
+/* HEADER LOGO - HAFÄ°F KÃœÃ‡ÃœLT */
 
 body > header img:first-of-type {
   width: auto !important;
@@ -2197,13 +2197,13 @@ body > header img:first-of-type {
   transform: scale(3.96);
 }
 /* =========================================================
-   F1 MEDIPOL
+   F1 SOCIAL
    RESPONSIVE SCREEN SCALING V2
    ========================================================= */
 
 /*
-  Temel güvenlik.
-  Sayfa her zaman viewport'un tamamını kaplar.
+  Temel gÃ¼venlik.
+  Sayfa her zaman viewport'un tamamÄ±nÄ± kaplar.
 */
 
 html {
@@ -2316,10 +2316,10 @@ svg {
 
 
 /* =========================================================
-   FULL HD GENİŞ EKRAN
+   FULL HD GENÄ°Å EKRAN
    1700 - 2099
 
-   Hafif büyütme.
+   Hafif bÃ¼yÃ¼tme.
    ========================================================= */
 
 @media
@@ -2341,7 +2341,7 @@ svg {
    2100 - 2999
 
    2560x1440 burada.
-   %12 büyütme.
+   %12 bÃ¼yÃ¼tme.
    ========================================================= */
 
 @media
@@ -2397,8 +2397,8 @@ svg {
 /* =========================================================
    ULTRAWIDE
 
-   3440x1440 gibi ekranlarda 4K büyüklüğüne
-   çıkmasını istemiyoruz.
+   3440x1440 gibi ekranlarda 4K bÃ¼yÃ¼klÃ¼ÄŸÃ¼ne
+   Ã§Ä±kmasÄ±nÄ± istemiyoruz.
    ========================================================= */
 
 @media
@@ -2436,7 +2436,7 @@ svg {
 }
 
 /* F1 MOBILE HOME V3 START */
-/* F1 MEDIPOL - MOBILE HERO FIT V3
+/* F1 SOCIAL - MOBILE HERO FIT V3
    Site genel renklerini etkilemez. Ana sayfanin grand prix hero alanina ozeldir. */
 @media (max-width: 740px) {
   .hero-main {
@@ -2529,3 +2529,4 @@ svg {
   .hero-main { padding-inline: 14px !important; }
 }
 /* F1 MOBILE HOME V3 END */
+

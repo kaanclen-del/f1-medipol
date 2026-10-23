@@ -1,0 +1,662 @@
+﻿import AdminRaceTicker from "@/components/AdminRaceTicker";
+
+import Link from "next/link";
+
+import Header from "@/components/Header";
+import { createClient } from "@/utils/supabase/server";
+import { createAdminClient } from "@/utils/supabase/admin";
+
+export const dynamic = "force-dynamic";
+
+export default async function AdminPage() {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return (
+      <>
+        <Header />
+
+        <main className="admin-access">
+          <style>{styles}</style>
+
+          <div className="access-card">
+            <span>F1 MEDÄ°POL · ADMIN</span>
+            <h1>GiriÅŸ Gerekli</h1>
+            <p>
+              YÃ¶netim panelini gÃ¶rÃ¼ntÃ¼lemek iÃ§in
+              giriÅŸ yapmalÄ±sÄ±n.
+            </p>
+
+            <Link
+              href="/login"
+              className="admin-button red"
+            >
+              GiriÅŸ Yap
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("display_name, username, is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.is_admin) {
+    return (
+      <>
+        <Header />
+
+        <main className="admin-access">
+          <style>{styles}</style>
+
+          <div className="access-card">
+            <span>F1 MEDÄ°POL · ADMIN</span>
+            <h1>Yetkisiz EriÅŸim</h1>
+            <p>
+              Bu bÃ¶lÃ¼m yalnÄ±zca yÃ¶neticiler
+              tarafÄ±ndan kullanÄ±labilir.
+            </p>
+
+            <Link
+              href="/"
+              className="admin-button"
+            >
+              Ana Sayfaya DÃ¶n
+            </Link>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  const admin = createAdminClient();
+  const { data: raceTickerConfig } = await admin.from("site_race_ticker").select("message").eq("id", 1).maybeSingle();
+  const {data: ownerConfig} = await admin.from("site_admin_config")
+    .select("owner_id").eq("singleton", true).maybeSingle();
+
+  const [
+    eventsResult,
+    achievementsResult,
+    awardsResult,
+  ] = await Promise.all([
+    admin
+      .from("events")
+      .select("id, is_published"),
+
+    admin
+      .from("achievements")
+      .select("id, is_published"),
+
+    admin
+      .from("user_achievements")
+      .select("id", {
+        count: "exact",
+        head: true,
+      }),
+  ]);
+
+  const events = eventsResult.data ?? [];
+  const achievements =
+    achievementsResult.data ?? [];
+
+  const totalEvents = events.length;
+
+  const publishedEvents = events.filter(
+    (event) => event.is_published
+  ).length;
+
+  const totalAchievements =
+    achievements.length;
+
+  const publishedAchievements =
+    achievements.filter(
+      (achievement) => achievement.is_published
+    ).length;
+
+  const totalAwards = awardsResult.count ?? 0;
+
+  const displayName =
+    profile.display_name ||
+    profile.username ||
+    user.email?.split("@")[0] ||
+    "Admin";
+
+  return (
+    <>
+      <Header />
+
+      <main className="admin-page">
+        <style>{styles}</style>
+
+        <div className="admin-wrap">
+
+          {/* HERO */}
+
+          <section className="admin-hero">
+            <div className="admin-eyebrow">
+              F1 MEDÄ°POL · CONTROL CENTER
+            </div>
+
+            <h1>ADMIN PANELÄ°</h1>
+
+            <p>
+              HoÅŸ geldin, {displayName}.
+            </p>
+
+            <div className="admin-active-badge">
+              â— YÃ–NETÄ°CÄ° OTURUMU AKTÄ°F
+            </div>
+          </section>
+
+          <AdminRaceTicker initialText={raceTickerConfig?.message ?? ""} />
+
+          {/* Ä°STATÄ°STÄ°KLER */}
+
+          <section className="admin-stats">
+            <StatCard
+              label="ETKÄ°NLÄ°K"
+              value={totalEvents}
+              text="Toplam"
+            />
+
+            <StatCard
+              label="YAYINDA"
+              value={publishedEvents}
+              text="Etkinlik"
+            />
+
+            <StatCard
+              label="ROZET"
+              value={totalAchievements}
+              text={`${publishedAchievements} yayÄ±nda`}
+            />
+
+            <StatCard
+              label="Ã–DÃœL"
+              value={totalAwards}
+              text="DaÄŸÄ±tÄ±lan rozet"
+            />
+          </section>
+
+          {/* YÃ–NETÄ°M MODÃœLLERÄ° */}
+
+          <section className="admin-modules">
+            <div className="admin-eyebrow">
+              YÃ–NETÄ°M MODÃœLLERÄ°
+            </div>
+
+            <h2>Kontrol Merkezi</h2>
+
+            <div className="admin-module-grid">
+              {/* G6.16.3 Ã‚· TEAM RADIO YONETIM KISAYOLU */}
+              <Link
+                href="/admin/team-radio"
+                className="admin-module"
+                style={{
+                  background:
+                    "radial-gradient(circle at 88% 12%, rgba(255, 73, 94, .23), transparent 45%), linear-gradient(145deg, #291721, #131820)",
+                }}
+              >
+                <div className="module-icon">ğŸ“»</div>
+                <span>OPENF1 Ã‚· TEAM RADIO</span>
+                <h3>Telsiz ArÅŸivi</h3>
+                <p>
+                  YÄ±l, Grand Prix, seans ve pilot seÃ§erek OpenF1
+                  telsizlerini ara, dinle ve yayÄ±n listesini yÃ¶net.
+                </p>
+                <strong>ARÅÄ°VÄ° YÃ–NET â†’</strong>
+              </Link>
+                <Link href="/admin/profile-wallpapers" className="admin-module">
+                  <div className="module-icon">ğŸ¨</div>
+                  <span>NEW MODULE</span>
+                  <h3>Profil Arka PlanlarÄ±</h3>
+                  <p>Ãœyelerin kullanacaÄŸÄ± arka planlarÄ± ekle, yayÄ±nla ve yÃ¶net.</p>
+                  <strong>KOLEKSÄ°YONU YÃ–NET â†’</strong>
+                </Link>
+              {ownerConfig?.owner_id === user.id && (
+                <Link href="/admin/permissions" className="admin-module">
+                  <div className="module-icon">ğŸ›¡ï¸</div>
+                  <span>ANA YÃ–NETÄ°CÄ° MODÃœLÃœ</span>
+                  <h3>YÃ¶netici Yetkileri</h3>
+                  <p>Ãœyelere yÃ¶netici yetkisi ver, diÄŸer yÃ¶neticilerin yetkilerini kaldÄ±r.</p>
+                  <strong>YETKÄ°LERÄ° YÃ–NET â†’</strong>
+                </Link>
+              )}
+
+              {/* BILDIRIM YONETIMI */}
+              <Link href="/admin/notifications" className="admin-module">
+                <div className="module-icon">ğŸ””</div>
+                <span>ACTIVE MODULE</span>
+                <h3>Bildirim YÃ¶netimi</h3>
+                <p>Ãœyelere push bildirimi gÃ¶nder, iPhone ve Android cihazlarÄ±nda test et.</p>
+                <strong>BÄ°LDÄ°RÄ°M GÃ–NDER â†’</strong>
+              </Link>
+
+              {/* ETKÄ°NLÄ°KLER */}
+
+              <Link
+                href="/admin/events"
+                className="admin-module"
+              >
+                <div className="module-icon">
+                  ğŸ
+                </div>
+
+                <span>ACTIVE MODULE</span>
+
+                <h3>Etkinlik YÃ¶netimi</h3>
+
+                <p>
+                  Etkinlikleri oluÅŸtur,
+                  yayÄ±nla ve yÃ¶net.
+                </p>
+
+                <strong>
+                  PANELE GÄ°T â†’
+                </strong>
+              </Link>
+
+              {/* BAÅARIMLAR */}
+
+              <Link
+                href="/admin/achievements"
+                className="admin-module achievement-module"
+              >
+                <div className="module-icon">
+                  ğŸ†
+                </div>
+
+                <span>ACTIVE MODULE</span>
+
+                <h3>Rozet & BaÅŸarÄ±m</h3>
+
+                <p>
+                  Rozet oluÅŸtur, ÅŸart belirle,
+                  gÃ¶rsel yÃ¼kle ve kullanÄ±cÄ±larÄ±
+                  Ã¶dÃ¼llendir.
+                </p>
+
+                <strong>
+                  BAÅARIM MERKEZÄ° â†’
+                </strong>
+              </Link>
+
+              {/* GALERÄ° */}
+
+              <Link
+                href="/admin/gallery"
+                className="admin-module"
+              >
+                <div className="module-icon">
+                  ğŸ“¸
+                </div>
+
+                <span>MODULE</span>
+
+                <h3>Galeri YÃ¶netimi</h3>
+
+                <p>
+                  Galeri iÃ§eriklerini yÃ¶net.
+                </p>
+
+                <strong>
+                  PANELE GÄ°T â†’
+                </strong>
+              </Link>
+
+              {/* YÃ–NETÄ°M KURULU */}
+
+              <Link
+                href="/admin/board"
+                className="admin-module"
+              >
+                <div className="module-icon">
+                  ğŸ‘¥
+                </div>
+
+                <span>MODULE</span>
+
+                <h3>YÃ¶netim Kurulu</h3>
+
+                <p>
+                  YÃ¶netim kurulu Ã¼yelerini
+                  dÃ¼zenle.
+                </p>
+
+                <strong>
+                  PANELE GÄ°T â†’
+                </strong>
+              </Link>
+
+              {/* HAFTALIK YORUM */}
+              <Link href="/admin/weekly-commentary" className="admin-module">
+                <div className="module-icon">ğŸ“</div>
+                <span>CONTENT MODULE</span>
+                <h3>HaftalÄ±k Yorum</h3>
+                <p>Ä°dil BoyalÄ±'nÄ±n haftalÄ±k yazÄ±sÄ±nÄ±, baÅŸlÄ±ÄŸÄ±nÄ±, gÃ¶rselini ve yayÄ±n durumunu yÃ¶net.</p>
+                <strong>YORUMU DÃœZENLE â†’</strong>
+              </Link>
+
+              {/* YENÄ°: YARIÅ GÃ–RSELLERÄ° */}
+
+              <Link
+                href="/admin/race-hero-images"
+                className="admin-module race-hero-module"
+              >
+                <div className="module-icon">
+                  ğŸï¸
+                </div>
+
+                <span>NEW MODULE</span>
+
+                <h3>YarÄ±ÅŸ GÃ¶rselleri</h3>
+
+                <p>
+                  Grand Prix seÃ§, ana sayfa
+                  arka plan fotoÄŸraflarÄ±nÄ± yÃ¼kle,
+                  sÄ±rala ve yÃ¶net.
+                </p>
+
+                <strong>
+                  GÃ–RSELLERÄ° YÃ–NET â†’
+                </strong>
+              </Link>
+
+            </div>
+          </section>
+        </div>
+      </main>
+    </>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  text,
+}: {
+  label: string;
+  value: number;
+  text: string;
+}) {
+  return (
+    <div className="admin-stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+      <small>{text}</small>
+    </div>
+  );
+}
+
+const styles = `
+  .admin-page,
+  .admin-access {
+    min-height: calc(100vh - 70px);
+    color: #f5f7fa;
+
+    background:
+      radial-gradient(
+        circle at 88% 0%,
+        rgba(225, 6, 0, .12),
+        transparent 30%
+      ),
+      linear-gradient(
+        145deg,
+        #0f131a,
+        #07090d
+      );
+  }
+
+  .admin-wrap {
+    width: min(
+      1450px,
+      calc(100% - 36px)
+    );
+
+    margin: auto;
+    padding: 32px 0 90px;
+  }
+
+  .admin-hero {
+    padding: 34px;
+
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 17px;
+
+    background:
+      radial-gradient(
+        circle at 90% 10%,
+        rgba(225, 6, 0, .15),
+        transparent 32%
+      ),
+      linear-gradient(
+        145deg,
+        #232b36,
+        #171d26
+      );
+  }
+
+  .admin-eyebrow,
+  .admin-module > span,
+  .admin-stat > span,
+  .access-card > span {
+    color: #ff5149;
+
+    font-size: 8px;
+    font-weight: 1000;
+    letter-spacing: .12em;
+  }
+
+  .admin-hero h1 {
+    margin: 8px 0 6px;
+    font-size: 48px;
+    letter-spacing: -.04em;
+  }
+
+  .admin-hero p {
+    margin: 0;
+    color: #9da8b5;
+  }
+
+  .admin-active-badge {
+    display: inline-block;
+    margin-top: 18px;
+    padding: 8px 12px;
+
+    border: 1px solid rgba(53, 212, 119, .22);
+    border-radius: 999px;
+
+    color: #65df96;
+    background: rgba(53, 212, 119, .10);
+
+    font-size: 9px;
+    font-weight: 900;
+  }
+
+  .admin-stats {
+    margin-top: 14px;
+
+    display: grid;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr));
+
+    gap: 12px;
+  }
+
+  .admin-stat {
+    min-height: 130px;
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 13px;
+    background: #131820;
+  }
+
+  .admin-stat strong {
+    margin-top: 7px;
+    font-size: 34px;
+  }
+
+  .admin-stat small {
+    color: #7f8b99;
+  }
+
+  .admin-modules {
+    margin-top: 32px;
+  }
+
+  .admin-modules h2 {
+    margin: 7px 0 17px;
+    font-size: 30px;
+  }
+
+  .admin-module-grid {
+    display: grid;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .admin-module {
+    position: relative;
+
+    min-height: 220px;
+    padding: 25px;
+    overflow: hidden;
+
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 15px;
+
+    color: #fff;
+    background: #131820;
+
+    transition: .2s ease;
+  }
+
+  .admin-module:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255, 81, 73, .35);
+    background: #171d26;
+  }
+
+  .achievement-module {
+    background:
+      radial-gradient(
+        circle at 90% 10%,
+        rgba(242, 196, 73, .13),
+        transparent 35%
+      ),
+      #131820;
+  }
+
+  .race-hero-module {
+    background:
+      radial-gradient(
+        circle at 90% 10%,
+        rgba(225, 6, 0, .19),
+        transparent 45%
+      ),
+      linear-gradient(
+        145deg,
+        #1c2029,
+        #131820
+      );
+  }
+
+  .race-hero-module > span {
+    color: #ff7770;
+  }
+
+  .module-icon {
+    margin-bottom: 18px;
+    font-size: 36px;
+  }
+
+  .admin-module h3 {
+    margin: 8px 0;
+    font-size: 24px;
+  }
+
+  .admin-module p {
+    max-width: 440px;
+    color: #8995a3;
+    font-size: 11px;
+    line-height: 1.6;
+  }
+
+  .admin-module > strong {
+    position: absolute;
+    left: 25px;
+    bottom: 24px;
+
+    color: #ff625b;
+    font-size: 9px;
+  }
+
+  .admin-access {
+    padding: 60px 20px;
+  }
+
+  .access-card {
+    width: min(650px, 100%);
+    margin: auto;
+    padding: 32px;
+
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 16px;
+    background: #131820;
+  }
+
+  .access-card p {
+    color: #9da8b5;
+  }
+
+  .admin-button {
+    min-height: 42px;
+    padding: 0 15px;
+
+    display: inline-flex;
+    align-items: center;
+
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 8px;
+
+    color: #fff;
+    background: rgba(255, 255, 255, .05);
+  }
+
+  .admin-button.red {
+    border: 0;
+    background: #e10600;
+  }
+
+  @media (max-width: 900px) {
+    .admin-stats {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  @media (max-width: 650px) {
+    .admin-module-grid,
+    .admin-stats {
+      grid-template-columns: 1fr;
+    }
+
+    .admin-hero h1 {
+      font-size: 36px;
+    }
+  }
+`;
+

@@ -1,0 +1,35 @@
+F1 MEDIPOL — G6.17.5
+Tema bazlı duvar kagidi, profil arkadas popup'i, etkinlik sayfasi onbellek ve yonetim kurulu gorseli gecis duzeltmesi.
+
+ONEMLI: Once G6.17.4 kurulu olmali (profile_wallpaper_light ve profile_wallpaper_red kolonlari kullaniliyor).
+Bu G6.17.5 icin YENI SQL YOK.
+
+1) ZIP'i proje kokune cikar:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_5*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2) Etkinlik sayfasi optimizasyonunu etkinlestir (GEREKLI):
+   node .\G6_17_5_Etkinlik_Optimizasyon.mjs
+   Bu komut mevcut app/events/page.tsx kodunu koruyarak yalnizca veri sorgusunu 45 saniyelik onbellege tasir.
+   Daha once uygulanmissa tekrar degisiklik yapmaz.
+   Bir onceki dosyayi app/events/page.tsx.before-g6175.bak olarak yedekler.
+   Kod beklenen bicimde degilse hata verir ve o dosyaya dokunmaz.
+
+3) Kontrol:
+   npm.cmd run dev
+   - /profile: tema degistir; wallpaper'in ustunde beyaz katman olmamali.
+   - Arkadaslar > kisi ekle simgesine bas, kisi ara, istek gonder/kabul et.
+   - /events: ilk ve sonraki ziyaretleri test et. Admin etkinlik degisiklikleri en fazla ~45 saniye gecikmeli gorunebilir.
+   - /board: gorsel kartlarini buyut/kucult; once zoomlu kucuk gorsel gorunmemeli.
+
+4) Derleme:
+   (dev serveri Ctrl+C ile durdur)
+   npm.cmd run build
+
+5) GitHub/Vercel (yalnizca build basariliysa):
+   git add app/profile/page.tsx app/events/page.tsx components/BoardShowcase.tsx components/ProfileFriendManager.tsx components/ProfileFriendManager.module.css components/ProfileWallpaperBackdrop.tsx components/ProfileWallpaperBackdrop.module.css lib/public-events-cache.ts
+   git diff --cached --stat
+   git commit -m "G6.17.5 - Clear wallpapers, profile friends popup, faster events and board images"
+   git push origin main
+
+Not: Yedek .bak dosyasini ve kurulum scriptini Git'e eklemen gerekmiyor.

@@ -1,0 +1,32 @@
+F1 MEDIPOL G6.17 - TELSIZ HER SAYFADA, KÜÇÜK OYNATICI
+
+Bu ZIP 2 bileşen dosyası ve bir kurulum scripti içerir.
+Script app/layout.tsx'e global radyo çağrısını EKLER ve app/page.tsx'teki mevcut çağrıyı KALDIRIR.
+Mevcut sayfa ve layout kodları tamamen değiştirilmez, yalnızca ilgili satırlar düzenlenir.
+Yedekler Windows TEMP klasöründe tutulur. Script ikinci kez çalıştırılsa bile aynı radyo iki kez eklenmez.
+
+1) ZIP'i İndirilenler klasörüne kaydedin.
+2) VS Code PowerShell terminalinizde proje klasöründe olduğunuzdan emin olun.
+
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17*.zip" | Select-Object -First 1
+if (-not $zip) { throw 'G6_17 ZIP dosyasi Downloads icinde bulunamadi.' }
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath '.' -Force
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\G6_17_Radyo_Her_Sayfada_Ekle.ps1
+
+3) Kontrol:
+npm.cmd run dev
+Ana sayfada ikonu ac, radyo baslat, /gallery veya /leaderboard sayfasina git.
+Radyo acik kalmali, ses calarken kesilmemeli; arka planda gezinebilmelisin.
+
+4) Derleme:
+npm.cmd run build
+
+5) Hatasizsa GitHub / Vercel:
+git add -- app/layout.tsx app/page.tsx components/LegendaryTeamRadio.tsx components/LegendaryTeamRadio.module.css
+git diff --cached --stat
+git commit -m "G6.17 - Persistent compact Team Radio dock"
+git push origin main
+
+Yeni SQL veya Vercel environment variable gerekmiyor.
+Not: Tam Next.js uygulamasinin layout.tsx kaynagi elimizde olmadigindan script bu dosyanin standart
+Next.js app-router yapisinda oldugunu dogrular; beklenmeyen durumda hata verip degisiklik yapmaz.

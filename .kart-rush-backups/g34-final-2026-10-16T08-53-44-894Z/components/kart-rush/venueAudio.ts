@@ -1,4 +1,4 @@
-/* F1 Medipol Kart Rush | Grandstand ambience + nearby camera shutter cues.
+﻿/* F1 SOCIAL Kart Rush | Grandstand ambience + nearby camera shutter cues.
  * G2.8: louder triple shutter burst, responsive to nearby cameras; gesture-gated WebAudio.
  */
 const clamp=(n:number,a:number,b:number)=>Math.min(b,Math.max(a,n));
@@ -75,3 +75,4 @@ export class KartRushVenueAudio{
   if(ctx)void ctx.close().catch(()=>{});
  }
 }
+

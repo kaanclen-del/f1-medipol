@@ -1,0 +1,28 @@
+F1 MEDIPOL G6.16.3 — ADMIN PANELI TELSIZ ARSIVI KARTI
+
+Bu paket mevcut app/admin/page.tsx dosyanizi yeni kart ekleyerek
+DUZENLER. Eski admin anasayfa kodunun uzerine eski bir tam dosya
+kopyalamadigimiz icin aradaki diger admin degisiklikleri korunur.
+
+1. ZIP'i indir, f1-medipol proje kokune cikart:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_16_3*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2. Tek seferlik yamayi uygula:
+   powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\G6_16_3_Admin_Telsiz_Kartini_Ekle.ps1
+
+3. http://localhost:3000/admin sayfasini yenile.
+   "Telsiz Arsivi" kartina tikla: /admin/team-radio
+
+4. Basariliysa:
+   npm.cmd run build
+   git add app/admin/page.tsx
+   git commit -m "G6.16.3 - Add Team Radio admin shortcut"
+   git push origin main
+
+NOTLAR
+- Script tekrar calistirilirsa karti ikinci defa eklemez.
+- Script, admin sayfasinin TEMP klasorune yedegini alir.
+- Yeni SQL ve Vercel degiskeni gerekmez.
+- G6.16.1/G6.16.2 Team Radio kurulu degilse script degisiklik yapmaz.
+- Kart sadece admin paneline baglanti ekler; mevcut yayin akisina dokunmaz.

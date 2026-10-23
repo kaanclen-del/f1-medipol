@@ -1,0 +1,5 @@
+﻿af39d4c Fix F1 SOCIAL icon image dimensions
+0cb1c03 Update F1 SOCIAL home screen icons
+a91d880 G6.18.1 - Restore theme logos and update hero label
+9a97dd0 G6.18.0 - F1 SOCIAL updates
+d43e469 G6.17.9 - Public member friends and theme wallpapers

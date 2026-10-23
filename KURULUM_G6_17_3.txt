@@ -1,0 +1,16 @@
+G6.17.3 — Arkadaşları seviyeye göre sırala; profil açık/kırmızı tema ve kontrast rötuşları.
+
+ÖNEMLİ: G6.17.2 paketini zaten yüklemiş olmalısın. Bu paket onun üzerine kurulmalıdır.
+
+1. PowerShell proje kökünde:
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_3*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2. npm.cmd run dev
+3. Açık temada Paddock, Tahmin, Bildirimler ve Profil; kırmızı temada Profil test et.
+4. npm.cmd run build
+5. git add app/profile/page.tsx app/globals.css components/NotificationInbox.module.css
+   git commit -m "G6.17.3 - Light theme profile and level ranked friends"
+   git push origin main
+
+Yeni SQL gerekmez. Not: Ek CSS kuralları görsel rötuştur; tarayıcı testi gerektirir.

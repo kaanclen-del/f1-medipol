@@ -1,0 +1,67 @@
+F1 MEDIPOL G6.17.7 - GUN SONU PAKETI
+===================================
+
+Bu ZIP iki degisikligi BIRLIKTE icerir:
+- app/profile/page.tsx : G6.17.6 koyu bordo / F1 kirmizisi profil temasi.
+- components/BoardShowcase.tsx : G6.17.5'in resim on-yukleme duzeltmesini
+  koruyarak yonetim kurulu kartina ~330 ms hafif yatay genisleme animasyonu.
+  Kucuk gorsel zoom ile buyutulmez, buyuk gorsel once decode edilir.
+
+G6.17.5'in kurulu oldugu proje uzerine cikarin.
+Yeni SQL veya ortam degiskeni yok.
+
+1) VS Code PowerShell terminali proje kokunde:
+
+$zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_17_7*.zip" | Select-Object -First 1
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2) Localhost calisirken /profile ve /board sayfalarini kontrol edin.
+   /profile: Kirmizi temanin bordo kartlari ve beyaz yazi kontrasti.
+   /board: Kucuk gorsele basinca hafif yana dogru acilma;
+           baska kisiye gecis, ileri/geri ve kapatma calismali.
+
+3) Dev sunucusunu Ctrl+C ile durdurup tam build:
+
+npm.cmd run build
+
+4) BASARILIYSA GitHub / Vercel:
+
+# Son iki duzeltme:
+git add -- app/profile/page.tsx components/BoardShowcase.tsx
+
+# ONEMLI: Daha onceki G6.17.1-5 guncellemeleri henuz Git'e eklenmediyse
+# asagidaki komut mevcut olan ilgili kaynak dosyalarini da ekler.
+$dailyPaths = @(
+  'app/globals.css',
+  'app/events/page.tsx',
+  'app/paddock/page.tsx',
+  'app/profile/edit/page.tsx',
+  'app/profile/wallpapers/page.tsx',
+  'app/arcade/arcade.module.css',
+  'components/HeaderThemeMenu.tsx',
+  'components/MessagesClient.tsx',
+  'components/NotificationBell.module.css',
+  'components/NotificationInbox.module.css',
+  'components/PaddockComposer.tsx',
+  'components/ProfileAchievements.tsx',
+  'components/PaddockPoll.tsx',
+  'components/ProfileFriendManager.tsx',
+  'components/ProfileFriendManager.module.css',
+  'components/ProfileWallpaperBackdrop.tsx',
+  'components/ProfileWallpaperBackdrop.module.css',
+  'lib/public-events-cache.ts'
+) | Where-Object { Test-Path -LiteralPath $_ }
+git add -- $dailyPaths
+
+git diff --cached --stat
+git commit -m "G6.17.7 - Red profile theme and smooth board expansion"
+git push origin main
+
+5) Vercel -> Deployments: Yeni commit'in Ready olmasini dogrulayin.
+
+NOTLAR:
+- Zipte .env.local, parolalar, SQL veya gereksiz yedek bulunmaz.
+- GitHub'dan Vercel'e deploy otomatik ise yeni push yeni build baslatir.
+- Tam Next.js derlemesi ve gercek tarayici performansi kullanici
+  ortaminda dogrulanmalidir.
+- Daha eski versiyonlari atlayarak kurulmasi beklenmez (G6.17.5 gerekli).

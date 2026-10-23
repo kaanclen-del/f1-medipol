@@ -1,0 +1,51 @@
+F1 MEDIPOL G6.16.1 — TEAM RADIO: OPENF1 ARŞİVİNDE ARAMA + SAĞ ALTTA POPUP
+
+GÜNCELLEME
+- Ana sayfadaki sağ alt TEAM RADIO düğmesi ve açılır pencere KORUNDU.
+- Büyük telsiz bölümü ana sayfaya GERİ GELMEZ.
+- Manuel ses yükleme formu ve upload URL'si devre dışı bırakıldı.
+- /admin/team-radio içinde yıl > Grand Prix > seans > pilot ve pilot adı araması.
+- OpenF1'daki telsizleri dinleyip istediğini tek tek arşive ekleyebilirsin.
+- Ana sayfa OpenF1'i otomatik sorgulamaz. Hiçbir telsiz otomatik eklenmez/oynatılmaz.
+- Yeni eklenen kayıtlar varsayılan olarak TASLAK. Hakları doğrulayıp yayımladığında popup'ta görünür.
+- Ses dosyalarını Vercel veya Supabase'e indirmiyoruz; sadece kaynak URL'sini kaydediyoruz.
+- G6.16 sürümünde yüklenmiş varsa eski ses kayıtları korunur.
+- G6.14.5 etkinlik kaydırması, kadraj, galeri, F1 Arcade alanları korunur.
+
+ÖNCE SUPABASE SQL
+  supabase/g6-16-1-openf1-team-radio.sql
+Dosyayı aç > Ctrl+A > Ctrl+C > Supabase Dashboard / SQL Editor / New Query > Yapıştır > Run.
+G6.16 SQL daha önce yapılmış olsa da bu yeni SQL'i çalıştır. Daha önce yapılmamış olsa da
+G6.16.1 SQL kendi başına tablosunu oluşturabilir. Ses dosyası bucket'ı gerekmiyor.
+Verileri silen SQL komutu yok; eski ses kayıtlarına dokunmaz.
+
+ZIP KURULUMU — VS Code PowerShell, proje ana klasöründe:
+  $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_16_1*.zip" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+  Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+  npm.cmd run dev
+
+TEST
+1) Admin olarak http://localhost:3000/admin/team-radio adresine git.
+2) Yıl 2024 > Grand Prix > seans > pilot seç.
+3) "OpenF1 telsizlerini ara" butonuna bas. Kayıtları tek tek dinle.
+4) Kaydı seç, gerekirse başlığı değiştir, "Listeye ekle (taslak)" de.
+5) Kullanım hakkı varsa 'Yayımla' ile onayla.
+6) http://localhost:3000 → sağ alt TEAM RADIO düğmesine bas.
+7) Yayımladığın kayıt görülmeli. Ses yalnızca sen oynat dediğinde başlamalı.
+NOT: Bazı seanslar için OpenF1 telsiz kaydı bulunmaz; 2026 kapsaması özellikle kısıtlı.
+Harici MP3 bağlantısı erişilemezse oynatma gerçekleşmez. Tarayıcı/URL kaynak kısıtları olabilir.
+
+GÜVENLİK VE HAKLAR
+OpenF1 API bağlantısı vermek, F1 telsiz kayıtlarının yeniden yayımlama hakkını vermez.
+Site ziyaretçilerine ses açmadan önce gerekli kullanım iznini doğrulamalısın.
+Kayıt arama ve ekleme admin hesabı (profiles.is_admin) gerektirir.
+
+BUILD + VERCEL (LOCALHOST TESTİ BAŞARILIYSA)
+  npm.cmd run build
+  git add app/page.tsx app/admin/team-radio/page.tsx app/api/team-radio/route.ts app/api/admin/team-radio components/AdminTeamRadioManager.tsx components/AdminTeamRadioManager.module.css components/LegendaryTeamRadio.tsx components/LegendaryTeamRadio.module.css lib/team-radio-admin.ts lib/team-radio-types.ts lib/openf1-team-radio.ts supabase/g6-16-1-openf1-team-radio.sql
+  git commit -m "G6.16.1 - Curated OpenF1 radio archive and popup"
+  git push origin main
+
+Yeni ortam değişkeni veya ayrıca npm paketi gerekmez. OpenF1 geçmiş verileri anonim erişilebilir.
+Bu paket TS/TSX sözdizimi ve ZIP bütünlüğü açısından denetlendi; tam Next.js derlemesi
+ve Supabase bağlantılı gerçek kullanımı yerel projenin tamamı olmadan doğrulanamıyor.

@@ -1,0 +1,5 @@
+Kart Rush G6.6 - Ses Paketidir. G6.5 uzerine kurulur.
+Yalnizca 3 ses dosyasi guncellenir.
+PowerShell: Expand-Archive -Path "$env:USERPROFILE\Downloads\F1_Medipol_Kart_Rush_G6_6_Ses_Paketi.zip" -DestinationPath "." -Force
+Ardindan: npm.cmd run build
+Not: AudioContext sesleri tarayicida kullanici etkilesiminden sonra etkinlesir.

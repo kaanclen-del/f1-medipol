@@ -1,0 +1,24 @@
+F1 MEDIPOL G6.14.2 - ETKINLIK KADRAJ DUZELTMESI
+
+Bu paket yalnızca app/page.tsx dosyasını değiştirir.
+Admin etkinlik ekranındaki kaydedilmiş kadraj ayarlarını ana sayfa da okur.
+G6.14 ve G6.14.1 üzerine uygulanmak üzere hazırlanmıştır.
+
+1. ZIP'i proje ANA dizinine çıkart:
+   $zip = Get-ChildItem "$env:USERPROFILE\Downloads" -Filter "*G6_14_2*.zip" | Select-Object -First 1
+   Expand-Archive -LiteralPath $zip.FullName -DestinationPath "." -Force
+
+2. Derleme kontrolü:
+   npm.cmd run build
+
+3. Localhost:
+   npm.cmd run dev
+   /admin/events üzerinden kadrajı kaydet, ana sayfayı yenile.
+
+4. Vercel:
+   git add app/page.tsx
+   git commit -m "G6.14.2 - Apply event thumbnail crop on homepage"
+   git push origin main
+
+Ek SQL gerekmez; ancak G6.14 için event_thumbnail_settings tablosunun
+Supabase'de oluşturulmuş ve admin kadraj kaydı yapılmış olması gerekir.

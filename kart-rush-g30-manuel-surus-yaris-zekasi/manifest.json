@@ -1,5 +1,5 @@
-{
-  "name": "F1 Medipol Kart Rush G3.0: Manual Steering + Bot Racecraft + Circuit + Responsive Audio",
+﻿{
+  "name": "F1 SOCIAL Kart Rush G3.0: Manual Steering + Bot Racecraft + Circuit + Responsive Audio",
   "files": [
     {
       "dest": "components/kart-rush/engine.ts",

@@ -1,0 +1,32 @@
+G6.17.9 — Ziyaret Edilen Uye Profili / Arkadaslar ve Tema Secimi
+
+Kapsam:
+- app/members/[id] sayfasinda ziyaret edilen uyenin kabul edilmis arkadaslarini gor.
+- Liste seviye ve XP'ye gore siralansin; arkadasin uzerine tiklayinca /members/[id] acilsin.
+- Ziyaret edilen kisinin mevcut profil bilgileri, favorileri, XP'si, paylasimlari, rozetleri korunsun.
+- Ziyaret edilen kullanicinin profile_wallpaper_light ve profile_wallpaper_red secimleri goruntulensin.
+- Acik/kirmizi/karanlik temalar arasinda uyumlu kart renkleri.
+- Bekleyen istekler, ozel mesajlar ve ozel tahminler hicbir zaman gosterilmez.
+
+1. ZIP'i projeye cikar (ayni klasore).
+2. Terminalde sunu calistir:
+   node .\G6_17_9_Uye_Profil_Arkadaslarini_Ekle.mjs
+3. Dosya eski surumunun yedegi app/members/[id]/page.tsx.before-g6179.bak olur.
+   Bu .bak dosyalarini Git'e ekleme.
+4. Localhost'ta /members/KULLANICI_ID sayfasini test et.
+   Iki farkli hesaptaki arkadaslari ve XP seviyelerini kontrol et.
+   Uc tema arasinda degis ve duvar kagitlarini kontrol et.
+5. Derleme: npm.cmd run build
+6. Basariliysa:
+   git add -- 'app/members/[id]/page.tsx' 'app/members/[id]/page.module.css'
+   git add -- components/MemberPublicFriends.tsx components/MemberPublicFriends.module.css
+   git add -- components/MemberThemeWallpaperBackdrop.tsx components/MemberThemeWallpaperBackdrop.module.css
+   git --no-pager diff --cached --stat
+   git diff --cached --check
+   git commit -m "G6.17.9 - Public member friends and theme wallpapers"
+   git push origin main
+7. Vercel Deployments son commit Ready mi kontrol et.
+
+Yeni SQL gerektirmez. Önceki G6.17.4 profile wallpaper SQL zaten calismis olmali.
+Not: Arkadas tablosunun user id sutun isimleri mevcut dm_friendships semasindan
+sunucuda algilanir. Eger arkadaslar gorunmezse terminaldeki loglar gerekli.
