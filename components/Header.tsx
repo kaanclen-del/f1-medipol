@@ -16,21 +16,13 @@ let cachedHeaderProfile: {
   avatarUrl: string | null;
 } | null = null;
 
-function normalizeTheme(
-  value: string | null | undefined
-): HeaderTheme {
+function normalizeTheme(value: string | null | undefined): HeaderTheme {
   const theme = (value || "").trim().toLowerCase();
 
-  if (
-    ["light", "white", "acik", "açık"].includes(theme)
-  ) {
-    return "light";
-  }
+  if (["light", "white", "acik", "açık"].includes(theme)) return "light";
 
   if (
-    ["red", "f1-red", "f1red", "f1", "kirmizi", "kırmızı"].includes(
-      theme
-    )
+    ["red", "f1-red", "f1red", "f1", "kirmizi", "kırmızı"].includes(theme)
   ) {
     return "red";
   }
@@ -42,7 +34,6 @@ function detectTheme(): HeaderTheme {
   if (typeof window === "undefined") return "gray";
 
   const html = document.documentElement;
-
   const dataTheme = html.getAttribute("data-theme");
   if (dataTheme) return normalizeTheme(dataTheme);
 
@@ -80,9 +71,7 @@ export default function Header() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(
     cachedHeaderProfile?.avatarUrl ?? null
   );
-  const [loading, setLoading] = useState(
-    () => cachedHeaderProfile === null
-  );
+  const [loading, setLoading] = useState(() => cachedHeaderProfile === null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [compactHeader, setCompactHeader] = useState(false);
   const [mobileHeaderHidden, setMobileHeaderHidden] = useState(false);
@@ -93,7 +82,6 @@ export default function Header() {
     );
 
     const update = () => setCompactHeader(media.matches);
-
     update();
     media.addEventListener("change", update);
 
@@ -109,7 +97,6 @@ export default function Header() {
 
       frame = window.requestAnimationFrame(() => {
         frame = 0;
-
         const nextY = window.scrollY;
         const difference = nextY - previousY;
 
@@ -183,7 +170,7 @@ export default function Header() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(() => {
-      void loadProfile();
+      window.setTimeout(() => void loadProfile(), 0);
     });
 
     return () => subscription.unsubscribe();
@@ -203,7 +190,6 @@ export default function Header() {
 
   useEffect(() => {
     const refreshTheme = () => setTheme(detectTheme());
-
     refreshTheme();
 
     const observer = new MutationObserver(refreshTheme);
@@ -251,9 +237,10 @@ export default function Header() {
 
   const isLight = theme === "light";
   const isRed = theme === "red";
+
   const logoSrc = isLight
-  ? "/f1-social-logo-beyaztema.png"
-  : "/logo-beyaz.png";
+    ? "/f1-social-logo-beyaztema.png"
+    : "/logo-beyaz.png";
 
   const headerBackground = isRed
     ? "linear-gradient(90deg,#b80000 0%,#ed0900 50%,#bd0000 100%)"
@@ -307,10 +294,10 @@ export default function Header() {
         }
 
         .medipol-header-logo {
-          width: 190px;
-          min-width: 150px;
-          max-width: 205px;
-          flex: 0 1 205px;
+          width: 155px;
+          min-width: 120px;
+          max-width: 155px;
+          flex: 0 1 155px;
           height: 64px;
           display: flex;
           align-items: center;
@@ -321,7 +308,7 @@ export default function Header() {
         .medipol-header-logo-art {
           display: block;
           width: 100%;
-          height: 48px;
+          height: 38px;
           background-repeat: no-repeat;
           background-position: left center;
           background-size: contain;
@@ -388,6 +375,8 @@ export default function Header() {
           width: 36px;
           height: 36px;
           min-width: 36px;
+          min-height: 36px;
+          flex: 0 0 36px;
           overflow: hidden;
           display: grid;
           place-items: center;
@@ -399,21 +388,21 @@ export default function Header() {
           background: linear-gradient(135deg,#e10600,#ff5149);
         }
 
-  .medipol-header-avatar img {
-  display: block !important;
-  box-sizing: border-box !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-  object-position: center center !important;
-  transform: none !important;
-  scale: 1 !important;
-  clip-path: none !important;
-  border-radius: 0 !important;
-  background: #fff;
-}
+        .medipol-header-avatar img {
+          display: block !important;
+          box-sizing: border-box !important;
+          width: 100% !important;
+          height: 100% !important;
+          max-width: 100% !important;
+          max-height: 100% !important;
+          object-fit: contain !important;
+          object-position: center center !important;
+          transform: none !important;
+          scale: 1 !important;
+          clip-path: none !important;
+          border-radius: 0 !important;
+          background: #fff;
+        }
 
         .medipol-header-profile-name {
           flex: 1 1 auto;
@@ -454,6 +443,8 @@ export default function Header() {
           box-sizing: border-box;
           width: 42px;
           height: 42px;
+          min-width: 42px;
+          min-height: 42px;
           flex: 0 0 42px;
           padding: 0;
           align-items: center;
@@ -518,6 +509,18 @@ export default function Header() {
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+
+        .medipol-quick-control.medipol-quick-dm {
+          box-sizing: border-box !important;
+          width: 42px !important;
+          height: 42px !important;
+          min-width: 42px !important;
+          min-height: 42px !important;
+          flex: 0 0 42px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
         }
 
         .medipol-quick-control.medipol-quick-dm > button {
@@ -645,7 +648,7 @@ export default function Header() {
 
         @media (max-width: 1150px) {
           .medipol-header-inner { gap: 10px; }
-          .medipol-header-logo { flex-basis: 150px; }
+          .medipol-header-logo { flex-basis: 135px; }
           .medipol-header-nav-link { padding: 9px 6px; font-size: 10px; }
           .medipol-header-right { gap: 5px; }
         }
@@ -669,23 +672,24 @@ export default function Header() {
           }
 
           .medipol-header-inner {
-            width: calc(100% - 16px);
-            gap: 5px;
+            width: calc(100% - 12px);
+            gap: 4px;
             justify-content: space-between;
           }
 
           .medipol-header-logo {
-            width: clamp(72px,25vw,110px);
-            min-width: 0;
-            max-width: 110px;
-            flex: 0 1 clamp(72px,25vw,110px);
+            width: clamp(82px,27vw,120px);
+            min-width: 82px;
+            max-width: 120px;
+            flex: 0 1 clamp(82px,27vw,120px);
             height: 56px;
           }
 
           .medipol-header-logo-art {
             width: 100%;
-            height: auto;
-            max-height: 32px;
+            height: 34px;
+            max-height: 34px;
+            background-position: left center;
           }
 
           .medipol-header-nav {
@@ -708,26 +712,45 @@ export default function Header() {
 
           .medipol-landscape-quick {
             display: flex;
+            align-items: center;
+            gap: 4px;
+            flex: 0 0 auto;
           }
 
           .medipol-quick-control,
+          .medipol-quick-control.medipol-quick-dm,
           .medipol-quick-control.medipol-quick-dm > button {
-            width: 40px !important;
-            height: 40px !important;
-            min-width: 40px !important;
-            min-height: 40px !important;
-            max-width: 40px !important;
-            max-height: 40px !important;
-            flex-basis: 40px !important;
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            min-height: 38px !important;
+            max-width: 38px !important;
+            max-height: 38px !important;
+            flex-basis: 38px !important;
+          }
+
+          .medipol-quick-control.medipol-quick-dm > button {
+            display: flex !important;
+            border: 1px solid ${borderColor} !important;
+            border-radius: 10px !important;
+            background: ${controlBackground} !important;
+          }
+
+          .medipol-quick-control.medipol-quick-dm > button > svg {
+            width: 19px !important;
+            height: 19px !important;
+            min-width: 19px !important;
+            min-height: 19px !important;
+            flex-basis: 19px !important;
           }
 
           .medipol-header-right > .medipol-mobile-menu-button {
             display: flex;
-            width: 40px;
-            height: 40px;
-            min-width: 40px;
-            min-height: 40px;
-            flex: 0 0 40px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            min-height: 38px;
+            flex: 0 0 38px;
           }
 
           .medipol-mobile-drawer {
@@ -752,22 +775,48 @@ export default function Header() {
         @media (max-width: 460px) {
           .medipol-mobile-nav { grid-template-columns: 1fr; }
           .medipol-mobile-profile-link { grid-column: auto; }
+          .medipol-header-inner { gap: 3px; }
+          .medipol-header-logo {
+            width: 82px;
+            min-width: 82px;
+            flex-basis: 82px;
+          }
+          .medipol-header-right { gap: 3px; }
+          .medipol-landscape-quick { gap: 3px; }
+          .medipol-quick-control,
+          .medipol-quick-control.medipol-quick-dm,
+          .medipol-quick-control.medipol-quick-dm > button {
+            width: 35px !important;
+            height: 35px !important;
+            min-width: 35px !important;
+            min-height: 35px !important;
+            max-width: 35px !important;
+            max-height: 35px !important;
+            flex-basis: 35px !important;
+          }
         }
 
         @media (max-width: 355px) {
           .medipol-header-inner { gap: 2px; }
-          .medipol-header-logo { width: 70px; flex-basis: 70px; }
+          .medipol-header-logo {
+            width: 72px;
+            min-width: 72px;
+            flex-basis: 72px;
+          }
           .medipol-header-right { gap: 2px; }
+          .medipol-landscape-quick { gap: 2px; }
+
           .medipol-quick-control,
+          .medipol-quick-control.medipol-quick-dm,
           .medipol-quick-control.medipol-quick-dm > button,
           .medipol-header-right > .medipol-mobile-menu-button {
-            width: 36px !important;
-            height: 36px !important;
-            min-width: 36px !important;
-            min-height: 36px !important;
-            max-width: 36px !important;
-            max-height: 36px !important;
-            flex-basis: 36px !important;
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            max-width: 32px !important;
+            max-height: 32px !important;
+            flex-basis: 32px !important;
           }
         }
 
@@ -791,6 +840,8 @@ export default function Header() {
             width: 28px;
             height: 28px;
             min-width: 28px;
+            min-height: 28px;
+            flex-basis: 28px;
           }
         }
 
@@ -977,18 +1028,7 @@ export default function Header() {
                   }}
                 >
                   {avatarUrl ? (
-                    <img
-  src={avatarUrl}
-  alt={displayName}
-  style={{
-    display: "block",
-    width: "100%",
-    height: "100%",
-    objectFit: "contain",
-    objectPosition: "center",
-    transform: "none",
-  }}
-/>
+                    <img src={avatarUrl} alt={displayName} />
                   ) : (
                     displayName.charAt(0).toUpperCase()
                   )}
@@ -998,6 +1038,20 @@ export default function Header() {
                   <strong>{displayName}</strong>
                   <span>Profilini görüntüle</span>
                 </span>
+              </Link>
+            )}
+
+            {!loading && !displayName && (
+              <Link
+                href="/login"
+                className="medipol-mobile-profile-link"
+                onClick={() => setMenuOpen(false)}
+              >
+                <span className="medipol-mobile-profile-copy">
+                  <strong>Giriş Yap</strong>
+                  <span>Hesabına giriş yap</span>
+                </span>
+                <span aria-hidden="true">→</span>
               </Link>
             )}
           </nav>

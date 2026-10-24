@@ -1,6 +1,9 @@
+
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
+  const icon = "/f1-social-app-icon.png.png";
+
   return {
     id: "/",
     name: "F1 SOCIAL",
@@ -14,8 +17,12 @@ export default function manifest(): MetadataRoute.Manifest {
     lang: "tr",
     categories: ["sports", "entertainment"],
     icons: [
-      { src: "/icon.png", type: "image/png", sizes: "any", purpose: "any" },
-      { src: "/apple-icon.png", type: "image/png", sizes: "180x180", purpose: "any" },
+      {
+        src: icon,
+        type: "image/png",
+        sizes: "any",
+        purpose: "any",
+      },
     ],
   };
 }

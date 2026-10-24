@@ -1403,17 +1403,14 @@ export default function DmDock({
           </button>
         ) : null}
 
-        <div className={styles.headerTitle}>
-          <strong>{active ? currentPersonName : "Mesajlar"}</strong>
-          <small>
-            {active
-              ? "Özel sohbet"
-              : unread
-                ? `${unread} okunmamış mesaj`
-                : "F1 Medipol"}
-          </small>
-        </div>
-
+       <div className={styles.headerTitle}>
+  <strong>{active ? currentPersonName : "Mesajlar"}</strong>
+  {(active || unread > 0) ? (
+    <small>
+      {active ? "Özel sohbet" : `${unread} okunmamış mesaj`}
+    </small>
+  ) : null}
+</div>
         {active ? (
           <>
             <button

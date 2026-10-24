@@ -1,4 +1,5 @@
-﻿import type { Metadata } from "next";
+﻿
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -18,13 +19,16 @@ const geistMono = Geist_Mono({
   subsets: ["latin", "latin-ext"],
 });
 
+const appIcon = "/f1-social-app-icon.png.png";
+
 export const metadata: Metadata = {
-  title: "F1 Social",
-  description: "F1 Social Topluluğu",
+  title: "F1 SOCIAL",
+  description: "F1 SOCIAL yarış tahminleri, etkinlikler ve Arcade.",
+  applicationName: "F1 SOCIAL",
   icons: {
-    icon: "/f1-social-app-icon.png",
-    shortcut: "/f1-social-app-icon.png",
-    apple: "/f1-social-app-icon.png",
+    icon: [{ url: appIcon, type: "image/png" }],
+    shortcut: [{ url: appIcon, type: "image/png" }],
+    apple: [{ url: appIcon, type: "image/png" }],
   },
 };
 
