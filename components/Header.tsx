@@ -1,5 +1,4 @@
-﻿
-"use client";
+﻿"use client";
 
 import HeaderThemeMenu from "@/components/HeaderThemeMenu";
 import WelcomeTour from "@/components/WelcomeTour";
@@ -268,6 +267,11 @@ export default function Header() {
   return (
     <>
       <style>{`
+        .medipol-header,
+        .medipol-header * {
+          box-sizing: border-box;
+        }
+
         .medipol-header {
           position: sticky;
           top: 0;
@@ -350,7 +354,6 @@ export default function Header() {
         }
 
         .medipol-header-profile {
-          box-sizing: border-box;
           min-width: 0;
           width: 155px;
           min-height: 48px;
@@ -371,7 +374,6 @@ export default function Header() {
         }
 
         .medipol-header-avatar {
-          box-sizing: border-box;
           width: 36px;
           height: 36px;
           min-width: 36px;
@@ -390,7 +392,6 @@ export default function Header() {
 
         .medipol-header-avatar img {
           display: block !important;
-          box-sizing: border-box !important;
           width: 100% !important;
           height: 100% !important;
           max-width: 100% !important;
@@ -440,7 +441,6 @@ export default function Header() {
 
         .medipol-mobile-menu-button {
           display: none;
-          box-sizing: border-box;
           width: 42px;
           height: 42px;
           min-width: 42px;
@@ -499,11 +499,13 @@ export default function Header() {
           min-width: 0;
         }
 
-        /* Her hızlı işlem kendi kutusunun içinde kalır. */
+        /*
+         * Üç hızlı işlem için ortak dış kutu.
+         * İç bileşenlerin kendi CSS ölçülerinin kutuyu bozmasını engeller.
+         */
         .medipol-quick-control {
           position: relative !important;
           isolation: isolate;
-          box-sizing: border-box !important;
           width: 40px !important;
           height: 40px !important;
           min-width: 40px !important;
@@ -518,13 +520,30 @@ export default function Header() {
           padding: 0 !important;
         }
 
-        .medipol-quick-control > button,
-        .medipol-quick-control > a,
-        .medipol-quick-control > div {
-          box-sizing: border-box;
+        /*
+         * Tema ve bildirim bileşenlerinin doğrudan kök öğesini
+         * ortak kutuya ortalar; iç içe geçmiş öğelere uygulanmaz.
+         */
+        .medipol-quick-control:not(.medipol-quick-dm) > * {
+          box-sizing: border-box !important;
+          min-width: 0 !important;
+          min-height: 0 !important;
+          max-width: 100% !important;
+          max-height: 100% !important;
+          margin: 0 !important;
         }
 
-        /* DM bileşeninin fixed/floating düğmesini header içinde tut. */
+        .medipol-quick-control:not(.medipol-quick-dm) > button,
+        .medipol-quick-control:not(.medipol-quick-dm) > a {
+          width: 40px !important;
+          height: 40px !important;
+          flex: 0 0 40px !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          padding: 0 !important;
+        }
+
         .medipol-quick-dm {
           overflow: visible;
         }
@@ -532,11 +551,6 @@ export default function Header() {
         .medipol-quick-control.medipol-quick-dm > button {
           position: relative !important;
           inset: auto !important;
-          right: auto !important;
-          bottom: auto !important;
-          top: auto !important;
-          left: auto !important;
-          box-sizing: border-box !important;
           width: 40px !important;
           height: 40px !important;
           min-width: 40px !important;
@@ -740,6 +754,13 @@ export default function Header() {
             flex: 0 0 38px !important;
           }
 
+          .medipol-quick-control:not(.medipol-quick-dm) > button,
+          .medipol-quick-control:not(.medipol-quick-dm) > a {
+            width: 38px !important;
+            height: 38px !important;
+            flex-basis: 38px !important;
+          }
+
           .medipol-quick-control.medipol-quick-dm > button {
             width: 38px !important;
             height: 38px !important;
@@ -815,6 +836,13 @@ export default function Header() {
             flex-basis: 35px !important;
           }
 
+          .medipol-quick-control:not(.medipol-quick-dm) > button,
+          .medipol-quick-control:not(.medipol-quick-dm) > a {
+            width: 35px !important;
+            height: 35px !important;
+            flex-basis: 35px !important;
+          }
+
           .medipol-quick-control.medipol-quick-dm > button {
             width: 35px !important;
             height: 35px !important;
@@ -843,7 +871,18 @@ export default function Header() {
           .medipol-landscape-quick { gap: 4px; }
 
           .medipol-quick-control,
-          .medipol-quick-control.medipol-quick-dm,
+          .medipol-quick-control.medipol-quick-dm {
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px !important;
+            min-height: 32px !important;
+            max-width: 32px !important;
+            max-height: 32px !important;
+            flex-basis: 32px !important;
+          }
+
+          .medipol-quick-control:not(.medipol-quick-dm) > button,
+          .medipol-quick-control:not(.medipol-quick-dm) > a,
           .medipol-quick-control.medipol-quick-dm > button,
           .medipol-header-right > .medipol-mobile-menu-button {
             width: 32px !important;
@@ -1001,7 +1040,10 @@ export default function Header() {
             )}
 
             {compactHeader && (
-              <div className="medipol-landscape-quick" aria-label="Hızlı işlemler">
+              <div
+                className="medipol-landscape-quick"
+                aria-label="Hızlı işlemler"
+              >
                 <div className="medipol-quick-control">
                   <HeaderThemeMenu />
                 </div>
