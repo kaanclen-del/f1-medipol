@@ -1,4 +1,3 @@
-
 import { NextResponse } from "next/server";
 
 import {
@@ -20,6 +19,13 @@ import {
 } from "@/lib/f1-live-status";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+const NO_CACHE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  Pragma: "no-cache",
+  Expires: "0",
+};
 
 function sessionPayload(session: OpenF1Session | null) {
   if (!session) return null;
@@ -37,58 +43,88 @@ function sessionPayload(session: OpenF1Session | null) {
   };
 }
 
+function jsonResponse(data: Record<string, unknown>, status = 200) {
+  return NextResponse.json(data, {
+    status,
+    headers: NO_CACHE_HEADERS,
+  });
+}
+
+function hasSessionEnded(
+  session: OpenF1Session | null,
+  now = Date.now()
+): boolean {
+  if (!session?.date_end) return false;
+
+  const endTimestamp = new Date(session.date_end).getTime();
+
+  if (!Number.isFinite(endTimestamp)) return false;
+
+  // Cho phép 2 dakikalık veri gecikmesi.
+  return now > endTimestamp + 2 * 60 * 1000;
+}
+
 export async function GET() {
   try {
+    const now = Date.now();
     const race = await getCurrentRaceWeekend();
     const scheduleStatus = await getF1LiveStatus(race);
 
-    if (!scheduleStatus.isLive || !scheduleStatus.currentSession) {
-      return NextResponse.json(
-        {
-          live: false,
-          timingAvailable: false,
-          currentSession: scheduleStatus.currentSession,
-          nextSession: scheduleStatus.nextSession,
-          session: null,
-          openF1Session: null,
-          qualifyingPhase: null,
-          drivers: [],
-          updated_at: new Date().toISOString(),
-        },
-        {
-          headers: {
-            "Cache-Control": "no-store, no-cache, must-revalidate",
-          },
-        }
-      );
+    const scheduledSession = scheduleStatus.currentSession;
+
+    // Takvime göre şu anda canlı seans yoksa LIVE döndürme.
+    if (!scheduleStatus.isLive || !scheduledSession) {
+      return jsonResponse({
+        live: false,
+        timingAvailable: false,
+        currentSession: null,
+        nextSession: scheduleStatus.nextSession,
+        session: null,
+        openF1Session: null,
+        qualifyingPhase: null,
+        drivers: [],
+        updated_at: new Date().toISOString(),
+      });
     }
 
     const openF1Session = await getLatestF1Session();
 
     const sessionMatches = openF1SessionMatchesScheduled(
       openF1Session,
-      scheduleStatus.currentSession
+      scheduledSession
     );
 
+    // OpenF1 seansı bulunamadıysa mevcut takvim seansını canlı
+    // zamanlama verisi varmış gibi göstermeyelim.
     if (!openF1Session || !sessionMatches) {
-      return NextResponse.json(
-        {
-          live: true,
-          timingAvailable: false,
-          currentSession: scheduleStatus.currentSession,
-          nextSession: scheduleStatus.nextSession,
-          session: sessionPayload(openF1Session),
-          openF1Session: sessionPayload(openF1Session),
-          qualifyingPhase: null,
-          drivers: [],
-          updated_at: new Date().toISOString(),
-        },
-        {
-          headers: {
-            "Cache-Control": "no-store, no-cache, must-revalidate",
-          },
-        }
-      );
+      return jsonResponse({
+        live: true,
+        timingAvailable: false,
+        currentSession: scheduledSession,
+        nextSession: scheduleStatus.nextSession,
+        session: sessionPayload(openF1Session),
+        openF1Session: sessionPayload(openF1Session),
+        qualifyingPhase: null,
+        drivers: [],
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    // OpenF1 bitiş zamanı geçtiyse eski seansı canlı kabul etme.
+    // Replay verisi mevcutsa ön yüz kendi replay akışını açabilir.
+    if (hasSessionEnded(openF1Session, now)) {
+      return jsonResponse({
+        live: false,
+        timingAvailable: false,
+        currentSession: null,
+        nextSession: scheduleStatus.nextSession,
+        session: sessionPayload(openF1Session),
+        openF1Session: sessionPayload(openF1Session),
+        qualifyingPhase: null,
+        drivers: [],
+        sessionEnded: true,
+        updated_at: new Date().toISOString(),
+      });
     }
 
     const isQualifying =
@@ -190,28 +226,21 @@ export async function GET() {
     const timingAvailable =
       liveDrivers.length > 0 && positions.length > 0;
 
-    return NextResponse.json(
-      {
-        live: true,
-        timingAvailable,
-        currentSession: scheduleStatus.currentSession,
-        nextSession: scheduleStatus.nextSession,
-        session: sessionPayload(openF1Session),
-        openF1Session: sessionPayload(openF1Session),
-        qualifyingPhase,
-        drivers: timingAvailable ? liveDrivers : [],
-        updated_at: new Date().toISOString(),
-      },
-      {
-        headers: {
-          "Cache-Control": "no-store, no-cache, must-revalidate",
-        },
-      }
-    );
+    return jsonResponse({
+      live: true,
+      timingAvailable,
+      currentSession: scheduledSession,
+      nextSession: scheduleStatus.nextSession,
+      session: sessionPayload(openF1Session),
+      openF1Session: sessionPayload(openF1Session),
+      qualifyingPhase,
+      drivers: timingAvailable ? liveDrivers : [],
+      updated_at: new Date().toISOString(),
+    });
   } catch (error) {
     console.error("F1 LIVE API ERROR:", error);
 
-    return NextResponse.json(
+    return jsonResponse(
       {
         live: false,
         timingAvailable: false,
@@ -227,12 +256,7 @@ export async function GET() {
             : "F1 live verisi hazırlanamadı.",
         updated_at: new Date().toISOString(),
       },
-      {
-        status: 500,
-        headers: {
-          "Cache-Control": "no-store",
-        },
-      }
+      500
     );
   }
 }
