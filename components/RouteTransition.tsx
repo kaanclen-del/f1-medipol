@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -37,6 +36,11 @@ const ROUTES: Record<string, TransitionInfo> = {
     title: "ÜYE PROFİLİ HAZIRLANIYOR",
     caption: "F1 SOCIAL · YOUR PROFILE · YOUR STORY",
   },
+  paddock: {
+    key: "paddock",
+    title: "PADDOCK HAZIRLANIYOR",
+    caption: "F1 SOCIAL · COMMUNITY · CONNECT",
+  },
 };
 
 const INTRO: TransitionInfo = {
@@ -46,10 +50,8 @@ const INTRO: TransitionInfo = {
 };
 
 function getTransition(path: string): TransitionInfo | null {
-  // Ana sayfanın adresi "/" olduğu için ayrıca kontrol edilmeli.
   if (path === "/") return ROUTES.home;
 
-  // Ziyaret edilen üyelerin profilleri.
   if (path === "/members" || path.startsWith("/members/")) {
     return ROUTES.member;
   }
@@ -173,8 +175,14 @@ export default function RouteTransition() {
       setLogoFailed(false);
       setVisible(true);
 
-      // Canlı yayın için mevcut 45 saniyelik güvenlik süresini koru.
-      const timeout = info.key === "live" ? 45000 : 12000;
+      // Paddock'ta geçiş ekranı kısa sürede kapanır.
+      // Canlı yayın için mevcut 45 saniyelik süre korunur.
+      const timeout =
+        info.key === "live"
+          ? 45000
+          : info.key === "paddock"
+            ? 1500
+            : 12000;
 
       navigationTimer.current = setTimeout(() => {
         setVisible(false);
@@ -204,7 +212,8 @@ export default function RouteTransition() {
       // Canlı yayın hazır sinyalini beklemeye devam eder.
       if (info?.key === "live") return;
 
-      closeNavigation(250);
+      // Paddock dahil normal sayfalarda geçiş ekranını kapat.
+      closeNavigation(info?.key === "paddock" ? 100 : 250);
       return;
     }
 
