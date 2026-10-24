@@ -109,7 +109,7 @@ export default function ProfileFriendManager({ variant = "icon" }: { variant?: T
     {open && <div className={styles.backdrop} role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) setOpen(false); }}>
       <section className={styles.dialog} role="dialog" aria-modal="true" aria-label="Arkadaş ekle ve arkadaşlık istekleri">
         <div className={styles.header}>
-          <div><span className={styles.eyebrow}>F1 MEDİPOL · SOCIAL PADDOCK</span><h2>Arkadaşlar</h2><p>Kullanıcı adıyla ara, istek gönder veya gelenleri yanıtla.</p></div>
+          <div><span className={styles.eyebrow}>F1 SOCIAL · SOCIAL PADDOCK</span><h2>Arkadaşlar</h2><p>Kullanıcı adıyla ara, istek gönder veya gelenleri yanıtla.</p></div>
           <button type="button" className={styles.close} onClick={() => setOpen(false)} aria-label="Pencereyi kapat">×</button>
         </div>
         <div className={styles.tabs} role="tablist" aria-label="Arkadaşlar">

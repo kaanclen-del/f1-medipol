@@ -108,7 +108,7 @@ export default function WeeklyCommentaryAdmin() {
       <style>{styles}</style>
       <div className="wa-wrap">
         <nav className="wa-nav"><Link href="/admin">← YÖNETİM PANELİ</Link><Link href="/#haftalik-yorum">ANA SAYFADA GÖR →</Link></nav>
-        <div className="wa-intro"><span>F1 MEDİPOL / CONTENT STUDIO</span>
+        <div className="wa-intro"><span>F1 SOCIAL / CONTENT STUDIO</span>
           <h1>Haftalık Yorum</h1><p>Yönetim Kurulu Üyemiz İdil Boyalı'nın analizini yayınla, görsel ekle ve önceki yazıları yönet.</p>
         </div>
         {error && <div className="wa-alert err" role="alert">{error}</div>}

@@ -372,7 +372,7 @@ export default function LoginPage() {
               <div className={styles.feature}>
                 <div className={styles.featureHeader}>
                   <span>PLATFORM / ÖZELLİKLER</span>
-                  <span>F1 MEDİPOL</span>
+                  <span>F1 SOCIAL</span>
                 </div>
 
                 <div className={styles.featureContent} key={featureIndex}>
@@ -602,14 +602,14 @@ export default function LoginPage() {
                     </b>
                   </>
                 ) : (
-                  "F1 MEDİPOL · F1 SOCIAL"
+                  "F1 SOCIAL · F1 SOCIAL"
                 )}
               </div>
             </section>
           </div>
 
           <footer className={styles.footer}>
-            <span>© F1 MEDİPOL · DIGITAL PADDOCK EXPERIENCE</span>
+            <span>© F1 SOCIAL · DIGITAL PADDOCK EXPERIENCE</span>
           </footer>
         </div>
       </main>

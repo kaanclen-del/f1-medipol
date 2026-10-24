@@ -1,4 +1,4 @@
-﻿import Header from "@/components/Header";
+import Header from "@/components/Header";
 import { loadPublishedEvents } from "@/lib/public-events-cache";
 
 export const dynamic = "force-dynamic";
@@ -97,7 +97,7 @@ export default async function EventsPage() {
         >
           {/* BAŞLIK */}
 
-          <div className="eyebrow">F1 MEDİPOL · EVENTS</div>
+          <div className="eyebrow">F1 SOCIAL · EVENTS</div>
 
           <h1
             style={{

@@ -421,7 +421,7 @@ export default function TimingClient() {
     <div className={s.wrap}>
       <header className={s.topbar}>
         <div>
-          <span className={s.overline}>F1 MEDİPOL / KARTING RACE CONTROL</span>
+          <span className={s.overline}>F1 SOCIAL / KARTING RACE CONTROL</span>
           <h1>
             GO-KART <em>TIMING.</em>
           </h1>

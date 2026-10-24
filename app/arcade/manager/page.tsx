@@ -229,7 +229,7 @@ export default function ManagerPage() {
                 marginBottom: "12px",
               }}
             >
-              F1 MEDİPOL · ARCADE
+              F1 SOCIAL · ARCADE
             </div>
 
             <h1

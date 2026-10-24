@@ -14,7 +14,7 @@ const ROUTES: Record<string, TransitionInfo> = {
   home: {
     key: "home",
     title: "PİST SENİ BEKLİYOR",
-    caption: "F1 MEDIPOL · RACE · CONNECT · PLAY",
+    caption: "F1 SOCIAL · RACE · CONNECT · PLAY",
   },
   profile: {
     key: "profile",

@@ -119,7 +119,7 @@ export default function WallpaperAdminClient() {
     <div className={styles.shell}>
       <Link className={styles.back} href="/admin">← YÖNETİM PANELİNE DÖN</Link>
       <div className={styles.heading}>
-        <div><span className={styles.eyebrow}>F1 MEDİPOL · CUSTOMIZATION CONTROL</span><h1>PROFİL ARKA PLANLARI</h1><p>Üyelerin kullanabileceği koleksiyona yeni tasarımlar ekle, yayına al ve yönet.</p></div>
+        <div><span className={styles.eyebrow}>F1 SOCIAL · CUSTOMIZATION CONTROL</span><h1>PROFİL ARKA PLANLARI</h1><p>Üyelerin kullanabileceği koleksiyona yeni tasarımlar ekle, yayına al ve yönet.</p></div>
         <Link href="/profile/wallpapers" className={styles.viewer}>ÜYE GÖRÜNÜMÜNÜ AÇ ↗</Link>
       </div>
 

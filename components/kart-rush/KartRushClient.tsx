@@ -943,7 +943,7 @@ export default function KartRushClient() {
 
           {menuTab === 'garage' && (
             <section className={s.menuPanel}>
-              <span className={s.sectionTag}>F1 MEDİPOL · RACE CAR STUDIO</span>
+              <span className={s.sectionTag}>F1 SOCIAL · RACE CAR STUDIO</span>
               <h2>FORMULA GARAJI</h2>
               <p className={s.menuIntro}>
                 11 gerçek F1 takımının renklerinden ilham alan kaplamalar. Seçimin yarışta ve çevrim içi lobide görünür. Resmî takım logoları kullanılmaz.

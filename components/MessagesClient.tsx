@@ -1923,7 +1923,7 @@ export default function DmDock({
                     <span className={styles.friendInfo}>
                       <strong>{person.display_name}</strong>
                       <small>
-                        {person.relationship || "F1 Medipol üyesi"}
+                        {person.relationship || "F1 Social üyesi"}
                       </small>
                     </span>
 
@@ -2161,7 +2161,7 @@ export default function DmDock({
                     <h3 style={{ margin: "0 0 6px" }}>
                       {profile.display_name}
                     </h3>
-                    <small style={{ opacity: 0.7 }}>F1 Medipol üyesi</small>
+                    <small style={{ opacity: 0.7 }}>F1 Social üyesi</small>
                   </div>
                 </div>
 

@@ -492,7 +492,7 @@ export default function KartRushTrack({supabase,roomId,userId,displayName,color,
      }}>▶ YARIŞA DEVAM ET</button>
    </div>
   </div>}
-  {paused&&!mobileMenuOpen&&!roomId&&ended===null&&<div className={s.pauseOverlay}><div className={s.pauseCard}><small>F1 MEDİPOL</small><h2>YARIŞ DURAKLATILDI</h2><p>Ayarları değiştirebilir veya ana menüye dönebilirsin.</p><button onClick={togglePause}>▶ Yarışa devam</button><button onClick={onExit}>← Ana menü</button></div></div>}
+  {paused&&!mobileMenuOpen&&!roomId&&ended===null&&<div className={s.pauseOverlay}><div className={s.pauseCard}><small>F1 SOCIAL</small><h2>YARIŞ DURAKLATILDI</h2><p>Ayarları değiştirebilir veya ana menüye dönebilirsin.</p><button onClick={togglePause}>▶ Yarışa devam</button><button onClick={onExit}>← Ana menü</button></div></div>}
   <div className={s.sideHud}>
    <div className={s.cameraControls}>
      <span>KAMERA <strong>{rearHeld?'ARKA BAKIŞ AKTİF':'ÖN KAMERA'}</strong></span>

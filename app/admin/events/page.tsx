@@ -92,7 +92,7 @@ export default async function AdminEventsPage() {
               maxWidth: "650px",
             }}
           >
-            <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
+            <div className="eyebrow">F1 SOCIAL · ADMIN</div>
 
             <h1>Yetkisiz Erişim</h1>
 
@@ -154,7 +154,7 @@ export default async function AdminEventsPage() {
           paddingBottom: "80px",
         }}
       >
-        <div className="eyebrow">F1 MEDİPOL · ADMIN</div>
+        <div className="eyebrow">F1 SOCIAL · ADMIN</div>
 
         <div
           style={{

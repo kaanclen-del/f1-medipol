@@ -44,7 +44,7 @@ export default function NotificationInbox() {
   return (
     <section className={styles.panel} aria-label="Gelen bildirimler">
       <div className={styles.head}>
-        <div><span>F1 MEDİPOL</span><h2>Gelen Bildirimler</h2></div>
+        <div><span>F1 SOCIAL</span><h2>Gelen Bildirimler</h2></div>
         <button type="button" onClick={allRead} disabled={!items.some(item => !item.read_at)}>Tümünü okundu işaretle</button>
       </div>
       {state ? <p className={styles.empty}>{state}</p> : items.length === 0 ?

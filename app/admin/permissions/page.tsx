@@ -31,7 +31,7 @@ export default async function AdminPermissionsPage() {
     .select("id,username,display_name,is_admin").order("username", { ascending: true }).limit(500);
   return <><Header/><main style={pageStyle}>
     <div style={{display:"flex",justifyContent:"space-between",gap:16,alignItems:"center",flexWrap:"wrap"}}>
-      <div><div style={{color:"#ff675f",fontSize:12,fontWeight:800,letterSpacing:2}}>F1 MEDİPOL · ANA YÖNETİCİ</div>
+      <div><div style={{color:"#ff675f",fontSize:12,fontWeight:800,letterSpacing:2}}>F1 SOCIAL · ANA YÖNETİCİ</div>
         <h1 style={{fontSize:"clamp(26px,4vw,44px)",margin:"8px 0"}}>Yönetici Yetkileri</h1>
         <p style={{color:"#b9c2ce",maxWidth:620}}>Üyelere yönetici yetkisi ver veya yetkilerini kaldır. Ana yönetici hesabı kilitlidir.</p></div>
       <Link href="/admin" style={{color:"white",border:"1px solid #38434e",padding:"11px 16px",borderRadius:10}}>← Admin Paneli</Link>

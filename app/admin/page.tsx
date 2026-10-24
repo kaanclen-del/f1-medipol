@@ -24,7 +24,7 @@ export default async function AdminPage() {
           <style>{styles}</style>
 
           <div className="access-card">
-            <span>F1 MEDİPOL · ADMIN</span>
+            <span>F1 SOCIAL · ADMIN</span>
             <h1>Giriş Gerekli</h1>
             <p>
               Yönetim panelini görüntülemek için
@@ -58,7 +58,7 @@ export default async function AdminPage() {
           <style>{styles}</style>
 
           <div className="access-card">
-            <span>F1 MEDİPOL · ADMIN</span>
+            <span>F1 SOCIAL · ADMIN</span>
             <h1>Yetkisiz Erişim</h1>
             <p>
               Bu bölüm yalnızca yöneticiler
@@ -142,7 +142,7 @@ export default async function AdminPage() {
 
           <section className="admin-hero">
             <div className="admin-eyebrow">
-              F1 MEDİPOL · CONTROL CENTER
+              F1 SOCIAL · CONTROL CENTER
             </div>
 
             <h1>ADMIN PANELİ</h1>

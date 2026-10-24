@@ -2773,7 +2773,7 @@ export default function F1LiveReplayCenter() {
         <section className="broadcast-header">
           <div className="broadcast-left">
             <span className="broadcast-eyebrow">
-              F1 MEDİPOL · RACE CONTROL
+              F1 SOCIAL · RACE CONTROL
             </span>
 
             <div className="broadcast-title-line">
@@ -3225,7 +3225,7 @@ export default function F1LiveReplayCenter() {
             <div className="hub-top">
               <div>
                 <span className="hub-eyebrow">
-                  F1 MEDİPOL
+                  F1 SOCIAL
                 </span>
 
                 <div className="hub-title-row">

@@ -582,7 +582,7 @@ export default function RaceHeroImagesPage() {
 
           <section className="race-admin-hero">
             <div className="race-eyebrow">
-              F1 MEDİPOL · MEDIA CONTROL
+              F1 SOCIAL · MEDIA CONTROL
             </div>
 
             <h1>YARIŞ GÖRSELLERİ</h1>

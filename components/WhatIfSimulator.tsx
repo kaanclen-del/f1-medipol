@@ -77,7 +77,7 @@ export default function WhatIfSimulator({ season, drivers, teams, races }: {
 
   async function copyResult() {
     const lines = [
-      `F1 MEDİPOL · WHAT IF · ${season} ${selectedRace?.name || "Grand Prix"}`,
+      `F1 SOCIAL · WHAT IF · ${season} ${selectedRace?.name || "Grand Prix"}`,
       `Alternatif podyum: ${order.slice(0, 3).map((id, index) => `P${index + 1} ${driverById.get(id)?.name || "?"}`).join(" / ")}`,
       "Simüle edilen pilotlar şampiyonası:",
       ...driverRanking.slice(0, 10).map((driver, index) => `${index + 1}. ${driver.name}: ${driver.projected} puan (${signed(driver.added)})`),
@@ -175,7 +175,7 @@ export default function WhatIfSimulator({ season, drivers, teams, races }: {
     `}</style>
     <Link href="/arcade/manager" className="wi-back">← ARCADE MANAGER</Link>
     <header className="wi-head">
-      <div className="wi-eyebrow">F1 MEDİPOL · ARCADE / WHAT IF</div>
+      <div className="wi-eyebrow">F1 SOCIAL · ARCADE / WHAT IF</div>
       <h1>Ya <span>başkası</span> kazansaydı?</h1>
       <p>Gelecek bir Grand Prix'nin bitiş sırasını yeniden oluştur, puanları dağıt ve pilotlar ile takımlar şampiyonasındaki alternatif tabloyu anında gör. Tamamen hayalî bir simülasyon.</p>
       <div className="wi-selector"><label htmlFor="wi-race">SENARYO YARIŞI</label>

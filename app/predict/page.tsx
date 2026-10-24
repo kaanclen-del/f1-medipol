@@ -783,7 +783,7 @@ export default async function PredictPage({
           <div className="predict-hero">
             <div>
               <div className="eyebrow">
-                F1 MEDİPOL · PREDICTION CENTER
+                F1 SOCIAL · PREDICTION CENTER
               </div>
 
               <h1>

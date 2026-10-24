@@ -89,7 +89,7 @@ export default function ProfileWallpapersPage() {
   return <><Header/><main className={styles.page}><div className={styles.container}>
     <div className={styles.heading}><div>
       <Link href="/profile" className={styles.back}>← PROFİLE DÖN</Link>
-      <div className={styles.eyebrow}>F1 MEDİPOL / DRIVER CUSTOMIZATION</div>
+      <div className={styles.eyebrow}>F1 SOCIAL / DRIVER CUSTOMIZATION</div>
       <h1>PROFİL ARKA PLANLARI</h1>
       <p>Her tema için kendi arka planını seç. Koyu, kırmızı ve açık tema birbirinden bağımsızdır.</p>
       <div style={{display:"flex",gap:9,flexWrap:"wrap",marginTop:16}}>
@@ -107,7 +107,7 @@ export default function ProfileWallpapersPage() {
           <ProfileWallpaperBackdrop wallpaper={selected}/>
           <div className={styles.previewTint}/>
           <div className={styles.previewWords}>
-            <span className={styles.previewEyebrow}>F1 MEDİPOL / PROFILE DESIGN</span>
+            <span className={styles.previewEyebrow}>F1 SOCIAL / PROFILE DESIGN</span>
             <strong>YOUR GRID.<br/>YOUR STORY.</strong>
             <span className={styles.previewCaption}>CANLI ÖN İZLEME</span>
           </div>

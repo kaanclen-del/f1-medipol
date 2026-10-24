@@ -29,7 +29,7 @@ export default async function AdminNotificationsPage() {
     <main className={styles.page}>
       <div className={styles.wrap}>
         <Link className={styles.back} href="/admin">← Yönetim paneline dön</Link>
-        <div className={styles.kicker}>F1 MEDİPOL / ADMİN ARAÇLARI</div>
+        <div className={styles.kicker}>F1 SOCIAL / ADMİN ARAÇLARI</div>
         <h1>Bildirim Yönetimi</h1>
         <p className={styles.lead}>Bilgisayarından oluşturduğun duyuru, izin vermiş iPhone ve Android cihazlarına gider ve aynı zamanda üyelerin bildirim kutusuna kaydedilir.</p>
         <AdminPushComposer />

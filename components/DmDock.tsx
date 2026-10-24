@@ -169,7 +169,7 @@ export default function DmDock({
             }}
           >
             Mesaj göndermek, arkadaşlarını bulmak ve sohbet isteklerini görmek
-            için F1 Medipol hesabına giriş yapmalısın.
+            için F1 Social hesabına giriş yapmalısın.
           </p>
 
           <a
