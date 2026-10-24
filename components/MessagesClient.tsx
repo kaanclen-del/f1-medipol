@@ -2194,28 +2194,32 @@ export default function DmDock({
                 ) : null}
 
                 <button
-                  type="button"
-                  style={{ ...primaryStyle, width: "100%", marginTop: 10 }}
-                  onClick={() => {
-                    // Profil penceresindeki RPC sonucuna bağlı kalma.
-                    // Açık olan sohbetin karşı tarafının kimliğini kullan.
-                    const targetId = active;
+  type="button"
+  style={{ ...primaryStyle, width: "100%", marginTop: 10 }}
+  onClick={() => {
+    const targetId = profile?.user_id;
 
-                    if (!targetId || !isUuid(targetId)) {
-                      setStatus("Kullanıcı profili açılamadı.");
-                      return;
-                    }
+    if (
+      !targetId ||
+      !isUuid(targetId) ||
+      targetId === userId
+    ) {
+      setStatus(
+        "Karşı tarafın profil kimliği geçersiz veya oturum açan kullanıcıyla aynı.",
+      );
+      return;
+    }
 
-                   setProfileOpen(false);
+    setProfileOpen(false);
 
-window.location.assign(
-  `/profile?user=${encodeURIComponent(targetId)}`,
-);
-                  }}
-                >
-                  <Icon name="external" size={16} />
-                  Profili ziyaret et
-                </button>
+    window.location.assign(
+      `/members/${encodeURIComponent(targetId)}`,
+    );
+  }}
+>
+  <Icon name="external" size={16} />
+  Profili ziyaret et
+</button>
 
                 {active && profile.user_id === active ? (
                   <button
