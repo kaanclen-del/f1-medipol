@@ -91,28 +91,6 @@ export default function DmDock({
           <path d="M22 2 11 13" />
           <path d="m22 2-7 20-4-9-9-4 20-7Z" />
         </svg>
-
-        <span
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            right: 1,
-            top: 1,
-            width: 15,
-            height: 15,
-            borderRadius: "50%",
-            background: "#17191f",
-            color: "#fff",
-            border: "2px solid #e10600",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 10,
-            fontWeight: 800,
-          }}
-        >
-          🔒
-        </span>
       </button>
 
       {showLoginPrompt ? (
