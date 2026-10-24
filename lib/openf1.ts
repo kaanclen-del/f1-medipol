@@ -172,6 +172,7 @@ function isValidLapDuration(
    ========================================================= */
 
 export async function getLatestF1Session():
+
   Promise<
     OpenF1Session | null
   > {
@@ -184,6 +185,7 @@ export async function getLatestF1Session():
             "no-store",
         }
       );
+      
 
     if (
       !response.ok
@@ -807,5 +809,41 @@ export async function getLatestF1SessionResult():
     );
 
     return [];
+  }
+}
+
+export async function getF1QualifyingPhase(
+  sessionKey: number
+): Promise<number | null> {
+  try {
+    const response = await openF1Request(
+      `https://api.openf1.org/v1/race_control?session_key=${sessionKey}`,
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) return null;
+
+    const events: Array<{
+      date?: string;
+      qualifying_phase?: number | null;
+    }> = await response.json();
+
+    const phases = events
+      .filter(
+        (event) =>
+          event.qualifying_phase === 1 ||
+          event.qualifying_phase === 2 ||
+          event.qualifying_phase === 3
+      )
+      .sort(
+        (a, b) =>
+          new Date(b.date ?? 0).getTime() -
+          new Date(a.date ?? 0).getTime()
+      );
+
+    return phases[0]?.qualifying_phase ?? null;
+  } catch (error) {
+    console.error("Qualifying phase error:", error);
+    return null;
   }
 }
