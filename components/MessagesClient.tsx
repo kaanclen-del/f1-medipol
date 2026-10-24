@@ -2206,11 +2206,11 @@ export default function DmDock({
                       return;
                     }
 
-                    setProfileOpen(false);
+                   setProfileOpen(false);
 
-                    window.location.assign(
-                      `/profile?user=${encodeURIComponent(targetId)}`,
-                    );
+window.location.assign(
+  `/profile?user=${encodeURIComponent(targetId)}`,
+);
                   }}
                 >
                   <Icon name="external" size={16} />
@@ -2329,7 +2329,29 @@ export default function DmDock({
           }
         }}
       >
-        <Icon name={open ? "close" : "chat"} size={23} />
+       <svg
+  width="29"
+  height="29"
+  viewBox="0 0 24 24"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  aria-hidden="true"
+>
+  <path
+    d="M22 2L11 13"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+  <path
+    d="M22 2L15 22L11 13L2 9L22 2Z"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  />
+</svg>
         {unread > 0 ? (
           <span className={styles.floatingBadge}>
             {unread > 99 ? "99+" : unread}

@@ -2226,11 +2226,120 @@ const styles = `
     }
   }
 
-  @media(max-width:900px) {
-    .spotlight-wrap {
-      display:none;
-    }
+ @media (max-width: 900px) {
+  .spotlight-wrap {
+    display: grid !important;
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
   }
+
+  .spotlight-driver,
+  .spotlight-driver.spotlight-p1 {
+    display: grid;
+    grid-template-columns: 42px 58px minmax(0, 1fr) 44px;
+    gap: 8px;
+    min-width: 0;
+    min-height: 100px;
+    padding: 12px 8px;
+  }
+
+  .spotlight-position {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .spotlight-position strong {
+    font-size: 25px;
+  }
+
+  .spotlight-portrait {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+    min-width: 0;
+  }
+
+  .spotlight-driver .portrait-ring,
+  .spotlight-p1 .portrait-ring {
+    width: 54px;
+    height: 54px;
+  }
+
+  .spotlight-driver-info {
+    grid-column: 3;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .spotlight-driver-info h3,
+  .spotlight-p1 .spotlight-driver-info h3 {
+    margin: 4px 0;
+    font-size: 14px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .spotlight-team {
+    font-size: 9px;
+  }
+
+  .spotlight-acronym-row {
+    flex-wrap: wrap;
+    gap: 4px 7px;
+  }
+
+  .spotlight-acronym-row span {
+    font-size: 10px;
+  }
+
+  .spotlight-tyre-zone {
+    grid-column: 4;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .spotlight-tyre {
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
+  }
+
+  .spotlight-timing {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,.08);
+  }
+
+  .spotlight-timing > div:first-child {
+    grid-column: auto;
+  }
+
+  .spotlight-timing small {
+    font-size: 8px;
+  }
+
+  .spotlight-timing strong,
+  .spotlight-timing .current {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+
+  .spotlight-sector-area,
+  .performance-panel {
+    display: none !important;
+  }
+
+  .spotlight-status {
+    top: 5px;
+    right: 5px;
+    font-size: 8px;
+  }
+}
   /* Responsive readability: keep every driver's tyre visible in the grid. */
   .spotlight-driver, .spotlight-p1 {
     grid-template-columns: 53px 75px minmax(145px,1.1fr) minmax(125px,.9fr) minmax(110px,.75fr) minmax(145px,1fr) 53px;

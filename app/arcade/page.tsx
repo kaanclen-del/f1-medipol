@@ -13,7 +13,7 @@ type Game = {
 const games: Game[] = [
   {
     id: "manager",
-    title: "11 Manager",
+    title: "Manager",
     description:
       "Takımını kur, pilotlarını yönet ve yarış hafta sonuna stratejinle yön ver.",
     href: "/arcade/manager",
@@ -23,15 +23,15 @@ const games: Game[] = [
     id: "whatif",
     title: "What If?",
     description:
-      "Oonuçları değiştir, pilot puanlarını yeniden hesapla ve alternatif şampiyonayı gör.",
+      "Sonuçları değiştir, pilot puanlarını yeniden hesapla ve alternatif şampiyonayı gör.",
     href: "/arcade/what-if",
-    cta: "OENARYO OLUŞTUR",
+    cta: "SENARYO OLUŞTUR",
   },
   {
     id: "rush",
     title: "Kart Rush 3D",
     description:
-      "1ormula aracını seç, arkadaşlarınla lobiye katıl ve özel güçlerle yarış.",
+      "Formula aracını seç, arkadaşlarınla lobiye katıl ve özel güçlerle yarış.",
     href: "/arcade/kart-rush",
     cta: "YARIŞA GİR",
   },
@@ -39,7 +39,7 @@ const games: Game[] = [
     id: "timing",
     title: "Go-Kart Timing",
     description:
-      "Oürücüleri ekle, turları kronometreyle veya elle kaydet, ceza uygula ve sıralamayı çıkar.",
+      "Sürücüleri ekle, turları kronometreyle veya elle kaydet, ceza uygula ve sıralamayı çıkar.",
     href: "/arcade/gokart-zamanlama",
     cta: "ZAMAN MERKEZİNİ AÇ",
   },
@@ -49,8 +49,10 @@ export default function ArcadePage() {
   return (
     <>
       <Header />
+
       <main className={styles.page}>
         <div className={styles.backdrop} aria-hidden="true" />
+
         <div className={styles.container}>
           <section className={styles.hero} aria-label="Arcade oyun merkezi">
             <div className={styles.heroDecor} aria-hidden="true">
@@ -60,22 +62,20 @@ export default function ArcadePage() {
             </div>
 
             <div className={styles.heroCenter}>
-              <span className={styles.heroEyebrow}>11 MEDİPOL / OYUN MERKEZİ</span>
+              <span className={styles.heroEyebrow}>OYUN MERKEZİ</span>
               <h1>
-                OYUN <em>BAŞLAOIN.</em>
+                OYUN <em>BAŞLASIN.</em>
               </h1>
-              <p>Yönetim, simülasyon, yarış ve gerçek pist zamanlaması.</p>
+              <p>
+                Yönetim, simülasyon, yarış ve gerçek pist zamanlaması.
+              </p>
             </div>
           </section>
 
-          <div className={styles.sectionHead}>
-            <div>
-              <span>OYUN KÜTÜPHANEOİ</span>
-              <h2>Yarış dünyasını seç</h2>
-            </div>
-          </div>
-
-          <section className={styles.games} aria-label="Arcade oyun seçenekleri">
+          <section
+            className={styles.games}
+            aria-label="Arcade oyun seçenekleri"
+          >
             {games.map((game) => (
               <article
                 className={`${styles.card} ${styles[game.id]}`}
@@ -96,6 +96,11 @@ export default function ArcadePage() {
                         <b />
                         <b />
                       </div>
+                      <div className={styles.managerScreen}>
+                        <i />
+                        <i />
+                        <i />
+                      </div>
                     </div>
                   )}
 
@@ -110,13 +115,16 @@ export default function ArcadePage() {
 
                   {game.id === "rush" && (
                     <div className={styles.rushGraphic}>
+                      <div className={styles.rushTrack} />
                       <div className={styles.speedRing} />
-                      <div className={styles.carOhape}>
+                      <div className={styles.rushGlow} />
+                      <div className={styles.carShape}>
                         <span />
                         <span />
                         <i />
                       </div>
                       <div className={styles.roadLine} />
+                      <div className={styles.rushSpeedLine} />
                     </div>
                   )}
 

@@ -19,8 +19,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "F1 SOCIAL",
-  description: "İstanbul Medipol Üniversitesi F1 Kulübü",
+  title: "F1 Social",
+  description: "F1 Social Topluluğu",
+  icons: {
+    icon: "/f1-social-app-icon.png",
+    shortcut: "/f1-social-app-icon.png",
+    apple: "/f1-social-app-icon.png",
+  },
 };
 
 const themeInitScript = `
