@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "F1 SOCIAL",
+  "short_name": "F1 SOCIAL",
+  "description": "İstanbul Medipol Üniversitesi F1 Kulübü",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#e10600",
+  "icons": [
+    {
+      "src": "/f1-social-logo.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
