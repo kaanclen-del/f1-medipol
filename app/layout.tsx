@@ -1,5 +1,4 @@
-﻿
-import type { Metadata } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 
@@ -32,22 +31,12 @@ export const metadata: Metadata = {
   },
 };
 
-const themeInitScript = `
-(function () {
-  try {
-    var saved = localStorage.getItem("f1-site-theme");
-    var theme =
-      saved === "red" ||
-      saved === "light" ||
-      saved === "gray"
-        ? saved
-        : "gray";
-    document.documentElement.setAttribute("data-site-theme", theme);
-  } catch (e) {
-    document.documentElement.setAttribute("data-site-theme", "gray");
-  }
-})();
-`;
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#e10600",
+};
 
 export default function RootLayout({
   children,
@@ -60,10 +49,6 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
-
       <body className="min-h-full flex flex-col">
         <SiteThemeSwitcher />
         <RouteTransition />
