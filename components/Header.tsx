@@ -293,7 +293,7 @@ export default function Header() {
           margin: 0 auto;
           display: flex;
           align-items: center;
-          gap: 18px;
+          gap: 14px;
           min-width: 0;
         }
 
@@ -329,10 +329,10 @@ export default function Header() {
         }
 
         .medipol-header-nav-link {
-          padding: 11px 8px;
+          padding: 11px 7px;
           border-radius: 8px;
           color: ${textColor} !important;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 650;
           line-height: 1;
           white-space: nowrap;
@@ -356,6 +356,7 @@ export default function Header() {
         .medipol-header-profile {
           min-width: 0;
           width: 155px;
+          height: 48px;
           min-height: 48px;
           padding: 5px 10px 5px 6px;
           display: flex;
@@ -391,19 +392,21 @@ export default function Header() {
         }
 
         .medipol-header-avatar img {
-          display: block !important;
-          width: 100% !important;
-          height: 100% !important;
-          max-width: 100% !important;
-          max-height: 100% !important;
-          object-fit: contain !important;
-          object-position: center center !important;
-          transform: none !important;
-          scale: 1 !important;
-          clip-path: none !important;
-          border-radius: 0 !important;
-          background: #fff;
-        }
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
+  scale: 1 !important;
+  clip-path: none !important;
+  border-radius: 0 !important;
+  background: #fff;
+}
 
         .medipol-header-profile-name {
           flex: 1 1 auto;
@@ -421,7 +424,6 @@ export default function Header() {
         }
 
         .medipol-header-profile-loading {
-          visibility: visible;
           opacity: .6;
           pointer-events: none;
         }
@@ -441,16 +443,16 @@ export default function Header() {
 
         .medipol-mobile-menu-button {
           display: none;
-          width: 42px;
-          height: 42px;
-          min-width: 42px;
-          min-height: 42px;
-          flex: 0 0 42px;
+          width: 40px;
+          height: 40px;
+          min-width: 40px;
+          min-height: 40px;
+          flex: 0 0 40px;
           padding: 0;
           align-items: center;
           justify-content: center;
           border: 1px solid ${borderColor};
-          border-radius: 11px;
+          border-radius: 10px;
           color: ${textColor};
           background: ${controlBackground};
           cursor: pointer;
@@ -494,16 +496,12 @@ export default function Header() {
         .medipol-landscape-quick {
           display: none;
           align-items: center;
-          gap: 8px;
+          gap: 7px;
           flex: 0 0 auto;
           min-width: 0;
         }
 
-        /*
-         * Üç hızlı işlem için ortak dış kutu.
-         * İç bileşenlerin kendi CSS ölçülerinin kutuyu bozmasını engeller.
-         */
-        .medipol-quick-control {
+            .medipol-quick-control {
           position: relative !important;
           isolation: isolate;
           width: 40px !important;
@@ -518,60 +516,61 @@ export default function Header() {
           justify-content: center !important;
           margin: 0 !important;
           padding: 0 !important;
+          overflow: visible;
+          border-radius: 10px;
+          color: ${textColor};
+          background: ${controlBackground};
+          box-shadow: inset 0 0 0 1px ${borderColor};
+          transition: background .15s ease;
         }
 
-        /*
-         * Tema ve bildirim bileşenlerinin doğrudan kök öğesini
-         * ortak kutuya ortalar; iç içe geçmiş öğelere uygulanmaz.
-         */
-        .medipol-quick-control:not(.medipol-quick-dm) > * {
+        .medipol-quick-control:hover {
+          background: ${hoverBackground};
+        }
+
+        .medipol-quick-control > * {
           box-sizing: border-box !important;
-          min-width: 0 !important;
-          min-height: 0 !important;
-          max-width: 100% !important;
-          max-height: 100% !important;
           margin: 0 !important;
         }
 
-        .medipol-quick-control:not(.medipol-quick-dm) > button,
-        .medipol-quick-control:not(.medipol-quick-dm) > a {
-          width: 40px !important;
-          height: 40px !important;
-          flex: 0 0 40px !important;
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          padding: 0 !important;
+        .medipol-quick-control > div {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .medipol-quick-dm {
-          overflow: visible;
-        }
-
-        .medipol-quick-control.medipol-quick-dm > button {
+        .medipol-quick-control > button,
+        .medipol-quick-control > a,
+        .medipol-quick-control > div > button:first-child,
+        .medipol-quick-control > div > a:first-child {
           position: relative !important;
           inset: auto !important;
-          width: 40px !important;
-          height: 40px !important;
-          min-width: 40px !important;
-          min-height: 40px !important;
-          max-width: 40px !important;
-          max-height: 40px !important;
-          flex: 0 0 40px !important;
-          margin: 0 !important;
-          padding: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+          min-width: 0 !important;
+          min-height: 0 !important;
+          max-width: none !important;
+          max-height: none !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
-          border: 1px solid ${borderColor} !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: 0 !important;
           border-radius: 10px !important;
           color: ${textColor} !important;
-          background: ${controlBackground} !important;
+          background: transparent !important;
           box-shadow: none !important;
           transform: none !important;
         }
 
-        .medipol-quick-control.medipol-quick-dm > button > svg {
+        .medipol-quick-control > button > svg,
+        .medipol-quick-control > a > svg,
+        .medipol-quick-control > div > button:first-child > svg,
+        .medipol-quick-control > div > a:first-child > svg {
           position: static !important;
           display: block !important;
           width: 19px !important;
@@ -580,10 +579,6 @@ export default function Header() {
           min-height: 19px !important;
           flex: 0 0 19px !important;
           margin: 0 !important;
-        }
-
-        .medipol-quick-control.medipol-quick-dm > button:hover {
-          background: ${hoverBackground} !important;
         }
 
         .medipol-mobile-drawer {
@@ -670,11 +665,39 @@ export default function Header() {
           display: none;
         }
 
-        @media (max-width: 1150px) {
-          .medipol-header-inner { gap: 10px; }
-          .medipol-header-logo { flex-basis: 135px; }
-          .medipol-header-nav-link { padding: 9px 6px; font-size: 10px; }
+        @media (max-width: 1250px) and (min-width: 701px) {
+          .medipol-header-inner { gap: 8px; }
+          .medipol-header-logo {
+            width: 125px;
+            min-width: 110px;
+            flex-basis: 125px;
+          }
+          .medipol-header-nav-link {
+            padding: 9px 5px;
+            font-size: 10px;
+          }
           .medipol-header-right { gap: 5px; }
+          .medipol-header-profile { width: 135px; }
+          .medipol-quick-control {
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+            max-width: 36px !important;
+            max-height: 36px !important;
+            flex-basis: 36px !important;
+          }
+          .medipol-quick-control:not(.medipol-quick-dm) > button,
+          .medipol-quick-control:not(.medipol-quick-dm) > a,
+          .medipol-quick-control.medipol-quick-dm > button {
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+            max-width: 36px !important;
+            max-height: 36px !important;
+            flex-basis: 36px !important;
+          }
         }
 
         @media (max-width: 700px), (pointer: coarse) and (max-width: 1100px) {
@@ -710,10 +733,8 @@ export default function Header() {
           }
 
           .medipol-header-logo-art {
-            width: 100%;
             height: 34px;
             max-height: 34px;
-            background-position: left center;
           }
 
           .medipol-header-nav {
@@ -722,7 +743,7 @@ export default function Header() {
 
           .medipol-header-right {
             flex: 0 0 auto;
-            gap: 8px;
+            gap: 6px;
             margin-left: auto;
           }
 
@@ -738,7 +759,7 @@ export default function Header() {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 6px;
             flex: 0 0 auto;
             min-width: 0;
           }
@@ -755,12 +776,7 @@ export default function Header() {
           }
 
           .medipol-quick-control:not(.medipol-quick-dm) > button,
-          .medipol-quick-control:not(.medipol-quick-dm) > a {
-            width: 38px !important;
-            height: 38px !important;
-            flex-basis: 38px !important;
-          }
-
+          .medipol-quick-control:not(.medipol-quick-dm) > a,
           .medipol-quick-control.medipol-quick-dm > button {
             width: 38px !important;
             height: 38px !important;
@@ -768,7 +784,7 @@ export default function Header() {
             min-height: 38px !important;
             max-width: 38px !important;
             max-height: 38px !important;
-            flex: 0 0 38px !important;
+            flex-basis: 38px !important;
           }
 
           .medipol-quick-control.medipol-quick-dm > button > svg {
@@ -822,7 +838,7 @@ export default function Header() {
             flex-basis: 76px;
           }
 
-          .medipol-header-right { gap: 6px; }
+          .medipol-header-right { gap: 5px; }
           .medipol-landscape-quick { gap: 5px; }
 
           .medipol-quick-control,
@@ -837,12 +853,7 @@ export default function Header() {
           }
 
           .medipol-quick-control:not(.medipol-quick-dm) > button,
-          .medipol-quick-control:not(.medipol-quick-dm) > a {
-            width: 35px !important;
-            height: 35px !important;
-            flex-basis: 35px !important;
-          }
-
+          .medipol-quick-control:not(.medipol-quick-dm) > a,
           .medipol-quick-control.medipol-quick-dm > button {
             width: 35px !important;
             height: 35px !important;
@@ -851,7 +862,6 @@ export default function Header() {
             max-width: 35px !important;
             max-height: 35px !important;
             flex-basis: 35px !important;
-            border-radius: 9px !important;
           }
         }
 
@@ -923,7 +933,8 @@ export default function Header() {
         @media (prefers-reduced-motion: reduce) {
           .medipol-header { transition: none; }
         }
-      `}</style>
+      `
+      }</style>
 
       <header
         className="medipol-header"
@@ -973,7 +984,11 @@ export default function Header() {
               </>
             )}
 
-            {!compactHeader && <WelcomeTour />}
+            {!compactHeader && (
+              <div className="medipol-welcome-tour">
+                <WelcomeTour />
+              </div>
+            )}
 
             {loading ? (
               <span

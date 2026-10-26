@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   useEffect,
@@ -7,9 +7,7 @@ import {
   type CSSProperties,
 } from "react";
 
-import type {
-  OpenF1Driver,
-} from "@/lib/openf1";
+import type { OpenF1Driver } from "@/lib/openf1";
 
 import {
   BULLETIN_MAX_POINTS,
@@ -22,73 +20,50 @@ import {
   type RaceSpecialPicks,
 } from "@/lib/prediction-scoring";
 
-import {
-  createClient,
-} from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/client";
 
-type PodiumSlot =
-  | "P1"
-  | "P2"
-  | "P3";
+type PodiumSlot = "P1" | "P2" | "P3";
+type Stage = "podium" | "bulletin" | "special" | "review";
 
 type SelectedPrediction = {
-  P1:
-    | number
-    | null;
-
-  P2:
-    | number
-    | null;
-
-  P3:
-    | number
-    | null;
+  P1: number | null;
+  P2: number | null;
+  P3: number | null;
 };
 
 export type PredictionCommunityStats = {
   ready: boolean;
   total: number;
-  podium: Record<"P1" | "P2" | "P3", Record<string, number>>;
+  podium: Record<PodiumSlot, Record<string, number>>;
   bulletin: Record<string, { yes: number; no: number; total: number }>;
   specials: Record<string, { total: number; choices: Record<string, number> }>;
 };
 
 type Props = {
-  drivers:
-    OpenF1Driver[];
-
-  season:
-    number;
-
-  round:
-    number;
-
-  raceName:
-    string;
-
-  predictionType?:
-    | "race"
-    | "sprint";
-
-  initialPrediction?:
-    SelectedPrediction |
-    null;
-
-  initialBulletin?:
-    RaceBulletinAnswers;
-
-  initialSpecialPicks?:
-    RaceSpecialPicks;
-
-  lockAt?:
-    string |
-    null;
+  drivers: OpenF1Driver[];
+  season: number;
+  round: number;
+  raceName: string;
+  predictionType?: "race" | "sprint";
+  initialPrediction?: SelectedPrediction | null;
+  initialBulletin?: RaceBulletinAnswers;
+  initialSpecialPicks?: RaceSpecialPicks;
+  lockAt?: string | null;
 };
 
-function driverName(
-  driver:
-    OpenF1Driver
-) {
+const EMPTY_PREDICTION: SelectedPrediction = {
+  P1: null,
+  P2: null,
+  P3: null,
+};
+
+const PODIUM_SLOTS: { key: PodiumSlot; points: string; label: string }[] = [
+  { key: "P1", points: "+50", label: "WINNER" },
+  { key: "P2", points: "+35", label: "SECOND PLACE" },
+  { key: "P3", points: "+25", label: "THIRD PLACE" },
+];
+
+function driverName(driver: OpenF1Driver) {
   return (
     driver.full_name ||
     driver.broadcast_name ||
@@ -97,139 +72,130 @@ function driverName(
   );
 }
 
+function teamColor(driver: OpenF1Driver) {
+  const color = driver.team_colour?.replace("#", "").trim();
+  return color && /^[0-9a-fA-F]{6}$/.test(color)
+    ? `#${color}`
+    : "#ff2638";
+}
+
 export default function PredictionSelector({
   drivers,
-
   season,
   round,
   raceName,
-
-  predictionType =
-    "race",
-
-  initialPrediction =
-    null,
-
-  initialBulletin =
-    {},
-
-  initialSpecialPicks =
-    {},
-
-  lockAt =
-    null,
+  predictionType = "race",
+  initialPrediction = null,
+  initialBulletin = {},
+  initialSpecialPicks = {},
+  lockAt = null,
 }: Props) {
-  const [
-    supabase,
-  ] =
-    useState(
-      () =>
-        createClient()
-    );
+  const [supabase] = useState(() => createClient());
 
-  const [
-    activeSlot,
-    setActiveSlot,
-  ] =
-    useState<PodiumSlot>(
-      "P1"
-    );
+  const [activeSlot, setActiveSlot] = useState<PodiumSlot>("P1");
+  const [selected, setSelected] = useState<SelectedPrediction>(
+    initialPrediction ?? EMPTY_PREDICTION
+  );
+  const [bulletin, setBulletin] =
+    useState<RaceBulletinAnswers>(initialBulletin);
+  const [specialPicks, setSpecialPicks] =
+    useState<RaceSpecialPicks>(initialSpecialPicks);
 
-  const [
-    selected,
-    setSelected,
-  ] =
-    useState<SelectedPrediction>(
-      initialPrediction ??
-        {
-          P1: null,
-          P2: null,
-          P3: null,
-        }
-    );
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState(
+    initialPrediction ? "Kayıtlı tahminin yüklendi." : ""
+  );
+  const [locked, setLocked] = useState(false);
+  const [currentStage, setCurrentStage] = useState<Stage>("podium");
+  const [community, setCommunity] =
+    useState<PredictionCommunityStats | null>(null);
+  const [communityRevision, setCommunityRevision] = useState(0);
 
-  const [
-    bulletin,
-    setBulletin,
-  ] =
-    useState<RaceBulletinAnswers>(
-      initialBulletin
-    );
+  const isRace = predictionType === "race";
 
-  const [
-    specialPicks,
-    setSpecialPicks,
-  ] =
-    useState<RaceSpecialPicks>(
-      initialSpecialPicks
-    );
-
-  const [
-    saving,
-    setSaving,
-  ] =
-    useState(false);
-
-  const [
-    message,
-    setMessage,
-  ] =
-    useState(
-      initialPrediction
-        ? "✅ Kayıtlı tahminin yüklendi."
-        : ""
-    );
-
-  const [
-    locked,
-    setLocked,
-  ] =
-    useState(false);
-
-  const isRace =
-    predictionType ===
-    "race";
-
-  type Stage = "podium" | "bulletin" | "special" | "review";
   const stages: { id: Stage; title: string; subtitle: string }[] = isRace
     ? [
-        { id: "podium", title: "Podyum", subtitle: "İlk üç" },
-        { id: "bulletin", title: "Yarış Senaryoları", subtitle: "12 soru" },
-        { id: "special", title: "Özel Seçimler", subtitle: "4 tahmin" },
-        { id: "review", title: "Onay", subtitle: "Kaydet" },
+        { id: "podium", title: "Podyum", subtitle: "İlk üç pilot" },
+        { id: "bulletin", title: "Senaryolar", subtitle: "12 soru" },
+        { id: "special", title: "Özel seçimler", subtitle: "4 tahmin" },
+        { id: "review", title: "Son kontrol", subtitle: "Paketi kaydet" },
       ]
     : [
-        { id: "podium", title: "Sprint Podyumu", subtitle: "İlk üç" },
-        { id: "review", title: "Onay", subtitle: "Kaydet" },
+        { id: "podium", title: "Sprint podyumu", subtitle: "İlk üç pilot" },
+        { id: "review", title: "Son kontrol", subtitle: "Tahmini kaydet" },
       ];
 
-  const [currentStage, setCurrentStage] = useState<Stage>("podium");
-  const currentStageIndex = Math.max(0, stages.findIndex((step) => step.id === currentStage));
-  const [community, setCommunity] = useState<PredictionCommunityStats | null>(null);
-  const [communityRevision, setCommunityRevision] = useState(0);
+  const currentStageIndex = Math.max(
+    0,
+    stages.findIndex((stage) => stage.id === currentStage)
+  );
 
   useEffect(() => {
     let cancelled = false;
-    const request = `/api/predict/community?season=${season}&round=${round}&type=${predictionType}`;
+
+    const request =
+      `/api/predict/community?season=${season}` +
+      `&round=${round}&type=${predictionType}`;
+
     fetch(request, { cache: "no-store" })
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => (response.ok ? response.json() : null))
       .then((data: PredictionCommunityStats | null) => {
         if (!cancelled && data) setCommunity(data);
       })
       .catch(() => {});
-    return () => { cancelled = true; };
+
+    return () => {
+      cancelled = true;
+    };
   }, [season, round, predictionType, communityRevision]);
 
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("f1-prediction-change", { detail: selected }));
+    window.dispatchEvent(
+      new CustomEvent("f1-prediction-change", { detail: selected })
+    );
   }, [selected]);
 
-  const pct = (count: number, total: number) => total > 0 ? Math.round(count * 100 / total) : 0;
+  useEffect(() => {
+    const checkLock = () => {
+      if (!lockAt) {
+        setLocked(false);
+        return;
+      }
 
-  function communityPodium(slot: PodiumSlot, number: number) {
+      const time = new Date(lockAt).getTime();
+      setLocked(!Number.isNaN(time) && Date.now() >= time);
+    };
+
+    checkLock();
+    const timer = window.setInterval(checkLock, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [lockAt]);
+
+  const teams = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          drivers
+            .map((driver) => driver.team_name?.trim())
+            .filter((team): team is string => Boolean(team))
+        )
+      ).sort(),
+    [drivers]
+  );
+
+  const getDriver = (number: number | null) => {
+    if (number === null) return null;
+    return drivers.find((driver) => driver.driver_number === number) ?? null;
+  };
+
+  const pct = (count: number, total: number) =>
+    total > 0 ? Math.round((count * 100) / total) : 0;
+
+  const communityPodium = (slot: PodiumSlot, number: number) => {
     if (!community?.ready) return null;
     return pct(community.podium[slot]?.[String(number)] ?? 0, community.total);
-  }
+  };
 
   function navigateStage(stage: Stage) {
     setCurrentStage(stage);
@@ -237,2335 +203,1904 @@ export default function PredictionSelector({
     window.scrollTo({ top: 160, behavior: "smooth" });
   }
 
-  useEffect(() => {
-    function checkLock() {
-      if (!lockAt) {
-        setLocked(false);
-        return;
+  function selectDriver(driverNumber: number) {
+    if (locked) return;
+
+    const next = { ...selected };
+
+    (Object.keys(next) as PodiumSlot[]).forEach((slot) => {
+      if (slot !== activeSlot && next[slot] === driverNumber) {
+        next[slot] = null;
       }
+    });
 
-      const time =
-        new Date(
-          lockAt
-        ).getTime();
+    next[activeSlot] = driverNumber;
+    setSelected(next);
+    setMessage("");
 
-      if (
-        Number.isNaN(
-          time
-        )
-      ) {
-        setLocked(false);
-        return;
-      }
-
-      setLocked(
-        Date.now() >=
-          time
-      );
-    }
-
-    checkLock();
-
-    const timer =
-      window.setInterval(
-        checkLock,
-        1000
-      );
-
-    return () =>
-      window.clearInterval(
-        timer
-      );
-  }, [lockAt]);
-
-  const teams =
-    useMemo(
-      () =>
-        Array.from(
-          new Set(
-            drivers
-              .map(
-                (
-                  driver
-                ) =>
-                  driver.team_name
-                    ?.trim()
-              )
-              .filter(
-                (
-                  item
-                ): item is string =>
-                  Boolean(
-                    item
-                  )
-              )
-          )
-        ).sort(),
-      [drivers]
-    );
-
-  function getDriver(
-    number:
-      | number
-      | null
-  ) {
-    if (!number) {
-      return null;
-    }
-
-    return (
-      drivers.find(
-        (
-          driver
-        ) =>
-          driver.driver_number ===
-          number
-      ) ??
-      null
-    );
-  }
-
-  function selectDriver(
-    driverNumber:
-      number
-  ) {
-    if (locked) {
-      return;
-    }
-
-    const next = {
-      ...selected,
-    };
-
-    (
-      Object.keys(
-        next
-      ) as PodiumSlot[]
-    ).forEach(
-      (
-        slot
-      ) => {
-        if (
-          slot !==
-            activeSlot &&
-          next[slot] ===
-            driverNumber
-        ) {
-          next[slot] =
-            null;
-        }
-      }
-    );
-
-    next[
-      activeSlot
-    ] =
-      driverNumber;
-
-    setSelected(
-      next
-    );
-
-    setMessage(
-      ""
-    );
-
-    if (
-      activeSlot ===
-      "P1"
-    ) {
-      setActiveSlot(
-        "P2"
-      );
-    } else if (
-      activeSlot ===
-      "P2"
-    ) {
-      setActiveSlot(
-        "P3"
-      );
-    }
+    if (activeSlot === "P1") setActiveSlot("P2");
+    else if (activeSlot === "P2") setActiveSlot("P3");
   }
 
   function answerQuestion(
-    key:
-      keyof RaceBulletinAnswers,
-    value:
-      "yes"
-      | "no"
+    key: keyof RaceBulletinAnswers,
+    value: "yes" | "no"
   ) {
-    if (locked) {
-      return;
-    }
+    if (locked) return;
 
-    setBulletin(
-      (
-        current
-      ) => ({
-        ...current,
-
-        [key]:
-          current[
-            key
-          ] ===
-          value
-            ? undefined
-            : value,
-      })
-    );
+    setBulletin((current) => ({
+      ...current,
+      [key]: current[key] === value ? undefined : value,
+    }));
   }
 
-  const answeredCount =
-    RACE_BULLETIN_QUESTIONS.filter(
-      (
-        item
-      ) =>
-        bulletin[
-          item.key
-        ] ===
-          "yes" ||
-        bulletin[
-          item.key
-        ] ===
-          "no"
-    ).length;
+  const answeredCount = RACE_BULLETIN_QUESTIONS.filter(
+    (item) => bulletin[item.key] === "yes" || bulletin[item.key] === "no"
+  ).length;
 
-  const specialCount =
-    RACE_SPECIAL_PICKS.filter(
-      (
-        item
-      ) => {
-        const value =
-          specialPicks[
-            item.key
-          ];
-
-        return (
-          value !==
-            null &&
-          value !==
-            undefined &&
-          value !==
-            ""
-        );
-      }
-    ).length;
+  const specialCount = RACE_SPECIAL_PICKS.filter((item) => {
+    const value = specialPicks[item.key];
+    return value !== null && value !== undefined && value !== "";
+  }).length;
 
   async function savePrediction() {
     if (locked) {
-      setMessage(
-        "🔒 Tahmin süresi sona erdi."
-      );
-
+      setMessage("Tahmin süresi sona erdi.");
       return;
     }
 
-    if (
-      !selected.P1 ||
-      !selected.P2 ||
-      !selected.P3
-    ) {
-      setMessage(
-        "Önce P1, P2 ve P3 pilotlarını seç."
-      );
-
+    if (!selected.P1 || !selected.P2 || !selected.P3) {
+      setMessage("Kaydetmeden önce P1, P2 ve P3 pilotlarını seçmelisin.");
       return;
     }
 
-    setSaving(
-      true
-    );
-
-    setMessage(
-      ""
-    );
+    setSaving(true);
+    setMessage("");
 
     try {
       const {
-        data: {
-          user,
-        },
-        error:
-          userError,
-      } =
-        await supabase
-          .auth
-          .getUser();
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
 
-      if (
-        userError ||
-        !user
-      ) {
-        window.location.href =
-          "/login";
-
+      if (userError || !user) {
+        window.location.href = "/login";
         return;
       }
 
-      const payload:
-        Record<
-          string,
-          unknown
-        > = {
-        user_id:
-          user.id,
-
+      const payload: Record<string, unknown> = {
+        user_id: user.id,
         season,
-
         round,
-
-        race_name:
-          raceName,
-
-        prediction_type:
-          predictionType,
-
-        p1_driver_number:
-          selected.P1,
-
-        p2_driver_number:
-          selected.P2,
-
-        p3_driver_number:
-          selected.P3,
-
+        race_name: raceName,
+        prediction_type: predictionType,
+        p1_driver_number: selected.P1,
+        p2_driver_number: selected.P2,
+        p3_driver_number: selected.P3,
         points: 0,
-
         podium_points: 0,
-
         bulletin_points: 0,
-
         special_points: 0,
-
         score_breakdown: {},
-
-        updated_at:
-          new Date()
-            .toISOString(),
+        updated_at: new Date().toISOString(),
       };
 
       if (isRace) {
-        payload.race_bulletin =
-          bulletin;
-
-        payload.special_picks =
-          specialPicks;
+        payload.race_bulletin = bulletin;
+        payload.special_picks = specialPicks;
       }
 
-      const {
-        error,
-      } =
-        await supabase
-          .from(
-            "predictions"
-          )
-          .upsert(
-            payload,
-            {
-              onConflict:
-                "user_id,season,round,prediction_type",
-            }
-          );
+      const { error } = await supabase
+        .from("predictions")
+        .upsert(payload, {
+          onConflict: "user_id,season,round,prediction_type",
+        });
 
       if (error) {
-        setMessage(
-          `Tahmin kaydedilemedi: ${error.message}`
-        );
-
+        setMessage(`Tahmin kaydedilemedi: ${error.message}`);
         return;
       }
 
       setMessage(
         isRace
-          ? `✅ Yarış tahmin paketin kaydedildi. ${answeredCount}/12 senaryo ve ${specialCount}/4 özel seçimi işaretlendi.`
-          : "✅ Sprint podyum tahminin kaydedildi."
+          ? `Yarış tahmin paketin kaydedildi. ${answeredCount}/12 senaryo ve ${specialCount}/4 özel seçim işaretlendi.`
+          : "Sprint podyum tahminin kaydedildi."
       );
+
       setCommunityRevision((revision) => revision + 1);
+    } catch (error) {
+      console.error("PREDICTION SAVE ERROR:", error);
+      setMessage("Beklenmeyen bir hata oluştu. Lütfen tekrar dene.");
     } finally {
-      setSaving(
-        false
-      );
+      setSaving(false);
     }
   }
-
-  const slots: {
-    key:
-      PodiumSlot;
-
-    points:
-      string;
-  }[] = [
-    {
-      key: "P1",
-      points:
-        "+50",
-    },
-
-    {
-      key: "P2",
-      points:
-        "+35",
-    },
-
-    {
-      key: "P3",
-      points:
-        "+25",
-    },
-  ];
 
   return (
     <div className="prediction-system">
       <style>{`
         .prediction-system {
-          color:
-            var(--text, #fff);
+          --arcade-bg: #08090c;
+          --arcade-panel: #101217;
+          --arcade-panel-2: #171a21;
+          --arcade-line: rgba(255,255,255,.11);
+          --arcade-red: #ff2638;
+          --arcade-red-dark: #c70c21;
+          --arcade-cyan: #58e7ff;
+          --arcade-green: #58f0a8;
+          --arcade-text: #f6f7fa;
+          --arcade-muted: #9ba1ad;
+          width: 100%;
+          min-width: 0;
+          color: var(--arcade-text);
+          font-family: inherit;
+          isolation: isolate;
         }
 
+        .prediction-system,
         .prediction-system * {
-          box-sizing:
-            border-box;
+          box-sizing: border-box;
         }
 
-        .prediction-lock {
-          margin-bottom:
-            20px;
+        .prediction-system button,
+        .prediction-system select {
+          font: inherit;
+        }
 
-          padding:
-            15px 17px;
+        .prediction-system button:focus-visible,
+        .prediction-system select:focus-visible {
+          outline: 2px solid var(--arcade-cyan);
+          outline-offset: 3px;
+        }
 
-          border:
-            1px solid
-            rgba(255,75,68,.28);
-
-          border-radius:
-            12px;
-
+        .prediction-system .race-control-hero {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          display: grid;
+          grid-template-columns: minmax(0,1fr) auto;
+          gap: 24px;
+          align-items: end;
+          margin-bottom: 16px;
+          padding: clamp(22px,4vw,38px);
+          border: 1px solid rgba(255,255,255,.13);
+          border-radius: 19px;
           background:
-            rgba(225,6,0,.08);
+            linear-gradient(115deg,rgba(255,38,56,.16),transparent 48%),
+            repeating-linear-gradient(135deg,rgba(255,255,255,.018) 0 1px,transparent 1px 9px),
+            linear-gradient(135deg,#181a21,#090a0e 72%);
+          box-shadow: 0 18px 45px rgba(0,0,0,.2);
         }
 
-        .prediction-lock b {
-          display:
-            block;
-
-          color:
-            #ff625b;
-
-          font-size:
-            11px;
-
-          letter-spacing:
-            .08em;
+        .prediction-system .race-control-hero::before {
+          position: absolute;
+          z-index: -1;
+          top: -80px;
+          right: 12%;
+          width: 260px;
+          height: 260px;
+          border: 1px solid rgba(255,38,56,.16);
+          border-radius: 50%;
+          box-shadow: 0 0 0 28px rgba(255,38,56,.025),0 0 0 56px rgba(255,38,56,.02);
+          content: "";
         }
 
-        .prediction-lock span {
-          display:
-            block;
-
-          margin-top:
-            5px;
-
-          color:
-            var(--muted, #9aa4af);
-
-          font-size:
-            12px;
+        .prediction-system .race-control-hero::after {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 5px;
+          height: 100%;
+          background: var(--arcade-red);
+          box-shadow: 0 0 24px rgba(255,38,56,.45);
+          content: "";
         }
 
-        .podium-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(
-              3,
-              minmax(
-                0,
-                1fr
-              )
-            );
-
-          gap:
-            12px;
+        .prediction-system .race-control-kicker {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 9px;
+          color: #ff7180;
+          font-size: 10px;
+          font-weight: 1000;
+          letter-spacing: .17em;
+          text-transform: uppercase;
         }
 
-        .podium-card {
-          position:
-            relative;
+        .prediction-system .race-control-light {
+          display: inline-block;
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: var(--arcade-red);
+          box-shadow: 0 0 12px rgba(255,38,56,.8);
+          animation: raceLightPulse 1.8s ease-in-out infinite;
+        }
 
-          min-height:
-            240px;
+        .prediction-system .race-control-hero h2 {
+          margin: 13px 0 8px;
+          color: white;
+          font-size: clamp(27px,5vw,48px);
+          font-weight: 1000;
+          line-height: 1;
+          letter-spacing: -.055em;
+          overflow-wrap: anywhere;
+        }
 
-          padding:
-            17px;
+        .prediction-system .race-control-hero p {
+          margin: 0;
+          color: #a4a9b4;
+          font-size: 12px;
+          line-height: 1.65;
+        }
 
-          overflow:
-            hidden;
+        .prediction-system .race-control-round {
+          min-width: 110px;
+          padding: 13px 17px;
+          border: 1px solid rgba(255,255,255,.13);
+          border-radius: 12px;
+          background: rgba(0,0,0,.28);
+          text-align: center;
+        }
 
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .09
-              )
-            );
+        .prediction-system .race-control-round small {
+          display: block;
+          color: #8e95a2;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: .15em;
+        }
 
-          border-radius:
-            15px;
+        .prediction-system .race-control-round strong {
+          display: block;
+          margin-top: 4px;
+          color: white;
+          font-size: 38px;
+          font-weight: 1000;
+          line-height: 1;
+          letter-spacing: -.07em;
+        }
 
-          color:
-            var(--text, #fff);
+        .prediction-system .race-control-round span {
+          display: block;
+          margin-top: 7px;
+          color: #ff6374;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: .12em;
+        }
 
+        .prediction-system .race-control-metrics {
+          display: grid;
+          grid-template-columns: repeat(4,minmax(0,1fr));
+          gap: 10px;
+          margin-bottom: 22px;
+        }
+
+        .prediction-system .race-metric {
+          min-width: 0;
+          padding: 14px 16px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 12px;
+          background: linear-gradient(145deg,#15171e,#0d0e12);
+        }
+
+        .prediction-system .race-metric span {
+          display: block;
+          color: #969ca8;
+          font-size: 9px;
+          font-weight: 900;
+          letter-spacing: .11em;
+        }
+
+        .prediction-system .race-metric strong {
+          display: block;
+          margin-top: 7px;
+          color: white;
+          font-size: clamp(18px,2.6vw,26px);
+          font-weight: 1000;
+          letter-spacing: -.04em;
+        }
+
+        .prediction-system .race-metric strong em {
+          color: var(--arcade-red);
+          font-size: 10px;
+          font-style: normal;
+          letter-spacing: 0;
+        }
+
+        .prediction-system .prediction-lock {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          margin-bottom: 18px;
+          padding: 16px 18px;
+          border: 1px solid rgba(255,38,56,.45);
+          border-radius: 12px;
+          background: rgba(255,38,56,.08);
+        }
+
+        .prediction-system .lock-icon {
+          display: grid;
+          place-items: center;
+          width: 40px;
+          height: 40px;
+          flex: 0 0 40px;
+          border-radius: 10px;
+          background: rgba(255,38,56,.14);
+          color: var(--arcade-red);
+          font-size: 20px;
+        }
+
+        .prediction-system .prediction-lock b {
+          display: block;
+          color: #ff7c8c;
+          font-size: 11px;
+          letter-spacing: .13em;
+        }
+
+        .prediction-system .prediction-lock span {
+          display: block;
+          margin-top: 4px;
+          color: var(--arcade-muted);
+          font-size: 12px;
+          line-height: 1.5;
+        }
+
+        .prediction-system .prediction-wizard {
+          position: relative;
+          isolation: isolate;
+          overflow: hidden;
+          margin: 0 0 22px;
+          padding: 20px;
+          border: 1px solid rgba(255,255,255,.12);
+          border-radius: 16px;
           background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
-
-          text-align:
-            left;
-
-          cursor:
-            pointer;
-
-          transition:
-            .2s;
+            linear-gradient(105deg,rgba(255,38,56,.08),transparent 45%),
+            linear-gradient(135deg,#17191f,#0c0d11 75%);
+          box-shadow: 0 12px 35px rgba(0,0,0,.16);
         }
 
-        .podium-card:hover {
-          transform:
-            translateY(
-              -2px
-            );
+        .prediction-system .prediction-wizard::after {
+          position: absolute;
+          top: 0;
+          right: 0;
+          width: 110px;
+          height: 3px;
+          content: "";
+          background: var(--arcade-red);
+          box-shadow: 0 0 20px var(--arcade-red);
         }
 
-        .podium-card.active {
-          border-color:
-            rgba(
-              255,
-              73,
-              66,
-              .68
-            );
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(
-                225,
-                6,
-                0,
-                .13
-              ),
-              rgba(
-                255,
-                255,
-                255,
-                .025
-              )
-            );
+        .prediction-system .prediction-wizard-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 14px;
+          color: var(--arcade-muted);
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: .13em;
         }
 
-        .podium-card:disabled {
-          cursor:
-            not-allowed;
-
-          opacity:
-            .7;
+        .prediction-system .prediction-wizard-top span:first-child {
+          color: #ff596b;
         }
 
-        .podium-top {
-          display:
-            flex;
-
-          justify-content:
-            space-between;
-
-          align-items:
-            flex-start;
+        .prediction-system .prediction-wizard-progress {
+          height: 4px;
+          margin-bottom: 16px;
+          overflow: hidden;
+          border-radius: 20px;
+          background: #30323a;
         }
 
-        .podium-position {
-          font-size:
-            39px;
-
-          line-height:
-            1;
-
-          font-weight:
-            1000;
+        .prediction-system .prediction-wizard-progress > span {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: linear-gradient(90deg,#c70c21,var(--arcade-red),#ff8490);
+          box-shadow: 0 0 14px rgba(255,38,56,.55);
+          transition: width .25s ease;
         }
 
-        .podium-points {
-          margin-top:
-            5px;
-
-          color:
-            #ff625b;
-
-          font-size:
-            9px;
-
-          font-weight:
-            900;
+        .prediction-system .prediction-wizard-steps {
+          display: grid;
+          grid-template-columns: repeat(var(--step-count),minmax(0,1fr));
+          gap: 8px;
         }
 
-        .podium-badge {
-          padding:
-            6px 8px;
-
-          border-radius:
-            999px;
-
-          color:
-            #ff756f;
-
-          background:
-            rgba(
-              225,
-              6,
-              0,
-              .13
-            );
-
-          font-size:
-            8px;
-
-          font-weight:
-            900;
+        .prediction-system .prediction-wizard-step {
+          display: flex;
+          align-items: center;
+          min-width: 0;
+          gap: 10px;
+          padding: 11px;
+          border: 1px solid transparent;
+          border-radius: 10px;
+          color: var(--arcade-muted);
+          background: rgba(255,255,255,.018);
+          text-align: left;
+          cursor: pointer;
+          transition: border-color .2s,background .2s,color .2s;
         }
 
-        .podium-driver {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            11px;
-
-          margin-top:
-            32px;
+        .prediction-system .prediction-wizard-step:hover {
+          border-color: var(--arcade-line);
+          background: rgba(255,255,255,.04);
         }
 
-        .podium-driver img,
-        .podium-avatar {
-          width:
-            74px;
-
-          height:
-            74px;
-
-          flex:
-            0 0 74px;
-
-          border-radius:
-            50%;
-
-          object-fit:
-            cover;
-
-          background:
-            #242b34;
+        .prediction-system .prediction-wizard-step.active {
+          border-color: rgba(255,38,56,.55);
+          color: white;
+          background: rgba(255,38,56,.09);
+          box-shadow: inset 0 0 18px rgba(255,38,56,.035);
         }
 
-        .podium-avatar {
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          font-weight:
-            1000;
+        .prediction-system .prediction-step-number {
+          display: grid;
+          place-items: center;
+          width: 29px;
+          height: 29px;
+          flex: 0 0 29px;
+          border: 1px solid #3a3d47;
+          border-radius: 8px;
+          color: #b8bdc7;
+          background: #202229;
+          font-size: 11px;
+          font-weight: 1000;
         }
 
-        .team-bar {
-          width:
-            4px;
-
-          height:
-            39px;
-
-          flex:
-            0 0 4px;
-
-          border-radius:
-            999px;
+        .prediction-system .prediction-wizard-step.active .prediction-step-number {
+          border-color: var(--arcade-red);
+          color: white;
+          background: var(--arcade-red);
+          box-shadow: 0 0 16px rgba(255,38,56,.22);
         }
 
-        .driver-title {
-          font-size:
-            15px;
-
-          font-weight:
-            1000;
+        .prediction-system .prediction-wizard-step strong {
+          display: block;
+          overflow: hidden;
+          color: inherit;
+          font-size: 11px;
+          font-weight: 900;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
-        .driver-team {
-          margin-top:
-            3px;
-
-          color:
-            var(--muted, #8994a1);
-
-          font-size:
-            9px;
+        .prediction-system .prediction-wizard-step small {
+          display: block;
+          margin-top: 4px;
+          color: #858b97;
+          font-size: 9px;
         }
 
-        .empty-podium {
-          height:
-            130px;
-
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          color:
-            var(--muted, #7e8996);
-
-          font-size:
-            11px;
-
-          text-align:
-            center;
+        .prediction-system .podium-grid {
+          display: grid;
+          grid-template-columns: repeat(3,minmax(0,1fr));
+          gap: 12px;
         }
 
-        .prediction-section {
-          margin-top:
-            30px;
-
-          padding-top:
-            27px;
-
-          border-top:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .08
-              )
-            );
-        }
-
-        .prediction-heading {
-          display:
-            flex;
-
-          align-items:
-            flex-end;
-
-          justify-content:
-            space-between;
-
-          gap:
-            18px;
-
-          margin-bottom:
-            15px;
-        }
-
-        .prediction-heading small {
-          color:
-            #ff514a;
-
-          font-size:
-            9px;
-
-          font-weight:
-            1000;
-
-          letter-spacing:
-            .13em;
-        }
-
-        .prediction-heading h3 {
-          margin:
-            5px 0 0;
-
-          font-size:
-            24px;
-        }
-
-        .prediction-progress {
-          color:
-            var(--muted, #8e99a6);
-
-          font-size:
-            10px;
-
-          font-weight:
-            800;
-        }
-
-        .driver-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(
-              4,
-              minmax(
-                0,
-                1fr
-              )
-            );
-
-          gap:
-            9px;
-        }
-
-        .driver-button {
-          min-width:
-            0;
-
-          padding:
-            10px;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          gap:
-            9px;
-
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .07
-              )
-            );
-
-          border-radius:
-            12px;
-
-          color:
-            var(--text, #fff);
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .02
-            );
-
-          text-align:
-            left;
-
-          cursor:
-            pointer;
-        }
-
-        .driver-button.selected {
-          border-color:
-            rgba(
-              255,
-              77,
-              68,
-              .55
-            );
-
-          background:
-            rgba(
-              225,
-              6,
-              0,
-              .08
-            );
-        }
-
-        .driver-button:disabled {
-          opacity:
-            .55;
-
-          cursor:
-            not-allowed;
-        }
-
-        .driver-button img,
-        .driver-small-avatar {
-          width:
-            43px;
-
-          height:
-            43px;
-
-          flex:
-            0 0 43px;
-
-          border-radius:
-            50%;
-
-          object-fit:
-            cover;
-
-          background:
-            #252c35;
-        }
-
-        .driver-small-avatar {
-          display:
-            grid;
-
-          place-items:
-            center;
-
-          font-size:
-            9px;
-
-          font-weight:
-            1000;
-        }
-
-        .driver-button-name {
-          overflow:
-            hidden;
-
-          font-size:
-            11px;
-
-          font-weight:
-            900;
-
-          white-space:
-            nowrap;
-
-          text-overflow:
-            ellipsis;
-        }
-
-        .driver-button-team {
-          margin-top:
-            2px;
-
-          overflow:
-            hidden;
-
-          color:
-            var(--muted, #7f8996);
-
-          font-size:
-            8px;
-
-          white-space:
-            nowrap;
-
-          text-overflow:
-            ellipsis;
-        }
-
-        .bulletin-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(
-              2,
-              minmax(
-                0,
-                1fr
-              )
-            );
-
-          gap:
-            10px;
-        }
-
-        .bulletin-card {
-          position:
-            relative;
-
-          min-height:
-            164px;
-
-          padding:
-            16px;
-
-          display:
-            flex;
-
-          flex-direction:
-            column;
-
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .08
-              )
-            );
-
-          border-radius:
-            14px;
-
-          background:
-            linear-gradient(
-              145deg,
-              rgba(
-                255,
-                255,
-                255,
-                .032
-              ),
-              rgba(
-                255,
-                255,
-                255,
-                .012
-              )
-            );
-        }
-
-        .bulletin-card-top {
-          display:
-            flex;
-
-          justify-content:
-            space-between;
-
-          gap:
-            10px;
-        }
-
-        .bulletin-icon {
-          font-size:
-            21px;
-        }
-
-        .bulletin-point {
-          color:
-            #ff665f;
-
-          font-size:
-            9px;
-
-          font-weight:
-            1000;
-        }
-
-        .bulletin-group {
-          margin-top:
-            9px;
-
-          color:
-            #ff625b;
-
-          font-size:
-            7px;
-
-          font-weight:
-            1000;
-
-          letter-spacing:
-            .11em;
-
-          text-transform:
-            uppercase;
-        }
-
-        .bulletin-card h4 {
-          margin:
-            5px 0 5px;
-
-          font-size:
-            13px;
-
-          line-height:
-            1.35;
-        }
-
-        .bulletin-card p {
-          margin:
-            0;
-
-          color:
-            var(--muted, #838e9b);
-
-          font-size:
-            9px;
-
-          line-height:
-            1.5;
-        }
-
-        .yes-no {
-          display:
-            grid;
-
-          grid-template-columns:
-            1fr 1fr;
-
-          gap:
-            6px;
-
-          margin-top:
-            auto;
-
-          padding-top:
-            12px;
-        }
-
-        .yes-no button {
-          height:
-            33px;
-
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .08
-              )
-            );
-
-          border-radius:
-            8px;
-
-          color:
-            var(--muted, #909ba7);
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
-
-          font-size:
-            9px;
-
-          font-weight:
-            900;
-
-          cursor:
-            pointer;
-        }
-
-        .yes-no button.yes-active {
-          border-color:
-            rgba(
-              51,
-              210,
-              116,
-              .45
-            );
-
-          color:
-            #62e697;
-
-          background:
-            rgba(
-              51,
-              210,
-              116,
-              .10
-            );
-        }
-
-        .yes-no button.no-active {
-          border-color:
-            rgba(
-              255,
-              72,
-              64,
-              .45
-            );
-
-          color:
-            #ff6b65;
-
-          background:
-            rgba(
-              225,
-              6,
-              0,
-              .09
-            );
-        }
-
-        .yes-no button:disabled {
-          cursor:
-            not-allowed;
-
-          opacity:
-            .6;
-        }
-
-        .special-grid {
-          display:
-            grid;
-
-          grid-template-columns:
-            repeat(
-              2,
-              minmax(
-                0,
-                1fr
-              )
-            );
-
-          gap:
-            10px;
-        }
-
-        .special-card {
-          padding:
-            16px;
-
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .08
-              )
-            );
-
-          border-radius:
-            14px;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .022
-            );
-        }
-
-        .special-head {
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          gap:
-            12px;
-        }
-
-        .special-head strong {
-          font-size:
-            12px;
-        }
-
-        .special-points {
-          color:
-            #ff655f;
-
-          font-size:
-            9px;
-
-          font-weight:
-            1000;
-        }
-
-        .special-card select {
-          width:
-            100%;
-
-          height:
-            42px;
-
-          margin-top:
-            12px;
-
-          padding:
-            0 10px;
-
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .10
-              )
-            );
-
-          border-radius:
-            9px;
-
-          color:
-            var(--text, #fff);
-
-          background:
-            var(--panel, #171b22);
-
-          outline:
-            none;
-        }
-
-        .save-summary {
-          margin-top:
-            27px;
-
-          padding:
-            17px;
-
-          display:
-            flex;
-
-          align-items:
-            center;
-
-          justify-content:
-            space-between;
-
-          gap:
-            20px;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              80,
-              72,
-              .20
-            );
-
-          border-radius:
-            14px;
-
-          background:
-            linear-gradient(
-              135deg,
-              rgba(
-                225,
-                6,
-                0,
-                .10
-              ),
-              rgba(
-                255,
-                255,
-                255,
-                .018
-              )
-            );
-        }
-
-        .save-summary strong {
-          display:
-            block;
-
-          font-size:
-            14px;
-        }
-
-        .save-summary span {
-          display:
-            block;
-
-          margin-top:
-            4px;
-
-          color:
-            var(--muted, #8b96a3);
-
-          font-size:
-            9px;
-        }
-
-        .save-button {
-          min-width:
-            190px;
-
-          height:
-            46px;
-
-          border:
-            0;
-
-          border-radius:
-            9px;
-
-          color:
-            white;
-
-          background:
-            linear-gradient(
-              135deg,
-              #c90000,
-              #ff463f
-            );
-
-          font-size:
-            10px;
-
-          font-weight:
-            1000;
-
-          cursor:
-            pointer;
-        }
-
-        .save-button:disabled {
-          opacity:
-            .5;
-
-          cursor:
-            not-allowed;
-        }
-
-        .prediction-message {
-          margin-top:
-            13px;
-
-          padding:
-            12px 14px;
-
-          border:
-            1px solid
-            var(
-              --border,
-              rgba(
-                255,
-                255,
-                255,
-                .08
-              )
-            );
-
-          border-radius:
-            10px;
-
-          color:
-            var(--muted, #c4ccd5);
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .025
-            );
-
-          font-size:
-            10px;
-
-          line-height:
-            1.5;
-        }
-
-        @media(
-          max-width:
-            850px
-        ) {
-          .podium-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .driver-grid {
-            grid-template-columns:
-              repeat(
-                2,
-                minmax(
-                  0,
-                  1fr
-                )
-              );
-          }
-
-          .bulletin-grid,
-          .special-grid {
-            grid-template-columns:
-              1fr;
-          }
-        }
-
-        @media(
-          max-width:
-            520px
-        ) {
-          .driver-grid {
-            grid-template-columns:
-              1fr;
-          }
-
-          .save-summary {
-            align-items:
-              stretch;
-
-            flex-direction:
-              column;
-          }
-
-          .save-button {
-            width:
-              100%;
-          }
-        }
-
-        /* F1 SOCIAL - 2026 Prediction Center */
-        .prediction-system { color: #f6f7fa; }
-        .prediction-system .driver-title,
-        .prediction-system .driver-button-name,
-        .prediction-system .podium-position,
-        .prediction-system .bulletin-card h4,
-        .prediction-system .special-head strong { color: #f9fafc !important; }
-        .prediction-system .driver-team,
-        .prediction-system .driver-button-team { color: #a9b4c4; }
         .prediction-system .podium-card {
-          min-height: 215px; border-radius: 17px;
-          background: linear-gradient(150deg, #20232c 0%, #151923 100%);
+          position: relative;
+          min-width: 0;
+          min-height: 230px;
+          overflow: hidden;
+          padding: 18px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 14px;
+          color: var(--arcade-text);
+          background:
+            radial-gradient(ellipse at 100% 0,rgba(255,255,255,.055),transparent 55%),
+            linear-gradient(150deg,#1b1d24,#101116);
+          text-align: left;
+          cursor: pointer;
+          transition: transform .2s,border-color .2s,box-shadow .2s;
         }
+
+        .prediction-system .podium-card::before {
+          position: absolute;
+          top: 0;
+          right: 0;
+          left: 0;
+          height: 3px;
+          content: "";
+          background: #343640;
+        }
+
+        .prediction-system .podium-card::after {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          height: 2px;
+          content: "";
+          background: #343640;
+        }
+
+        .prediction-system .podium-card:hover:not(:disabled) {
+          transform: translateY(-3px);
+          border-color: rgba(255,38,56,.55);
+        }
+
         .prediction-system .podium-card.active {
-          border-color: #ff424b;
-          box-shadow: 0 0 0 1px rgba(255, 66, 75, .18) inset;
-          background: linear-gradient(145deg, #441b27, #191920);
+          border-color: rgba(255,38,56,.8);
+          background:
+            radial-gradient(ellipse at 50% 0,rgba(255,38,56,.14),transparent 70%),
+            linear-gradient(150deg,#21161c,#101116);
+          box-shadow: 0 0 0 1px rgba(255,38,56,.1),0 0 26px rgba(255,38,56,.07);
         }
-        .prediction-system .driver-button { position: relative; padding: 12px 13px; min-height: 78px; background: #1b202a; border-color: #343a47; }
-        .prediction-system .driver-button:hover { border-color: #fb515e; background: #28232c; }
-        .prediction-system .driver-button:disabled { opacity: .55; }
-        .prediction-system .driver-button-name { font-size: 12px; }
-        .prediction-system .bulletin-card { background: #1c2029; border-color: #343a47; }
-        .prediction-system .special-card { background: #1c2029; border-color: #343a47; }
-        .prediction-wizard { margin: 0 0 24px; padding: 15px; border-radius: 16px; border: 1px solid #333743; background: linear-gradient(100deg,#1d202a,#161820); }
-        .prediction-wizard-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #a5afbf; font-size: 10px; font-weight: 900; letter-spacing: .08em; margin-bottom: 12px; }
-        .prediction-wizard-progress { height: 3px; background: #353944; border-radius: 10px; overflow: hidden; margin-bottom: 14px; }
-        .prediction-wizard-progress > span { display: block; height: 100%; background: linear-gradient(90deg,#e10600,#ff6c65); transition: width .2s; }
-        .prediction-wizard-steps { display: grid; grid-template-columns: repeat(var(--step-count),1fr); gap: 8px; }
-        .prediction-wizard-step { min-width: 0; display: flex; align-items: center; gap: 9px; text-align: left; padding: 10px 8px; border: 1px solid transparent; border-radius: 10px; color: #aab3c1; background: transparent; cursor: pointer; }
-        .prediction-wizard-step.active { border-color: #ae3443; color: white; background: #38202a; }
-        .prediction-step-number { display: grid; place-items: center; flex: 0 0 26px; height: 26px; background: #303540; color: #d8dce2; border-radius: 50%; font-size: 11px; font-weight: 1000; }
-        .prediction-wizard-step.active .prediction-step-number { background: #f1424e; color: white; }
-        .prediction-wizard-step strong { display:block; font-size: 10px; color: inherit; }
-        .prediction-wizard-step small { display:block; font-size: 9px; color: #8d98a8; margin-top: 2px; }
-        .prediction-system .prediction-section { margin-top: 18px; }
-        .prediction-wizard-controls { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 23px; }
-        .prediction-wizard-controls button { border-radius: 10px; border: 1px solid #454653; padding: 13px 19px; background: #292b35; color: white; font-size: 11px; font-weight: 900; cursor: pointer; }
-        .prediction-wizard-controls .next { background: linear-gradient(115deg,#bc1218,#f54a50); border-color: #f55361; }
-        .prediction-wizard-controls .back { color:#c7d0db; }
-        .prediction-wizard-controls button:disabled { opacity: .4; }
-        .community-mini { margin-top: 9px; display: grid; gap: 5px; }
-        .community-mini-label { display:flex; justify-content:space-between; gap: 8px; color: #c7d0da; font-size: 10px; }
-        .community-mini-label b { color: #ffa49c; }
-        .community-track { height: 4px; border-radius: 20px; background: #3a3b43; overflow:hidden; }
-        .community-track i { display:block; height:100%; background:linear-gradient(90deg,#e10600,#ff726f); border-radius:inherit; }
-        .community-yesno { display:grid; gap: 6px; margin-top:10px; }
-        .community-duo { display:flex; justify-content:space-between; font-size:9px; color:#b7c3d0; }
-        .community-duo b { color:white; }
-        .community-footnote { padding: 13px; margin: 16px 0 0; border-radius: 12px; background: #171b25; color: #a3afbe; border: 1px solid #313743; font-size: 11px; line-height: 1.5; }
-        .prediction-review { padding: 22px; border-radius: 14px; border: 1px solid #383d49; background: linear-gradient(145deg,#24222c,#1a1c25); }
-        .prediction-review h3 { color:white; font-size: 26px; margin: 0 0 9px; }
-        .prediction-review-picks { display:grid; gap:7px; margin:20px 0; }
-        .prediction-review-picks > div { display:flex; justify-content:space-between; padding:10px 12px; border-radius:9px; background:#151923; border:1px solid #383a47; gap:10px; }
-        .prediction-review-picks span { color:#ff6571; font-size:11px; font-weight:1000; }
-        .prediction-review-picks strong { color:#fff; font-size:12px; }
-        @media (max-width: 850px) {
-          .prediction-system .podium-grid { grid-template-columns: repeat(3, minmax(0,1fr)); }
-          .prediction-system .podium-card { min-height: 180px; padding: 12px; }
-          .prediction-system .podium-driver { margin-top: 15px; gap: 7px; flex-wrap:wrap; }
-          .prediction-system .podium-driver img,.prediction-system .podium-avatar { width: 48px; height: 48px; flex-basis:48px; }
-          .prediction-system .podium-position { font-size: 29px; }
-          .prediction-wizard-step { gap: 5px; padding: 7px 3px; flex-direction:column; justify-content:center; text-align:center; }
-          .prediction-wizard-step strong { font-size:9px; }
-          .prediction-wizard-step small { display:none; }
+
+        .prediction-system .podium-card.active::before,
+        .prediction-system .podium-card.active::after {
+          background: linear-gradient(90deg,transparent,var(--arcade-red),transparent);
+          box-shadow: 0 0 12px var(--arcade-red);
         }
-        @media (max-width: 520px) {
-          .prediction-system .podium-card { min-height: 157px; padding: 9px; }
-          .prediction-system .podium-driver img,.prediction-system .podium-avatar,.prediction-system .team-bar { display:none; }
-          .prediction-system .driver-title { font-size: 11px; }
-          .prediction-system .driver-team { font-size: 8px; }
-          .prediction-system .driver-button { min-height: 65px; }
-          .prediction-system .driver-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
-          .prediction-system .driver-button img,.prediction-system .driver-small-avatar { width: 35px; height: 35px; flex-basis:35px; }
-          .prediction-wizard-step strong { font-size:8px; }
-          .prediction-review-picks > div { flex-direction:column; }
+
+        .prediction-system .podium-card:disabled {
+          cursor: not-allowed;
+          opacity: .78;
+        }
+
+        .prediction-system .podium-top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+        }
+
+        .prediction-system .podium-position {
+          color: white;
+          font-size: 42px;
+          font-weight: 1000;
+          line-height: .95;
+          letter-spacing: -.07em;
+        }
+
+        .prediction-system .podium-points {
+          margin-top: 8px;
+          color: #ff6878;
+          font-size: 10px;
+          font-weight: 1000;
+          letter-spacing: .1em;
+        }
+
+        .prediction-system .podium-badge {
+          padding: 6px 8px;
+          border: 1px solid rgba(255,38,56,.35);
+          border-radius: 5px;
+          color: #ff6878;
+          background: rgba(255,38,56,.07);
+          font-size: 8px;
+          font-weight: 1000;
+          letter-spacing: .06em;
+        }
+
+        .prediction-system .podium-driver {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 0;
+          margin-top: 27px;
+        }
+
+        .prediction-system .podium-driver img,
+        .prediction-system .podium-avatar {
+          width: 66px;
+          height: 66px;
+          flex: 0 0 66px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,.12);
+          border-radius: 11px;
+          object-fit: cover;
+          object-position: center top;
+          background: #252730;
+        }
+
+        .prediction-system .podium-avatar {
+          display: grid;
+          place-items: center;
+          color: var(--arcade-red);
+          font-size: 14px;
+          font-weight: 1000;
+        }
+
+        .prediction-system .team-bar {
+          width: 4px;
+          height: 43px;
+          flex: 0 0 4px;
+          border-radius: 10px;
+          box-shadow: 0 0 10px currentColor;
+        }
+
+        .prediction-system .driver-title {
+          overflow-wrap: anywhere;
+          color: white;
+          font-size: 13px;
+          font-weight: 1000;
+          line-height: 1.25;
+        }
+
+        .prediction-system .driver-team {
+          margin-top: 5px;
+          color: var(--arcade-muted);
+          font-size: 10px;
+          line-height: 1.4;
+        }
+
+        .prediction-system .empty-podium {
+          display: grid;
+          min-height: 105px;
+          place-items: center;
+          color: #9298a4;
+          font-size: 11px;
+          text-align: center;
+        }
+
+        .prediction-system .empty-podium::before {
+          display: block;
+          margin-bottom: 7px;
+          color: var(--arcade-red);
+          content: "+";
+          font-size: 26px;
+          font-weight: 300;
+        }
+
+        .prediction-system .prediction-section {
+          margin-top: 28px;
+          padding-top: 25px;
+          border-top: 1px solid var(--arcade-line);
+        }
+
+        .prediction-system .prediction-heading {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 16px;
+        }
+
+        .prediction-system .prediction-heading small {
+          color: #ff6575;
+          font-size: 9px;
+          font-weight: 1000;
+          letter-spacing: .17em;
+        }
+
+        .prediction-system .prediction-heading h3 {
+          margin: 6px 0 0;
+          color: white;
+          font-size: clamp(21px,3vw,27px);
+          font-weight: 1000;
+          letter-spacing: -.04em;
+        }
+
+        .prediction-system .prediction-progress {
+          color: var(--arcade-muted);
+          font-size: 10px;
+          font-weight: 900;
+          text-align: right;
+        }
+
+        .prediction-system .driver-grid {
+          display: grid;
+          grid-template-columns: repeat(3,minmax(0,1fr));
+          gap: 9px;
+        }
+
+        .prediction-system .driver-button {
+          display: flex;
+          align-items: center;
+          min-width: 0;
+          min-height: 76px;
+          gap: 11px;
+          padding: 11px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 11px;
+          color: var(--arcade-text);
+          background: linear-gradient(135deg,#191b22,#101116);
+          text-align: left;
+          cursor: pointer;
+          transition: border-color .18s,background .18s,transform .18s;
+        }
+
+        .prediction-system .driver-button:hover:not(:disabled) {
+          transform: translateY(-1px);
+          border-color: rgba(255,38,56,.6);
+          background: #21181d;
+        }
+
+        .prediction-system .driver-button.selected {
+          border-color: rgba(255,38,56,.75);
+          background: rgba(255,38,56,.075);
+          box-shadow: inset 0 0 18px rgba(255,38,56,.035);
+        }
+
+        .prediction-system .driver-button:disabled {
+          cursor: not-allowed;
+          opacity: .55;
+        }
+
+        .prediction-system .driver-button img,
+        .prediction-system .driver-small-avatar {
+          width: 45px;
+          height: 45px;
+          flex: 0 0 45px;
+          overflow: hidden;
+          border: 1px solid rgba(255,255,255,.12);
+          border-radius: 9px;
+          object-fit: cover;
+          object-position: center top;
+          background: #252730;
+        }
+
+        .prediction-system .driver-small-avatar {
+          display: grid;
+          place-items: center;
+          color: #ff6878;
+          font-size: 10px;
+          font-weight: 1000;
+        }
+
+        .prediction-system .driver-button-name {
+          overflow: hidden;
+          color: white;
+          font-size: 11px;
+          font-weight: 900;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .prediction-system .driver-button-team {
+          overflow: hidden;
+          margin-top: 4px;
+          color: var(--arcade-muted);
+          font-size: 9px;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .prediction-system .community-mini {
+          display: grid;
+          gap: 6px;
+          margin-top: 10px;
+        }
+
+        .prediction-system .community-mini-label {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          color: #a8adb7;
+          font-size: 9px;
+        }
+
+        .prediction-system .community-mini-label b {
+          color: #ff6878;
+        }
+
+        .prediction-system .community-track {
+          height: 4px;
+          overflow: hidden;
+          border-radius: 20px;
+          background: #343640;
+        }
+
+        .prediction-system .community-track i {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: linear-gradient(90deg,#c70c21,var(--arcade-red),#ff8995);
+          box-shadow: 0 0 10px rgba(255,38,56,.4);
+        }
+
+        .prediction-system .community-footnote {
+          margin: 16px 0 0;
+          padding: 13px 15px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 10px;
+          color: var(--arcade-muted);
+          background: rgba(12,13,18,.8);
+          font-size: 11px;
+          line-height: 1.6;
+        }
+
+        .prediction-system .bulletin-grid,
+        .prediction-system .special-grid {
+          display: grid;
+          grid-template-columns: repeat(2,minmax(0,1fr));
+          gap: 12px;
+        }
+
+        .prediction-system .bulletin-card {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+          min-height: 185px;
+          padding: 17px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 12px;
+          background:
+            linear-gradient(120deg,rgba(255,38,56,.035),transparent 60%),
+            #121319;
+        }
+
+        .prediction-system .bulletin-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+
+        .prediction-system .bulletin-icon {
+          font-size: 23px;
+        }
+
+        .prediction-system .bulletin-point {
+          color: #ff6878;
+          font-size: 10px;
+          font-weight: 1000;
+        }
+
+        .prediction-system .bulletin-group {
+          margin-top: 11px;
+          color: #a2a7b1;
+          font-size: 8px;
+          font-weight: 1000;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+        }
+
+        .prediction-system .bulletin-card h4 {
+          margin: 7px 0;
+          color: white;
+          font-size: 14px;
+          font-weight: 900;
+          line-height: 1.4;
+        }
+
+        .prediction-system .bulletin-card p {
+          margin: 0 0 12px;
+          color: var(--arcade-muted);
+          font-size: 11px;
+          line-height: 1.55;
+        }
+
+        .prediction-system .yes-no {
+          display: grid;
+          grid-template-columns: repeat(2,minmax(0,1fr));
+          gap: 8px;
+          margin-top: auto;
+          padding-top: 8px;
+        }
+
+        .prediction-system .yes-no button {
+          min-height: 38px;
+          border: 1px solid #383a44;
+          border-radius: 8px;
+          color: #a4a9b4;
+          background: #1b1d24;
+          font-size: 10px;
+          font-weight: 1000;
+          cursor: pointer;
+          transition: .18s;
+        }
+
+        .prediction-system .yes-no button.yes-active {
+          border-color: rgba(81,240,168,.6);
+          color: var(--arcade-green);
+          background: rgba(81,240,168,.08);
+          box-shadow: inset 0 0 12px rgba(81,240,168,.04);
+        }
+
+        .prediction-system .yes-no button.no-active {
+          border-color: rgba(255,38,56,.65);
+          color: #ff8190;
+          background: rgba(255,38,56,.08);
+        }
+
+        .prediction-system .yes-no button:disabled {
+          cursor: not-allowed;
+          opacity: .6;
+        }
+
+        .prediction-system .community-yesno {
+          display: grid;
+          gap: 7px;
+          margin-top: 11px;
+        }
+
+        .prediction-system .community-duo {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          color: #a9adb7;
+          font-size: 9px;
+        }
+
+        .prediction-system .community-duo b {
+          color: white;
+        }
+
+        .prediction-system .special-card {
+          min-width: 0;
+          padding: 18px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 12px;
+          background: linear-gradient(145deg,#191b22,#101116);
+        }
+
+        .prediction-system .special-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .prediction-system .special-head strong {
+          color: white;
+          font-size: 13px;
+          font-weight: 900;
+          line-height: 1.5;
+        }
+
+        .prediction-system .special-points {
+          flex: 0 0 auto;
+          color: #ff6878;
+          font-size: 10px;
+          font-weight: 1000;
+        }
+
+        .prediction-system .special-card select {
+          width: 100%;
+          min-height: 45px;
+          margin-top: 17px;
+          padding: 0 12px;
+          border: 1px solid #3a3d47;
+          border-radius: 8px;
+          color: white;
+          background: #0b0c10;
+          outline: none;
+        }
+
+        .prediction-system .special-card select option {
+          color: white;
+          background: #101116;
+        }
+
+        .prediction-system .prediction-review {
+          padding: clamp(18px,4vw,28px);
+          border: 1px solid rgba(255,38,56,.3);
+          border-radius: 15px;
+          background:
+            radial-gradient(ellipse at 100% 0,rgba(255,38,56,.08),transparent 60%),
+            linear-gradient(145deg,#191a21,#0d0e12);
+        }
+
+        .prediction-system .eyebrow {
+          color: #ff6878;
+          font-size: 9px;
+          font-weight: 1000;
+          letter-spacing: .17em;
+        }
+
+        .prediction-system .prediction-review h3 {
+          margin: 9px 0;
+          color: white;
+          font-size: clamp(24px,4vw,32px);
+          font-weight: 1000;
+          letter-spacing: -.05em;
+        }
+
+        .prediction-system .prediction-review > p {
+          color: var(--arcade-muted);
+          font-size: 12px;
+          line-height: 1.6;
+        }
+
+        .prediction-system .prediction-review-picks {
+          display: grid;
+          gap: 8px;
+          margin: 22px 0;
+        }
+
+        .prediction-system .prediction-review-picks > div {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          padding: 13px 15px;
+          border: 1px solid var(--arcade-line);
+          border-radius: 9px;
+          background: rgba(5,6,9,.5);
+        }
+
+        .prediction-system .prediction-review-picks span {
+          flex: 0 0 auto;
+          color: #ff6878;
+          font-size: 10px;
+          font-weight: 1000;
+        }
+
+        .prediction-system .prediction-review-picks strong {
+          color: white;
+          font-size: 12px;
+          text-align: right;
+        }
+
+        .prediction-system .save-summary {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          margin-top: 24px;
+          padding: 17px;
+          border: 1px solid rgba(255,38,56,.3);
+          border-radius: 11px;
+          background: rgba(255,38,56,.055);
+        }
+
+        .prediction-system .save-summary strong {
+          display: block;
+          color: white;
+          font-size: 14px;
+          font-weight: 1000;
+        }
+
+        .prediction-system .save-summary span {
+          display: block;
+          margin-top: 6px;
+          color: var(--arcade-muted);
+          font-size: 10px;
+          line-height: 1.6;
+        }
+
+        .prediction-system .save-button {
+          min-width: 205px;
+          min-height: 48px;
+          padding: 0 18px;
+          border: 1px solid rgba(255,38,56,.8);
+          border-radius: 8px;
+          color: white;
+          background: linear-gradient(110deg,#c70c21,#ff2638);
+          box-shadow: 0 6px 20px rgba(255,38,56,.15);
+          font-size: 10px;
+          font-weight: 1000;
+          letter-spacing: .06em;
+          cursor: pointer;
+          transition: transform .18s,box-shadow .18s;
+        }
+
+        .prediction-system .save-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 9px 25px rgba(255,38,56,.25);
+        }
+
+        .prediction-system .save-button:disabled {
+          cursor: not-allowed;
+          opacity: .5;
+        }
+
+        .prediction-system .prediction-wizard-controls {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-top: 22px;
+        }
+
+        .prediction-system .prediction-wizard-controls button {
+          min-height: 44px;
+          padding: 0 18px;
+          border: 1px solid #3a3d47;
+          border-radius: 8px;
+          color: #d1d3da;
+          background: #191b22;
+          font-size: 10px;
+          font-weight: 1000;
+          letter-spacing: .05em;
+          cursor: pointer;
+          transition: .18s;
+        }
+
+        .prediction-system .prediction-wizard-controls button:hover:not(:disabled) {
+          border-color: var(--arcade-red);
+          color: white;
+        }
+
+        .prediction-system .prediction-wizard-controls button.next {
+          border-color: var(--arcade-red);
+          color: white;
+          background: var(--arcade-red);
+          box-shadow: 0 5px 18px rgba(255,38,56,.12);
+        }
+
+        .prediction-system .prediction-wizard-controls button:disabled {
+          cursor: not-allowed;
+          opacity: .35;
+        }
+
+        .prediction-system .prediction-message {
+          margin-top: 13px;
+          padding: 13px 15px;
+          border: 1px solid rgba(255,38,56,.25);
+          border-radius: 9px;
+          color: #e0e1e7;
+          background: rgba(255,38,56,.045);
+          font-size: 11px;
+          line-height: 1.6;
+          overflow-wrap: anywhere;
+        }
+
+        @keyframes raceLightPulse {
+          0%,100% { opacity: 1; box-shadow: 0 0 12px rgba(255,38,56,.8); }
+          50% { opacity: .45; box-shadow: 0 0 4px rgba(255,38,56,.35); }
+        }
+
+        @media (max-width: 900px) {
+          .prediction-system .podium-card {
+            min-height: 200px;
+            padding: 13px;
+          }
+
+          .prediction-system .podium-position {
+            font-size: 35px;
+          }
+
+          .prediction-system .podium-driver {
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 21px;
+          }
+
+          .prediction-system .podium-driver img,
+          .prediction-system .podium-avatar {
+            width: 52px;
+            height: 52px;
+            flex-basis: 52px;
+          }
+
+          .prediction-system .driver-grid {
+            grid-template-columns: repeat(2,minmax(0,1fr));
+          }
+
+          .prediction-system .prediction-wizard-step {
+            gap: 7px;
+            padding: 9px 7px;
+          }
+
+          .prediction-system .prediction-wizard-step strong {
+            font-size: 10px;
+          }
+        }
+
+        @media (max-width: 620px) {
+          .prediction-system .race-control-hero {
+            grid-template-columns: minmax(0,1fr) auto;
+            gap: 12px;
+            padding: 22px 17px;
+          }
+
+          .prediction-system .race-control-round {
+            min-width: 74px;
+            padding: 10px;
+          }
+
+          .prediction-system .race-control-round strong {
+            font-size: 30px;
+          }
+
+          .prediction-system .race-control-metrics {
+            grid-template-columns: repeat(2,minmax(0,1fr));
+            gap: 8px;
+          }
+
+          .prediction-system .race-metric {
+            padding: 12px;
+          }
+
+          .prediction-system .prediction-wizard {
+            padding: 14px;
+            border-radius: 12px;
+          }
+
+          .prediction-system .prediction-wizard-top {
+            font-size: 9px;
+          }
+
+          .prediction-system .prediction-wizard-steps {
+            gap: 5px;
+          }
+
+          .prediction-system .prediction-wizard-step {
+            flex-direction: column;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 3px;
+            text-align: center;
+          }
+
+          .prediction-system .prediction-wizard-step strong {
+            font-size: 9px;
+          }
+
+          .prediction-system .prediction-wizard-step small {
+            display: none;
+          }
+
+          .prediction-system .prediction-step-number {
+            width: 25px;
+            height: 25px;
+            flex-basis: 25px;
+            border-radius: 7px;
+          }
+
+          .prediction-system .podium-grid {
+            gap: 7px;
+          }
+
+          .prediction-system .podium-card {
+            min-height: 160px;
+            padding: 9px;
+            border-radius: 10px;
+          }
+
+          .prediction-system .podium-position {
+            font-size: 28px;
+          }
+
+          .prediction-system .podium-points {
+            font-size: 8px;
+            letter-spacing: 0;
+          }
+
+          .prediction-system .podium-badge {
+            padding: 4px;
+            font-size: 7px;
+          }
+
+          .prediction-system .podium-driver {
+            gap: 5px;
+            margin-top: 18px;
+          }
+
+          .prediction-system .podium-driver img,
+          .prediction-system .podium-avatar,
+          .prediction-system .team-bar {
+            display: none;
+          }
+
+          .prediction-system .driver-title {
+            font-size: 10px;
+          }
+
+          .prediction-system .driver-team {
+            font-size: 8px;
+          }
+
+          .prediction-system .bulletin-grid,
+          .prediction-system .special-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .prediction-system .prediction-heading {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .prediction-system .prediction-progress {
+            text-align: left;
+          }
+
+          .prediction-system .save-summary {
+            align-items: stretch;
+            flex-direction: column;
+            gap: 14px;
+          }
+
+          .prediction-system .save-button {
+            width: 100%;
+            min-width: 0;
+          }
+        }
+
+        @media (max-width: 390px) {
+          .prediction-system .race-control-hero {
+            grid-template-columns: 1fr;
+          }
+
+          .prediction-system .race-control-round {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            text-align: left;
+          }
+
+          .prediction-system .race-control-round strong {
+            margin: 0;
+            font-size: 26px;
+          }
+
+          .prediction-system .race-control-round span {
+            margin: 0;
+          }
+
+          .prediction-system .driver-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .prediction-system .prediction-review-picks > div {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 6px;
+          }
+
+          .prediction-system .prediction-review-picks strong {
+            text-align: left;
+          }
+
+          .prediction-system .prediction-wizard-controls button {
+            padding: 0 12px;
+            font-size: 9px;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .prediction-system *,
+          .prediction-system *::before,
+          .prediction-system *::after {
+            scroll-behavior: auto !important;
+            animation-duration: .01ms !important;
+            transition-duration: .01ms !important;
+          }
         }
       `}</style>
 
       {locked && (
-        <div className="prediction-lock">
-          <b>
-           TAHMİNLER KİLİTLENDİ
-          </b>
-
-          <span>
-            Seans başladı. Kaydedilen tahminler artık değiştirilemez.
-          </span>
+        <div className="prediction-lock" role="status">
+          <div className="lock-icon" aria-hidden="true">⌑</div>
+          <div>
+            <b>TAHMİNLER KİLİTLENDİ</b>
+            <span>Seans başladı. Kayıtlı tahminler artık değiştirilemez.</span>
+          </div>
         </div>
       )}
 
+      <section className="race-control-hero">
+        <div>
+          <div className="race-control-kicker">
+            <span className="race-control-light" />
+            F1 SOCIAL / RACE CONTROL
+            <span>·</span>
+            {isRace ? "GRAND PRIX" : "SPRINT"}
+          </div>
+          <h2>{raceName || "Yarış tahmini"}</h2>
+          <p>
+            {season} SEZONU · TAHMİN MERKEZİ ·
+            {" "}{locked ? "TAHMİN SÜRESİ DOLDU" : "SEÇİMLERİNİ HAZIRLA"}
+          </p>
+        </div>
+
+        <div className="race-control-round">
+          <small>ROUND</small>
+          <strong>{String(round).padStart(2, "0")}</strong>
+          <span>{locked ? "LOCKED" : "PREDICT"}</span>
+        </div>
+      </section>
+
+      <div className="race-control-metrics">
+        <div className="race-metric">
+          <span>PODYUM SEÇİMİ</span>
+          <strong>{[selected.P1, selected.P2, selected.P3].filter(Boolean).length}<em> / 3</em></strong>
+        </div>
+        <div className="race-metric">
+          <span>SENARYOLAR</span>
+          <strong>{isRace ? answeredCount : "—"}<em>{isRace ? " / 12" : " SPRINT"}</em></strong>
+        </div>
+        <div className="race-metric">
+          <span>ÖZEL TAHMİNLER</span>
+          <strong>{isRace ? specialCount : "—"}<em>{isRace ? " / 4" : " SPRINT"}</em></strong>
+        </div>
+        <div className="race-metric">
+          <span>MAKSİMUM PUAN</span>
+          <strong>{isRace ? RACE_MAX_POINTS : PODIUM_MAX_POINTS}<em> PTS</em></strong>
+        </div>
+      </div>
+
       <div className="prediction-wizard">
         <div className="prediction-wizard-top">
-          <span>TAHMİN ROTASI · {isRace ? "GRAND PRIX" : "SPRINT"}</span>
+          <span>F1 SOCIAL / TAHMİN KONTROLÜ · {isRace ? "GRAND PRIX" : "SPRINT"}</span>
           <span>ADIM {currentStageIndex + 1} / {stages.length}</span>
         </div>
-        <div className="prediction-wizard-progress"><span style={{ width: `${((currentStageIndex + 1) / stages.length) * 100}%` }} /></div>
-        <div className="prediction-wizard-steps" style={{ "--step-count": stages.length } as CSSProperties}>
+
+        <div className="prediction-wizard-progress">
+          <span
+            style={{
+              width: `${((currentStageIndex + 1) / stages.length) * 100}%`,
+            }}
+          />
+        </div>
+
+        <div
+          className="prediction-wizard-steps"
+          style={{ "--step-count": stages.length } as CSSProperties}
+        >
           {stages.map((stage, index) => (
-            <button key={stage.id} type="button" className={`prediction-wizard-step ${stage.id === currentStage ? "active" : ""}`} onClick={() => navigateStage(stage.id)}>
+            <button
+              key={stage.id}
+              type="button"
+              className={`prediction-wizard-step ${
+                stage.id === currentStage ? "active" : ""
+              }`}
+              onClick={() => navigateStage(stage.id)}
+            >
               <span className="prediction-step-number">{index + 1}</span>
-              <span><strong>{stage.title}</strong><small>{stage.subtitle}</small></span>
+              <span>
+                <strong>{stage.title}</strong>
+                <small>{stage.subtitle}</small>
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* PODIUM */}
-      {currentStage === "podium" && (<>
-
-
-      <div className="podium-grid">
-        {slots.map(
-          (
-            slot
-          ) => {
-            const driver =
-              getDriver(
-                selected[
-                  slot.key
-                ]
-              );
-
-            const active =
-              activeSlot ===
-                slot.key &&
-              !locked;
-
-            return (
-              <button
-                key={
-                  slot.key
-                }
-                type="button"
-                className={`podium-card ${
-                  active
-                    ? "active"
-                    : ""
-                }`}
-                disabled={
-                  locked
-                }
-                onClick={() =>
-                  setActiveSlot(
-                    slot.key
-                  )
-                }
-              >
-                <div className="podium-top">
-                  <div>
-                    <div className="podium-position">
-                      {slot.key}
-                    </div>
-
-                    <div className="podium-points">
-                      {slot.points} PUAN
-                    </div>
-                  </div>
-
-                  {active && (
-                    <span className="podium-badge">
-                      SEÇİLİYOR
-                    </span>
-                  )}
-                </div>
-
-                {driver ? (
-                  <div className="podium-driver">
-                    {driver.headshot_url ? (
-                      <img
-                        src={
-                          driver.headshot_url
-                        }
-                        alt={
-                          driverName(
-                            driver
-                          )
-                        }
-                      />
-                    ) : (
-                      <div className="podium-avatar">
-                        {driver.name_acronym ||
-                          "F1"}
-                      </div>
-                    )}
-
-                    <span
-                      className="team-bar"
-                      style={{
-                        background:
-                          driver.team_colour
-                            ? `#${driver.team_colour}`
-                            : "#777",
-                      }}
-                    />
-
-                    <div>
-                      <div className="driver-title">
-                        {driverName(
-                          driver
-                        )}
-                      </div>
-
-                      <div className="driver-team">
-                        {driver.team_name ||
-                          "Formula 1"}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="empty-podium">
-                    Aşağıdan pilot seç
-                  </div>
-                )}
-                {driver && communityPodium(slot.key, driver.driver_number) !== null && (
-                  <div className="community-mini">
-                    <div className="community-mini-label"><span>{slot.key} için topluluk tercihi</span><b>%{communityPodium(slot.key, driver.driver_number)}</b></div>
-                    <div className="community-track"><i style={{ width: `${communityPodium(slot.key, driver.driver_number)}%` }} /></div>
-                  </div>
-                )}
-              </button>
-            );
-          }
-        )}
-      </div>
-
-      {/* DRIVER PICKER */}
-
-      <section className="prediction-section">
-        <div className="prediction-heading">
-          <div>
-            <small>
-              DRIVER PICK
-            </small>
-
-            <h3>
-              {activeSlot} için pilot seç
-            </h3>
-          </div>
-
-          <div className="prediction-progress">
-            PODIUM · {PODIUM_MAX_POINTS} PUAN
-          </div>
-        </div>
-
-        <div className="driver-grid">
-          {drivers.map(
-            (
-              driver
-            ) => {
-              const chosen =
-                selected.P1 ===
-                  driver.driver_number ||
-                selected.P2 ===
-                  driver.driver_number ||
-                selected.P3 ===
-                  driver.driver_number;
+      {currentStage === "podium" && (
+        <>
+          <div className="podium-grid">
+            {PODIUM_SLOTS.map((slot) => {
+              const driver = getDriver(selected[slot.key]);
+              const active = activeSlot === slot.key && !locked;
+              const share = driver
+                ? communityPodium(slot.key, driver.driver_number)
+                : null;
 
               return (
                 <button
-                  key={
-                    driver.driver_number
-                  }
+                  key={slot.key}
                   type="button"
-                  className={`driver-button ${
-                    chosen
-                      ? "selected"
-                      : ""
-                  }`}
-                  disabled={
-                    locked
-                  }
-                  onClick={() =>
-                    selectDriver(
-                      driver.driver_number
-                    )
-                  }
+                  className={`podium-card ${active ? "active" : ""}`}
+                  disabled={locked}
+                  onClick={() => setActiveSlot(slot.key)}
                 >
-                  {driver.headshot_url ? (
-                    <img
-                      src={
-                        driver.headshot_url
-                      }
-                      alt=""
-                    />
-                  ) : (
-                    <div className="driver-small-avatar">
-                      {driver.name_acronym ||
-                        "F1"}
-                    </div>
-                  )}
-
-                  <div
-                    style={{
-                      minWidth:
-                        0,
-                    }}
-                  >
-                    <div className="driver-button-name">
-                      {driverName(
-                        driver
-                      )}
+                  <div className="podium-top">
+                    <div>
+                      <div className="podium-position">{slot.key}</div>
+                      <div className="podium-points">{slot.points} PUAN</div>
                     </div>
 
-                    <div className="driver-button-team">
-                      {driver.team_name ||
-                        "Formula 1"}
-                    </div>
-                    {communityPodium(activeSlot, driver.driver_number) !== null && (
-                      <div className="community-mini-label" style={{ marginTop: 6 }}><span>{activeSlot} seçimi</span><b>%{communityPodium(activeSlot, driver.driver_number)}</b></div>
-                    )}
+                    <span className="podium-badge">
+                      {active ? "SEÇİM AKTİF" : slot.label}
+                    </span>
                   </div>
-                </button>
-              );
-            }
-          )}
-        </div>
-      </section>
 
-      {community?.ready ? (
-        <div className="community-footnote">Topluluk tercihleri · {community.total} kayıtlı tahmin üzerinden hesaplanıyor. Yüzdelers gerçeğe göre değişir.</div>
-      ) : (
-        <div className="community-footnote">Topluluk oranları en az 10 kişinin bu yarış için tahmin kaydetmesinden sonra görünür.</div>
-      )}
-      </>)}
-
-      {/* NORMAL RACE EXTRA */}
-
-      {isRace && currentStage === "bulletin" && (
-        <>
-          <section className="prediction-section">
-            <div className="prediction-heading">
-              <div>
-                <small>
-                  RACE BULLETIN
-                </small>
-
-                <h3>
-                  Yarış Senaryoları
-                </h3>
-              </div>
-
-              <div className="prediction-progress">
-                {answeredCount}/12 · MAKS. {BULLETIN_MAX_POINTS} PUAN
-              </div>
-            </div>
-
-            <div className="bulletin-grid">
-              {RACE_BULLETIN_QUESTIONS.map(
-                (
-                  question
-                ) => {
-                  const value =
-                    bulletin[
-                      question.key
-                    ];
-
-                  return (
-                    <article
-                      className="bulletin-card"
-                      key={
-                        question.key
-                      }
-                    >
-                      <div className="bulletin-card-top">
-                        <span className="bulletin-icon">
-                          {question.icon}
-                        </span>
-
-                        <span className="bulletin-point">
-                          +{question.points} P
-                        </span>
-                      </div>
-
-                      <div className="bulletin-group">
-                        {question.group}
-                      </div>
-
-                      <h4>
-                        {question.label}
-                      </h4>
-
-                      <p>
-                        {question.hint}
-                      </p>
-
-                      <div className="yes-no">
-                        <button
-                          type="button"
-                          disabled={
-                            locked
-                          }
-                          className={
-                            value ===
-                            "yes"
-                              ? "yes-active"
-                              : ""
-                          }
-                          onClick={() =>
-                            answerQuestion(
-                              question.key,
-                              "yes"
-                            )
-                          }
-                        >
-                          EVET
-                        </button>
-
-                        <button
-                          type="button"
-                          disabled={
-                            locked
-                          }
-                          className={
-                            value ===
-                            "no"
-                              ? "no-active"
-                              : ""
-                          }
-                          onClick={() =>
-                            answerQuestion(
-                              question.key,
-                              "no"
-                            )
-                          }
-                        >
-                          HAYIR
-                        </button>
-                      </div>
-                      {community?.ready && (community.bulletin[question.key]?.total ?? 0) >= 10 && (
-                        <div className="community-yesno">
-                          <div className="community-duo"><span>EVET <b>%{pct(community.bulletin[question.key].yes, community.bulletin[question.key].total)}</b></span><span>HAYIR <b>%{pct(community.bulletin[question.key].no, community.bulletin[question.key].total)}</b></span></div>
-                          <div className="community-track"><i style={{ width: `${pct(community.bulletin[question.key].yes, community.bulletin[question.key].total)}%` }} /></div>
+                  {driver ? (
+                    <div className="podium-driver">
+                      {driver.headshot_url ? (
+                        <img src={driver.headshot_url} alt={driverName(driver)} />
+                      ) : (
+                        <div className="podium-avatar">
+                          {driver.name_acronym || "F1"}
                         </div>
                       )}
-                    </article>
-                  );
-                }
-              )}
-            </div>
-          </section>
 
-        </>
-      )}
-      {isRace && currentStage === "special" && (
-        <>
+                      <span
+                        className="team-bar"
+                        style={
+                          {
+                            background: teamColor(driver),
+                            color: teamColor(driver),
+                          } as CSSProperties
+                        }
+                      />
+
+                      <div style={{ minWidth: 0 }}>
+                        <div className="driver-title">{driverName(driver)}</div>
+                        <div className="driver-team">{driver.team_name || "Formula 1"}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="empty-podium">Pilot seçmek için aşağıya dokun</div>
+                  )}
+
+                  {share !== null && (
+                    <div className="community-mini">
+                      <div className="community-mini-label">
+                        <span>Topluluk tercihi</span>
+                        <b>%{share}</b>
+                      </div>
+                      <div className="community-track">
+                        <i style={{ width: `${share}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
           <section className="prediction-section">
             <div className="prediction-heading">
               <div>
-                <small>
-                  SPECIAL PICKS
-                </small>
-
-                <h3>
-                  Özel Tahminler
-                </h3>
+                <small>PİLOT SEÇİMİ / DRIVER PICK</small>
+                <h3>{activeSlot} için pilot seç</h3>
               </div>
-
               <div className="prediction-progress">
-                {specialCount}/4 · MAKS. {SPECIAL_MAX_POINTS} PUAN
+                PODIUM · {PODIUM_MAX_POINTS} PUAN
               </div>
             </div>
 
-            <div className="special-grid">
-              {/* FASTEST LAP */}
+            <div className="driver-grid">
+              {drivers.map((driver) => {
+                const chosen =
+                  selected.P1 === driver.driver_number ||
+                  selected.P2 === driver.driver_number ||
+                  selected.P3 === driver.driver_number;
 
-              <div className="special-card">
-                <div className="special-head">
-                  <strong>
-                    ⚡ En hızlı turu kim atar?
-                  </strong>
+                const share = communityPodium(activeSlot, driver.driver_number);
 
-                  <span className="special-points">
-                    +20 P
-                  </span>
-                </div>
+                return (
+                  <button
+                    key={driver.driver_number}
+                    type="button"
+                    className={`driver-button ${chosen ? "selected" : ""}`}
+                    disabled={locked}
+                    onClick={() => selectDriver(driver.driver_number)}
+                  >
+                    {driver.headshot_url ? (
+                      <img src={driver.headshot_url} alt="" />
+                    ) : (
+                      <div className="driver-small-avatar">
+                        {driver.name_acronym || "F1"}
+                      </div>
+                    )}
 
-                <select
-                  disabled={
-                    locked
-                  }
-                  value={
-                    specialPicks.fastestLap ??
-                    ""
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setSpecialPicks(
-                      (
-                        current
-                      ) => ({
-                        ...current,
+                    <div style={{ minWidth: 0, flex: 1 }}>
+                      <div className="driver-button-name">{driverName(driver)}</div>
+                      <div className="driver-button-team">
+                        {driver.team_name || "Formula 1"}
+                      </div>
 
-                        fastestLap:
-                          event
-                            .target
-                            .value
-                            ? Number(
-                                event
-                                  .target
-                                  .value
-                              )
-                            : null,
-                      })
-                    )
-                  }
-                >
-                  <option value="">
-                    Pilot seç
-                  </option>
+                      {share !== null && (
+                        <div className="community-mini-label" style={{ marginTop: 7 }}>
+                          <span>{activeSlot} topluluk oranı</span>
+                          <b>%{share}</b>
+                        </div>
+                      )}
+                    </div>
 
-                  {drivers.map(
-                    (
-                      driver
-                    ) => (
-                      <option
-                        key={
-                          driver.driver_number
-                        }
-                        value={
-                          driver.driver_number
-                        }
+                    {chosen && (
+                      <span
+                        aria-label="Bu pilot seçilmiş"
+                        style={{ color: "var(--arcade-red)", fontWeight: 1000 }}
                       >
-                        {driver.name_acronym ||
-                          driverName(
-                            driver
-                          )}
-                        {" · "}
-                        {driverName(
-                          driver
-                        )}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              {/* FIRST DNF */}
-
-              <div className="special-card">
-                <div className="special-head">
-                  <strong>
-                    💥 İlk DNF kim olur?
-                  </strong>
-
-                  <span className="special-points">
-                    +25 P
-                  </span>
-                </div>
-
-                <select
-                  disabled={
-                    locked
-                  }
-                  value={
-                    specialPicks.firstDnf ??
-                    ""
-                  }
-                  onChange={(
-                    event
-                  ) => {
-                    const value =
-                      event
-                        .target
-                        .value;
-
-                    setSpecialPicks(
-                      (
-                        current
-                      ) => ({
-                        ...current,
-
-                        firstDnf:
-                          value ===
-                          "NONE"
-                            ? "NONE"
-                            : value
-                            ? Number(
-                                value
-                              )
-                            : null,
-                      })
-                    );
-                  }}
-                >
-                  <option value="">
-                    Pilot seç
-                  </option>
-
-                  <option value="NONE">
-                    DNF olmayacak
-                  </option>
-
-                  {drivers.map(
-                    (
-                      driver
-                    ) => (
-                      <option
-                        key={
-                          driver.driver_number
-                        }
-                        value={
-                          driver.driver_number
-                        }
-                      >
-                        {driver.name_acronym ||
-                          driverName(
-                            driver
-                          )}
-                        {" · "}
-                        {driverName(
-                          driver
-                        )}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              {/* MOST GAINED */}
-
-              <div className="special-card">
-                <div className="special-head">
-                  <strong>
-                    📈 En çok sıra kazanan pilot
-                  </strong>
-
-                  <span className="special-points">
-                    +20 P
-                  </span>
-                </div>
-
-                <select
-                  disabled={
-                    locked
-                  }
-                  value={
-                    specialPicks.mostGained ??
-                    ""
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setSpecialPicks(
-                      (
-                        current
-                      ) => ({
-                        ...current,
-
-                        mostGained:
-                          event
-                            .target
-                            .value
-                            ? Number(
-                                event
-                                  .target
-                                  .value
-                              )
-                            : null,
-                      })
-                    )
-                  }
-                >
-                  <option value="">
-                    Pilot seç
-                  </option>
-
-                  {drivers.map(
-                    (
-                      driver
-                    ) => (
-                      <option
-                        key={
-                          driver.driver_number
-                        }
-                        value={
-                          driver.driver_number
-                        }
-                      >
-                        {driver.name_acronym ||
-                          driverName(
-                            driver
-                          )}
-                        {" · "}
-                        {driverName(
-                          driver
-                        )}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
-
-              {/* TEAM */}
-
-              <div className="special-card">
-                <div className="special-head">
-                  <strong>
-                    🏆 Kazanan takım
-                  </strong>
-
-                  <span className="special-points">
-                    +15 P
-                  </span>
-                </div>
-
-                <select
-                  disabled={
-                    locked
-                  }
-                  value={
-                    specialPicks.winningTeam ??
-                    ""
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setSpecialPicks(
-                      (
-                        current
-                      ) => ({
-                        ...current,
-
-                        winningTeam:
-                          event
-                            .target
-                            .value ||
-                          null,
-                      })
-                    )
-                  }
-                >
-                  <option value="">
-                    Takım seç
-                  </option>
-
-                  {teams.map(
-                    (
-                      team
-                    ) => (
-                      <option
-                        key={
-                          team
-                        }
-                        value={
-                          team
-                        }
-                      >
-                        {team}
-                      </option>
-                    )
-                  )}
-                </select>
-              </div>
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            {community?.ready && (
-              <div className="community-footnote">
-                <b style={{ color: "white" }}>Topluluğun favorileri</b>
-                {RACE_SPECIAL_PICKS.map((pick) => {
-                  const stat = community.specials[pick.key];
-                  if (!stat || stat.total < 10) return null;
-                  const top = Object.entries(stat.choices).sort((a,b) => b[1] - a[1])[0];
-                  if (!top) return null;
-                  const driver = getDriver(Number(top[0]));
-                  const label = pick.key === "winningTeam" ? top[0] : top[0] === "NONE" ? "DNF yok" : driver ? driverName(driver) : `#${top[0]}`;
-                  return <div key={pick.key} style={{ marginTop: 8 }}>{pick.label}: <strong style={{ color: "#f9fafc" }}>({top[1]}/{stat.total})</strong></div>;
-                })}
-              </div>
-            )}
           </section>
+
+          <div className="community-footnote">
+            {community?.ready
+              ? `Topluluk tercihleri ${community.total} kayıtlı tahmin üzerinden hesaplanıyor.`
+              : "Topluluk oranları, yeterli sayıda tahmin kaydedildikten sonra görünür."}
+          </div>
         </>
+      )}
+
+      {isRace && currentStage === "bulletin" && (
+        <section className="prediction-section">
+          <div className="prediction-heading">
+            <div>
+              <small>RACE BULLETIN / YARIŞ SENARYOSU</small>
+              <h3>Yarış senaryoları</h3>
+            </div>
+            <div className="prediction-progress">
+              {answeredCount}/12 · MAKS. {BULLETIN_MAX_POINTS} PUAN
+            </div>
+          </div>
+
+          <div className="bulletin-grid">
+            {RACE_BULLETIN_QUESTIONS.map((question) => {
+              const value = bulletin[question.key];
+              const stat = community?.bulletin[question.key];
+              const showCommunity = Boolean(
+                community?.ready && stat && stat.total >= 10
+              );
+
+              return (
+                <article className="bulletin-card" key={question.key}>
+                  <div className="bulletin-card-top">
+                    <span className="bulletin-icon">{question.icon}</span>
+                    <span className="bulletin-point">+{question.points} P</span>
+                  </div>
+
+                  <div className="bulletin-group">{question.group}</div>
+                  <h4>{question.label}</h4>
+                  <p>{question.hint}</p>
+
+                  <div className="yes-no">
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className={value === "yes" ? "yes-active" : ""}
+                      onClick={() => answerQuestion(question.key, "yes")}
+                    >
+                      EVET
+                    </button>
+                    <button
+                      type="button"
+                      disabled={locked}
+                      className={value === "no" ? "no-active" : ""}
+                      onClick={() => answerQuestion(question.key, "no")}
+                    >
+                      HAYIR
+                    </button>
+                  </div>
+
+                  {showCommunity && stat && (
+                    <div className="community-yesno">
+                      <div className="community-duo">
+                        <span>
+                          EVET <b>%{pct(stat.yes, stat.total)}</b>
+                        </span>
+                        <span>
+                          HAYIR <b>%{pct(stat.no, stat.total)}</b>
+                        </span>
+                      </div>
+                      <div className="community-track">
+                        <i style={{ width: `${pct(stat.yes, stat.total)}%` }} />
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {isRace && currentStage === "special" && (
+        <section className="prediction-section">
+          <div className="prediction-heading">
+            <div>
+              <small>SPECIAL PICKS / EKSTRA PUAN</small>
+              <h3>Özel tahminler</h3>
+            </div>
+            <div className="prediction-progress">
+              {specialCount}/4 · MAKS. {SPECIAL_MAX_POINTS} PUAN
+            </div>
+          </div>
+
+          <div className="special-grid">
+            <div className="special-card">
+              <div className="special-head">
+                <strong>⚡ En hızlı turu kim atar?</strong>
+                <span className="special-points">+20 P</span>
+              </div>
+              <select
+                disabled={locked}
+                value={specialPicks.fastestLap ?? ""}
+                onChange={(event) =>
+                  setSpecialPicks((current) => ({
+                    ...current,
+                    fastestLap: event.target.value
+                      ? Number(event.target.value)
+                      : null,
+                  }))
+                }
+              >
+                <option value="">Pilot seç</option>
+                {drivers.map((driver) => (
+                  <option key={driver.driver_number} value={driver.driver_number}>
+                    {driver.name_acronym || driverName(driver)} · {driverName(driver)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="special-card">
+              <div className="special-head">
+                <strong>💥 İlk DNF kim olur?</strong>
+                <span className="special-points">+25 P</span>
+              </div>
+              <select
+                disabled={locked}
+                value={specialPicks.firstDnf ?? ""}
+                onChange={(event) => {
+                  const value = event.target.value;
+
+                  setSpecialPicks((current) => ({
+                    ...current,
+                    firstDnf:
+                      value === "NONE"
+                        ? "NONE"
+                        : value
+                          ? Number(value)
+                          : null,
+                  }));
+                }}
+              >
+                <option value="">Pilot seç</option>
+                <option value="NONE">DNF olmayacak</option>
+                {drivers.map((driver) => (
+                  <option key={driver.driver_number} value={driver.driver_number}>
+                    {driver.name_acronym || driverName(driver)} · {driverName(driver)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="special-card">
+              <div className="special-head">
+                <strong>📈 En çok sıra kazanan pilot</strong>
+                <span className="special-points">+20 P</span>
+              </div>
+              <select
+                disabled={locked}
+                value={specialPicks.mostGained ?? ""}
+                onChange={(event) =>
+                  setSpecialPicks((current) => ({
+                    ...current,
+                    mostGained: event.target.value
+                      ? Number(event.target.value)
+                      : null,
+                  }))
+                }
+              >
+                <option value="">Pilot seç</option>
+                {drivers.map((driver) => (
+                  <option key={driver.driver_number} value={driver.driver_number}>
+                    {driver.name_acronym || driverName(driver)} · {driverName(driver)}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="special-card">
+              <div className="special-head">
+                <strong>🏆 Kazanan takım</strong>
+                <span className="special-points">+15 P</span>
+              </div>
+              <select
+                disabled={locked}
+                value={specialPicks.winningTeam ?? ""}
+                onChange={(event) =>
+                  setSpecialPicks((current) => ({
+                    ...current,
+                    winningTeam: event.target.value || null,
+                  }))
+                }
+              >
+                <option value="">Takım seç</option>
+                {teams.map((team) => (
+                  <option key={team} value={team}>
+                    {team}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {community?.ready && (
+            <div className="community-footnote">
+              <b style={{ color: "white" }}>Topluluğun favorileri</b>
+              {RACE_SPECIAL_PICKS.map((pick) => {
+                const stat = community.specials[pick.key];
+                if (!stat || stat.total < 10) return null;
+
+                const top = Object.entries(stat.choices).sort(
+                  (a, b) => b[1] - a[1]
+                )[0];
+
+                if (!top) return null;
+
+                const driver = getDriver(Number(top[0]));
+                const label =
+                  pick.key === "winningTeam"
+                    ? top[0]
+                    : top[0] === "NONE"
+                      ? "DNF yok"
+                      : driver
+                        ? driverName(driver)
+                        : `#${top[0]}`;
+
+                return (
+                  <div key={pick.key} style={{ marginTop: 8 }}>
+                    {pick.label}: <strong style={{ color: "white" }}>{label}</strong>
+                    {" "}({top[1]}/{stat.total})
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </section>
       )}
 
       {currentStage === "review" && (
         <div className="prediction-review">
-          <div className="eyebrow">SON KONTROL TAHMİN ÖZETİN </div>
-          <h3>Pistte her şey hazır mı?</h3>
-          <p style={{ color: "#abb4c0", fontSize: 12 }}>Seçimlerini kontrol et, ardından tahmin paketini hesabına kaydet.</p>
+          <div className="eyebrow">SON KONTROL / TAHMİN ÖZETİ</div>
+          <h3>Her şey hazır mı?</h3>
+          <p>Seçimlerini kontrol et, ardından tahmin paketini hesabına kaydet.</p>
+
           <div className="prediction-review-picks">
-            {slots.map(({ key }) => (
-              <div key={key}><span>{key}</span><strong>{getDriver(selected[key]) ? driverName(getDriver(selected[key])!) : "Henüz Seçilmedi"}</strong></div>
-            ))}
-            {isRace && <div><span>EK SEÇİMLER</span><strong>{answeredCount}/12 senaryo · {specialCount}/4 özel seçim</strong></div>}
+            {PODIUM_SLOTS.map(({ key }) => {
+              const driver = getDriver(selected[key]);
+
+              return (
+                <div key={key}>
+                  <span>{key}</span>
+                  <strong>{driver ? driverName(driver) : "Henüz seçilmedi"}</strong>
+                </div>
+              );
+            })}
+
+            {isRace && (
+              <div>
+                <span>EK SEÇİMLER</span>
+                <strong>{answeredCount}/12 senaryo · {specialCount}/4 özel seçim</strong>
+              </div>
+            )}
           </div>
+
           <div className="save-summary">
-        <div>
-          <strong>
-            {isRace
-              ? `Maksimum ${RACE_MAX_POINTS} puan`
-              : `${PODIUM_MAX_POINTS} puanlama Sprint tahmini`}
-          </strong>
+            <div>
+              <strong>
+                {isRace
+                  ? `Maksimum ${RACE_MAX_POINTS} puan`
+                  : `${PODIUM_MAX_POINTS} puanlık sprint tahmini`}
+              </strong>
+              <span>
+                {isRace
+                  ? `${PODIUM_MAX_POINTS} podyum + ${BULLETIN_MAX_POINTS} senaryo + ${SPECIAL_MAX_POINTS} özel seçim`
+                  : "P1, P2 ve P3 tahminlerini tek pakette kaydet."}
+              </span>
+            </div>
 
-          <span>
-            {isRace
-              ? `${PODIUM_MAX_POINTS} podyum + ${BULLETIN_MAX_POINTS} senaryo + ${SPECIAL_MAX_POINTS} Özel Seçim`
-              : "P1, P2 ve P3 tahminlerini tek pakette kaydet."}
-          </span>
-        </div>
-
-        <button
-          type="button"
-          className="save-button"
-          disabled={
-            saving ||
-            locked
-          }
-          onClick={
-            savePrediction
-          }
-        >
-          {saving
-            ? "KAYDEDİLİYOR..."
-            : locked
-            ? "TAHMİNLER KİLİTLENDİ"
-            : "TAHMİN PAKETİNİ KAYDET → "}
-        </button>
-      </div>
-
+            <button
+              type="button"
+              className="save-button"
+              disabled={saving || locked}
+              onClick={savePrediction}
+            >
+              {saving
+                ? "KAYDEDİLİYOR..."
+                : locked
+                  ? "TAHMİNLER KİLİTLİ"
+                  : "TAHMİN PAKETİNİ KAYDET →"}
+            </button>
+          </div>
         </div>
       )}
 
       <div className="prediction-wizard-controls">
-        <button type="button" className="back" disabled={currentStageIndex === 0} onClick={() => navigateStage(stages[currentStageIndex - 1].id)}>← GERİ</button>
+        <button
+          type="button"
+          disabled={currentStageIndex === 0}
+          onClick={() => navigateStage(stages[currentStageIndex - 1].id)}
+        >
+          ← GERİ
+        </button>
+
         {currentStageIndex < stages.length - 1 && (
-          <button type="button" className="next" onClick={() => navigateStage(stages[currentStageIndex + 1].id)}>DEVAM ET →</button>
+          <button
+            type="button"
+            className="next"
+            onClick={() => navigateStage(stages[currentStageIndex + 1].id)}
+          >
+            DEVAM ET →
+          </button>
         )}
       </div>
 
       {message && (
-        <div className="prediction-message">
+        <div className="prediction-message" role="status" aria-live="polite">
           {message}
         </div>
       )}

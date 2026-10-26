@@ -386,32 +386,6 @@ type LiveResponse = {
     LiveDriver[];
 };
 
-/**
- * Canlı zamanlama yalnızca oturumun live görünmesiyle hazır sayılmaz.
- * Timing işaretinin açık olması ve en az dört sürücü için veri bulunması gerekir;
- * aksi hâlde replay kullanılabilir durumdaysa onu gösteririz.
- */
-function hasUsableLiveTiming(data: LiveResponse | null): boolean {
-  if (!data?.live || !data.timingAvailable) return false;
-
-  const drivers = data.drivers ?? [];
-  if (drivers.length < 4) return false;
-
-  return drivers.some((driver) => {
-    const position = driver.livePosition ?? driver.position;
-    const lap = driver.lapNumber ?? driver.lap_number;
-    const bestLap = driver.bestLap ?? driver.best_lap;
-    const lastLap = driver.lastLap ?? driver.last_lap;
-
-    return (
-      position != null ||
-      (typeof lap === "number" && lap > 0) ||
-      (typeof bestLap === "number" && bestLap > 0) ||
-      (typeof lastLap === "number" && lastLap > 0)
-    );
-  });
-}
-
 /* =========================================================
    CHAMPIONSHIP
    ========================================================= */
@@ -1099,15 +1073,10 @@ export default function F1LiveReplayCenter() {
     []
   );
 
-  const live = hasUsableLiveTiming(liveData);
-
-    useEffect(() => {
-    // Canlı timing gerçekten kullanılabiliyorsa veya replay hazırsa
-    // geçiş ekranına içeriğin görüntülenebilir olduğunu bildir.
-    if (live || replay) {
-      window.dispatchEvent(new Event("f1-live-content-ready"));
-    }
-  }, [live, replay]);
+  const live =
+    Boolean(
+      liveData?.live
+    );
 
   /* =======================================================
      CHAMPIONSHIP FETCH
@@ -1305,8 +1274,6 @@ export default function F1LiveReplayCenter() {
   const checkLive =
     useCallback(
       async () => {
-        let liveTimingReady = false;
-
         try {
           const response =
             await fetch(
@@ -1330,11 +1297,13 @@ export default function F1LiveReplayCenter() {
               await response.json()
             ) as LiveResponse;
 
-          setLiveData(data);
-          liveTimingReady = hasUsableLiveTiming(data);
+          setLiveData(
+            data
+          );
 
-          // Seans live görünse bile timing hazır değilse replay'i dene.
-          if (!liveTimingReady) {
+          if (
+            !data.live
+          ) {
             await loadReplay();
           }
         } catch (
@@ -1346,9 +1315,8 @@ export default function F1LiveReplayCenter() {
 
           await loadReplay();
         } finally {
-          // Ne kullanılabilir live timing ne de replay varsa loader ekranda kalır.
           setLoading(
-            !liveTimingReady && !replayRef.current
+            false
           );
         }
       },
@@ -2699,7 +2667,6 @@ export default function F1LiveReplayCenter() {
 
   if (
     loading &&
-    !live &&
     !replay
   ) {
     return (
@@ -2773,7 +2740,7 @@ export default function F1LiveReplayCenter() {
         <section className="broadcast-header">
           <div className="broadcast-left">
             <span className="broadcast-eyebrow">
-              F1 SOCIAL · RACE CONTROL
+              F1 MEDİPOL · RACE CONTROL
             </span>
 
             <div className="broadcast-title-line">
@@ -3206,11 +3173,15 @@ export default function F1LiveReplayCenter() {
                     }
                   )
                 ) : (
-                  <div className="no-data" aria-live="polite">
-                    <div className="spinner" />
+                  <div className="no-data">
                     <strong>
-                      {live ? "Canlı timing verisi hazırlanıyor..." : "Replay verisi yükleniyor..."}
+                      Timing verisi bekleniyor
                     </strong>
+
+                    <p>
+                      Henüz P4 ve sonrası için anlamlı timing
+                      verisi oluşmadı.
+                    </p>
                   </div>
                 )}
               </div>
@@ -3225,7 +3196,7 @@ export default function F1LiveReplayCenter() {
             <div className="hub-top">
               <div>
                 <span className="hub-eyebrow">
-                  F1 SOCIAL
+                  F1 MEDİPOL
                 </span>
 
                 <div className="hub-title-row">
@@ -5365,10 +5336,11 @@ const styles = `
     font-weight:1000;
   }
 
-  .driver-row > span {
-    color:var(--muted);
-
-    font-size:8px;
+    .driver-row > span {
+    color:var(--text);
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:-.01em;
   }
 
   .current-lap {
@@ -6812,5 +6784,70 @@ const styles = `
       grid-template-columns:
         1fr;
     }
+  }
+
+  /* =========================================================
+     SÜRE FONTLARI (en sona konur, diğer kuralları ezer)
+     ========================================================= */
+
+  .race-center .driver-row > span {
+    color:var(--text) !important;
+    <font-size:14></font-size:14>px !important;
+    font-weight:700 !important;
+  }
+
+  .race-center .driver-row > span.status-text {
+    color:var(--muted) !important;
+    font-weight:900 !important;
+  }
+
+  .race-center .driver-row > span.current-lap {
+    color:#2fc77a !important;
+    font-weight:900 !important;
+  }
+
+  .race-center .tyre-cell small {
+    color:var(--text) !important;
+    <font-size:13></font-size:13>px !important;
+  }
+
+  .race-center .sector-bottom b {
+    color:var(--text) !important;
+    <font-size:13></font-size:13>px !important;
+  }
+
+  .race-center .sector-bottom span {
+    font-size:11px !important;
+  }
+
+  .race-center .driver-row {
+    min-height:72px !important;
+  }
+
+  .race-center .timing-table { min-width:1120px !important; }
+  .race-center .session-table { min-width:1420px !important; }
+
+  .race-center .race-table .row {
+    grid-template-columns:
+      76px
+      minmax(220px,1.2fr)
+      116px
+      116px
+      124px
+      70px
+      96px
+      70px !important;
+  }
+
+  .race-center .session-table .row {
+    grid-template-columns:
+      76px
+      minmax(210px,1fr)
+      108px
+      124px
+      124px
+      minmax(360px,1.5fr)
+      66px
+      96px !important;
   }
 `;
