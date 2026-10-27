@@ -178,11 +178,9 @@ export default function RouteTransition() {
       // Paddock'ta geçiş ekranı kısa sürede kapanır.
       // Canlı yayın için mevcut 45 saniyelik süre korunur.
       const timeout =
-        info.key === "live"
-          ? 45000
-          : info.key === "paddock"
-            ? 1500
-            : 12000;
+        info.key === "paddock"
+          ? 1500
+          : 12000;
 
       navigationTimer.current = setTimeout(() => {
         setVisible(false);
@@ -209,10 +207,8 @@ export default function RouteTransition() {
 
       if (info) setTransition(info);
 
-      // Canlı yayın hazır sinyalini beklemeye devam eder.
-      if (info?.key === "live") return;
-
-      // Paddock dahil normal sayfalarda geçiş ekranını kapat.
+      // Hedef sayfaya ulaşıldığında geçiş ekranını kapat.
+      // Canlı sayfa için hazır olayı beklenmez; bu olay gönderilmiyor.
       closeNavigation(info?.key === "paddock" ? 100 : 250);
       return;
     }
