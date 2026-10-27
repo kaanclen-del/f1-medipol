@@ -2665,31 +2665,6 @@ export default function F1LiveReplayCenter() {
      LOADING
      ======================================================= */
 
-  if (
-    loading &&
-    !replay
-  ) {
-    return (
-      <div className="race-center">
-        <style>
-          {styles}
-        </style>
-
-        <div className="loading">
-          <div className="spinner" />
-
-          <strong>
-            Race Control bağlanıyor...
-          </strong>
-
-          <span>
-            Live session ve replay arşivi kontrol ediliyor.
-          </span>
-        </div>
-      </div>
-    );
-  }
-
   /* =======================================================
      UI
      ======================================================= */
