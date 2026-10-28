@@ -19,9 +19,41 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://formulasocial.org"),
   title: "F1 Social",
-  description: "F1 Social yarış tahminleri, etkinlikler ve Arcade.",
+  description:
+    "Formula 1 yarış tahminleri, yarış gündemi, etkinlikler ve F1 hayranlarına özel Arcade deneyimi.",
   applicationName: "F1 Social",
+
+  openGraph: {
+    type: "website",
+    url: "https://formulasocial.org/",
+    siteName: "F1 Social",
+    title: "F1 Social | Formula 1 Topluluğu",
+    description:
+      "Formula 1 yarış tahminleri, yarış gündemi, etkinlikler ve F1 hayranlarına özel Arcade deneyimi.",
+    locale: "tr_TR",
+  },
+
+  twitter: {
+    card: "summary",
+    title: "F1 Social | Formula 1 Topluluğu",
+    description:
+      "Formula 1 yarış tahminleri, yarış gündemi, etkinlikler ve F1 hayranlarına özel Arcade deneyimi.",
+  },
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png", sizes: "512x512" },
@@ -33,6 +65,7 @@ export const metadata: Metadata = {
     ],
   },
 };
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -52,6 +85,20 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              name: "F1 Social",
+              alternateName: "F1 SOCIAL",
+              url: "https://formulasocial.org/",
+              inLanguage: "tr-TR",
+            }),
+          }}
+        />
+
         <SiteThemeSwitcher />
         <RouteTransition />
         {children}
