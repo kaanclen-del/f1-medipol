@@ -1,6 +1,7 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 
 import Header from "@/components/Header";
+import HomeArcadeCarousel from "@/components/HomeArcadeCarousel";
 import HomeChampionshipLive from "@/components/HomeChampionshipLive";
 import LiveAutoRefresh from "@/components/LiveAutoRefresh";
 import RaceCountdown from "@/components/RaceCountdown";
@@ -4194,28 +4195,11 @@ export default async function HomePage() {
           <div className="section-head">
             <div className="section-title">
               <h2>F1 Arcade</h2>
-              <p>F1 SOCIAL arcade alanında dört farklı deneyime hemen gir.</p>
+              <p>Beş oyunu keşfet; oklarla seçim yap ve hemen oynamaya başla.</p>
             </div>
           </div>
 
-          <section className="arcade-home-grid" aria-label="F1 Arcade oyunları">
-            <Link href="/arcade/manager" className="arcade-home-card arcade-home-manager">
-              <h3>F1 Manager</h3>
-              <p>Takımını yönet, pilot transferlerini planla ve çok sezonlu kariyer yapısında pit wall kararlarını sen ver.</p>
-            </Link>
-            <Link href="/arcade/what-if" className="arcade-home-card arcade-home-whatif">
-              <h3>What If</h3>
-              <p>Alternatif finiş sıraları kur, şampiyona puanlarını anında hesapla ve farklı senaryoları karşılaştır.</p>
-            </Link>
-            <Link href="/arcade/kart-rush" className="arcade-home-card arcade-home-kartrush">
-              <h3>Kart Rush 3D</h3>
-              <p>3D pistte sür, rakiplerine karşı yarış ve kulübün arcade bölümündeki hızlı aksiyon deneyimine gir.</p>
-            </Link>
-            <Link href="/arcade/gokart-zamanlama" className="arcade-home-card arcade-home-timing">
-              <h3>Go-Kart Zamanlama</h3>
-              <p>Gerçek karting turlarını kaydet, sürücü ve takım sıralamalarını takip et, seans sonuçlarını kolayca yönet.</p>
-            </Link>
-          </section>
+          <HomeArcadeCarousel />
         </div>
       </main>
     </>

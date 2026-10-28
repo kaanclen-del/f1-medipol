@@ -1123,3 +1123,126 @@ transform: none;
     padding: 10px 12px;
   }
 }
+
+/* MCOLD — yazısız, diğer oyun kartlarıyla uyumlu yarış görseli */
+.card.mcold {
+  --accent: #ff3a43;
+  --soft: #e1060030;
+  border-color: #75232a;
+  background:
+    radial-gradient(ellipse at 70% 0, #e1060028, transparent 58%),
+    linear-gradient(160deg, #170e15, #080c14 82%);
+}
+.mcoldGraphic {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 190px;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 70% 100%, #e1060050, transparent 58%),
+    linear-gradient(145deg, #20121a, #080b12 75%);
+}
+.mcoldTrack {
+  position: absolute;
+  width: 300px;
+  height: 175px;
+  right: -45px;
+  top: 2px;
+  border: 13px solid #ffffff0c;
+  border-radius: 50%;
+  transform: rotate(-28deg);
+  box-shadow: 0 0 0 12px #ffffff05, inset 0 0 20px #e1060014;
+}
+.mcoldTrackInner {
+  position: absolute;
+  width: 240px;
+  height: 130px;
+  right: -14px;
+  top: 23px;
+  border: 2px dashed #ff46513d;
+  border-radius: 50%;
+  transform: rotate(-28deg);
+}
+.mcoldGlow {
+  position: absolute;
+  width: 160px;
+  height: 90px;
+  left: 30%;
+  bottom: 22px;
+  border-radius: 50%;
+  background: #e1060050;
+  filter: blur(32px);
+}
+.mcoldSpeedLines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    168deg,
+    transparent 0 17px,
+    #ffffff0a 18px,
+    transparent 20px
+  );
+  mask-image: linear-gradient(90deg, #000, transparent 90%);
+}
+.mcoldCar {
+  position: absolute;
+  width: 170px;
+  height: 76px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -35%) rotate(-12deg);
+  filter: drop-shadow(0 10px 12px #000b) drop-shadow(0 0 14px #e1060040);
+  background: linear-gradient(155deg, #ff7777, #f01832 48%, #8e001b);
+  clip-path: polygon(0 43%, 15% 36%, 28% 24%, 38% 5%, 63% 5%, 76% 24%, 89% 36%, 100% 43%, 96% 62%, 79% 68%, 73% 91%, 27% 91%, 21% 68%, 4% 62%);
+}
+.mcoldCockpit {
+  position: absolute;
+  left: 42%;
+  top: 16%;
+  width: 23%;
+  height: 35%;
+  background: linear-gradient(145deg, #d9f1ff, #43586e 62%, #0b111b);
+  clip-path: polygon(28% 0, 72% 0, 100% 100%, 0 100%);
+}
+.mcoldWheelLeft, .mcoldWheelRight {
+  position: absolute;
+  top: 57%;
+  width: 23%;
+  height: 25%;
+  border: 3px solid #a8a8b2;
+  border-radius: 4px;
+  background: #080b11;
+}
+.mcoldWheelLeft { left: 8%; }
+.mcoldWheelRight { right: 8%; }
+.mcoldWing {
+  position: absolute;
+  left: 24%;
+  bottom: 4%;
+  width: 52%;
+  height: 8%;
+  border-radius: 3px;
+  background: #ff9da8;
+}
+:global(html[data-theme="light"]) .card.mcold,
+:global(html[data-site-theme="light"]) .card.mcold {
+  background: linear-gradient(160deg, #fff1f2, #f4e9ec 82%);
+}
+:global(html[data-theme="light"]) .mcoldGraphic,
+:global(html[data-site-theme="light"]) .mcoldGraphic {
+  background:
+    radial-gradient(ellipse at 70% 100%, #e1060030, transparent 58%),
+    linear-gradient(145deg, #f4e4e8, #e3e8f0 75%);
+}
+:global(html[data-theme="red"]) .card.mcold,
+:global(html[data-site-theme="red"]) .card.mcold {
+  background: linear-gradient(160deg, #570e19, #26060d 82%);
+}
+:global(html[data-theme="red"]) .mcoldGraphic,
+:global(html[data-site-theme="red"]) .mcoldGraphic {
+  background:
+    radial-gradient(ellipse at 70% 100%, #ff343450, transparent 58%),
+    linear-gradient(145deg, #570e19, #26060d 75%);
+}
