@@ -1,9 +1,10 @@
+
 import Header from "@/components/Header";
 import Link from "next/link";
 import styles from "./arcade.module.css";
 
 type Game = {
-  id: "manager" | "whatif" | "rush" | "timing";
+  id: "manager" | "whatif" | "rush" | "timing" | "mcold";
   title: string;
   description: string;
   href: string;
@@ -43,6 +44,14 @@ const games: Game[] = [
     href: "/arcade/gokart-zamanlama",
     cta: "ZAMAN MERKEZİNİ AÇ",
   },
+  {
+    id: "mcold",
+    title: "MCOLD Grand Prix",
+    description:
+      "Motorları çalıştır, piste çık ve Grand Prix mücadelesine katıl.",
+    href: "/arcade/mcold-grand-prix",
+    cta: "YARIŞA BAŞLA",
+  },
 ];
 
 export default function ArcadePage() {
@@ -78,7 +87,9 @@ export default function ArcadePage() {
           >
             {games.map((game) => (
               <article
-                className={`${styles.card} ${styles[game.id]}`}
+                className={`${styles.card} ${
+                  game.id === "mcold" ? "" : styles[game.id]
+                }`}
                 key={game.id}
               >
                 <div className={styles.visual} aria-hidden="true">
@@ -139,6 +150,107 @@ export default function ArcadePage() {
                         <i />
                         <i />
                       </div>
+                    </div>
+                  )}
+
+                  {game.id === "mcold" && (
+                    <div
+                      style={{
+                        position: "relative",
+                        minHeight: 190,
+                        height: "100%",
+                        width: "100%",
+                        overflow: "hidden",
+                        display: "flex",
+                        alignItems: "center",
+                        background:
+                          "radial-gradient(ellipse at 80% 100%, #700800 0%, transparent 55%), linear-gradient(135deg, #242424, #080808 72%)",
+                        color: "#fff",
+                      }}
+                    >
+                      <div
+                        style={{
+                          position: "absolute",
+                          width: 230,
+                          height: 100,
+                          right: -45,
+                          top: 25,
+                          border: "10px solid rgba(255,255,255,.08)",
+                          borderRadius: "50%",
+                          transform: "rotate(-30deg)",
+                        }}
+                      />
+
+                      <div
+                        style={{
+                          position: "absolute",
+                          inset: "auto 0 24px",
+                          height: 2,
+                          background:
+                            "linear-gradient(90deg, transparent, #e10600, transparent)",
+                        }}
+                      />
+
+                      <div
+                        style={{
+                          position: "relative",
+                          zIndex: 1,
+                          padding: "22px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: "#ff3028",
+                            fontSize: 11,
+                            fontWeight: 900,
+                            letterSpacing: 4,
+                            marginBottom: 8,
+                          }}
+                        >
+                          MCOLD
+                        </div>
+
+                        <div
+                          style={{
+                            fontSize: "clamp(21px, 3vw, 32px)",
+                            fontWeight: 950,
+                            fontStyle: "italic",
+                            lineHeight: 1,
+                            letterSpacing: -1,
+                          }}
+                        >
+                          GRAND PRIX
+                        </div>
+
+                        <div
+                          style={{
+                            marginTop: 10,
+                            fontSize: 9,
+                            color: "#c7c7c7",
+                            fontWeight: 700,
+                            letterSpacing: 3,
+                          }}
+                        >
+                          READY TO RACE
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          position: "absolute",
+                          right: 25,
+                          bottom: 35,
+                          width: 100,
+                          height: 24,
+                          background:
+                            "linear-gradient(180deg, #ff3932, #a00000)",
+                          clipPath:
+                            "polygon(0 50%, 20% 35%, 35% 0, 67% 0, 82% 35%, 100% 50%, 90% 75%, 10% 75%)",
+                          transform: "rotate(-12deg)",
+                          filter:
+                            "drop-shadow(0 0 12px rgba(225,6,0,.6))",
+                        }}
+                      />
                     </div>
                   )}
                 </div>
