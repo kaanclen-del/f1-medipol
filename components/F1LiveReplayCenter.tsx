@@ -1301,10 +1301,11 @@ export default function F1LiveReplayCenter() {
             data
           );
 
-          if (
-            !data.live
-          ) {
-            await loadReplay();
+          // Canlı API yanıt verdi; ana arayüzü bekletme.
+          setLoading(false);
+
+          if (!data.live) {
+            void loadReplay();
           }
         } catch (
           liveError
@@ -1313,11 +1314,9 @@ export default function F1LiveReplayCenter() {
             liveError
           );
 
-          await loadReplay();
-        } finally {
-          setLoading(
-            false
-          );
+          // Canlı API başarısız olsa da arayüzü aç.
+          setLoading(false);
+          void loadReplay();
         }
       },
       [

@@ -2429,4 +2429,93 @@ const styles = `
 }
 /* END MOBILE_SPOTLIGHT_COMPACT_FIX */
 
+
+
+/* MOBILE_OFFICIAL_ACRONYM_FIX */
+@media (max-width: 900px) {
+  .spotlight-driver-info h3,
+  .spotlight-p1 .spotlight-driver-info h3 {
+    display: none !important;
+  }
+
+  .spotlight-driver-info,
+  .spotlight-acronym-row,
+  .spotlight-timing,
+  .spotlight-tyre-zone {
+    min-width: 0 !important;
+  }
+
+  .spotlight-driver-info .spotlight-team {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .spotlight-acronym-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 4px !important;
+  }
+
+  .spotlight-acronym-row b {
+    flex: 0 0 auto;
+    font-size: 13px !important;
+    letter-spacing: .04em;
+  }
+
+  .spotlight-acronym-row span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .spotlight-sector-area,
+  .spotlight-driver .performance-panel,
+  .spotlight-driver .performance-laps {
+    display: none !important;
+  }
+
+  .spotlight-driver,
+  .spotlight-driver.spotlight-p1 {
+    grid-template-columns: 30px 42px minmax(0, 1fr) 28px !important;
+    gap: 5px !important;
+    padding: 9px 5px !important;
+  }
+
+  .spotlight-driver .portrait-ring,
+  .spotlight-p1 .portrait-ring {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .spotlight-timing {
+    grid-column: 3 / 5;
+    grid-row: 2;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 3px !important;
+  }
+
+  .spotlight-timing > div {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .spotlight-timing small {
+    font-size: 7px !important;
+  }
+
+  .spotlight-timing strong,
+  .spotlight-timing .current {
+    font-size: clamp(9px, 2.7vw, 12px) !important;
+    white-space: nowrap;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+}
+/* END MOBILE_OFFICIAL_ACRONYM_FIX */
+
 `;

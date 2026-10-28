@@ -465,12 +465,6 @@ export default function DmDock({
     setReplyingTo(message);
     setMessageAction(null);
 
-    window.setTimeout(() => {
-      const input = document.querySelector<HTMLInputElement>(
-        '[aria-label="Mesaj"]',
-      );
-      input?.focus();
-    }, 50);
   }, []);
 
   // Menü seçilen mesajın yakınında açılır.
@@ -571,59 +565,78 @@ export default function DmDock({
 
       const rawMessages = (Array.isArray(data) ? data : []) as Message[];
 
-      let mediaRows: MediaRecord[] = [];
-
-      const mediaResult = await supabase.rpc("dm_get_media_metadata", {
-        p_other: otherId,
-      });
-
-      if (!mediaResult.error && Array.isArray(mediaResult.data)) {
-        mediaRows = mediaResult.data as MediaRecord[];
-      }
-
-      const mediaByMessage = new Map(
-        mediaRows.map((item) => [item.message_id, item]),
-      );
-
-      const merged = await Promise.all(
-        rawMessages.map(async (message) => {
-          const media = mediaByMessage.get(message.id);
-
-          if (!media) return message;
-
-          const { data: signed, error: signedError } = await supabase.storage
-            .from("dm-media")
-            .createSignedUrl(media.media_path, 60 * 60);
-
-          return {
-            ...message,
-            media_kind: media.media_kind,
-            media_mime: media.media_mime,
-            media_name: media.media_name,
-            media_url: signedError ? null : signed?.signedUrl || null,
-          };
-        }),
-      );
-
+      // Mesajları medya sorgularını beklemeden göster.
       setMessages((previous) => {
         const optimistic = previous.filter(
           (message) =>
             message.optimistic &&
             message.recipient_id === otherId &&
-            !merged.some((item) => item.id === message.id),
+            !rawMessages.some((item) => item.id === message.id),
         );
 
-        return [...merged, ...optimistic].sort(
+        return [...rawMessages, ...optimistic].sort(
           (a, b) =>
             new Date(a.created_at).getTime() -
             new Date(b.created_at).getTime(),
         );
       });
 
-      await supabase.rpc("dm_mark_read", { p_other: otherId });
-
+      // Okundu işaretleme ve bildirim yenilemeyi kritik yoldan çıkar.
+      void supabase.rpc("dm_mark_read", { p_other: otherId });
       window.dispatchEvent(new CustomEvent("f1-notifications-updated"));
       void refresh();
+
+      // Medya bilgileri ve imzalı URL'ler mesajlar ekrandayken yüklenir.
+      void (async () => {
+        try {
+          const mediaResult = await supabase.rpc("dm_get_media_metadata", {
+            p_other: otherId,
+          });
+
+          if (mediaResult.error || !Array.isArray(mediaResult.data)) return;
+
+          const mediaRows = mediaResult.data as MediaRecord[];
+          const mediaByMessage = new Map(
+            mediaRows.map((item) => [item.message_id, item]),
+          );
+
+          const mediaUpdates = await Promise.all(
+            rawMessages.map(async (message) => {
+              const media = mediaByMessage.get(message.id);
+              if (!media) return null;
+
+              const { data: signed, error: signedError } = await supabase.storage
+                .from("dm-media")
+                .createSignedUrl(media.media_path, 60 * 60);
+
+              return {
+                id: message.id,
+                media_kind: media.media_kind,
+                media_mime: media.media_mime,
+                media_name: media.media_name,
+                media_url: signedError ? null : signed?.signedUrl || null,
+              };
+            }),
+          );
+
+          const updates = new Map(
+            mediaUpdates
+              .filter((item): item is NonNullable<typeof item> => item !== null)
+              .map((item) => [item.id, item]),
+          );
+
+          if (updates.size) {
+            setMessages((previous) =>
+              previous.map((message) => {
+                const update = updates.get(message.id);
+                return update ? { ...message, ...update } : message;
+              }),
+            );
+          }
+        } catch (mediaError) {
+          console.error("DM MEDIA LOAD ERROR:", mediaError);
+        }
+      })();
     },
     [supabase, userId, refresh],
   );
