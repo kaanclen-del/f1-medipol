@@ -19,9 +19,9 @@ self.addEventListener("push", (event) => {
 
   event.waitUntil(self.registration.showNotification(title, {
     body,
-    icon: "/icon.png",
-    badge: "/icon.png",
-    tag: typeof payload.tag === "string" ? payload.tag.slice(0, 100) : "f1-medipol-push",
+    icon: "/f1-social-push-icon.png",
+    badge: "/f1-social-push-icon.png",
+    tag: typeof payload.tag === "string" ? payload.tag.slice(0, 100) : "f1-social-push",
     data: { url },
   }));
 });

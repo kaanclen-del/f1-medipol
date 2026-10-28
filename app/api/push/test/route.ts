@@ -19,21 +19,21 @@ export async function POST() {
     const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: "GiriÅŸ yapmalÄ±sÄ±n." }, { status: 401 });
+      return NextResponse.json({ error: "Giriş yapmalısın." }, { status: 401 });
     }
 
     const admin = createAdminClient();
     const devices = await listUserPushDevices<Device>(admin, user.id,
       "id,endpoint,p256dh,auth,last_test_sent_at");
     if (devices.length === 0) {
-      return NextResponse.json({ error: "Ã–nce bildirimleri etkinleÅŸtir." }, { status: 400 });
+      return NextResponse.json({ error: "Önce bildirimleri etkinleştir." }, { status: 400 });
     }
 
     let push;
     try {
       push = configuredWebPush();
     } catch {
-      return NextResponse.json({ error: "VAPID anahtarlarÄ± yapÄ±landÄ±rÄ±lmadÄ±." }, { status: 503 });
+      return NextResponse.json({ error: "VAPID anahtarları yapılandırılmadı." }, { status: 503 });
     }
 
     let sent = 0;
@@ -42,7 +42,7 @@ export async function POST() {
     for (let start = 0; start < devices.length; start += 8) {
       await Promise.all(devices.slice(start, start + 8).map(async device => {
       if (!isSupportedPushEndpoint(device.endpoint)) return;
-      // Atomik koÅŸullu UPDATE: aynÄ± cihaza 45 saniyede birden Ã§ok test engellenir.
+      // Atomik koşullu UPDATE: aynı cihaza 45 saniyede birden çok test engellenir.
       const { data: claimed, error: claimError } = await admin
         .from("push_subscriptions")
         .update({ last_test_sent_at: new Date().toISOString() })
@@ -57,10 +57,10 @@ export async function POST() {
         await push.sendNotification(
           { endpoint: device.endpoint, keys: { p256dh: device.p256dh, auth: device.auth } },
           JSON.stringify({
-            title: "F1 SOCIAL ğŸ",
-            body: "Test bildirimi baÅŸarÄ±lÄ±! YarÄ±ÅŸ ve tahmin hatÄ±rlatmalarÄ±na bir adÄ±m kaldÄ±.",
+            title: "F1 SOCIAL 🏁",
+            body: "Test bildirimi başarılı! Yarış ve tahmin hatırlatmalarına bir adım kaldı.",
             url: "/bildirimler",
-            tag: "f1-medipol-test",
+            tag: "f1-social-test",
           }),
           { TTL: 90, urgency: "normal" },
         );
@@ -78,24 +78,24 @@ export async function POST() {
     if (sent === 0) {
       return NextResponse.json({
         error: rateLimited > 0
-          ? "Yeni test gÃ¶ndermek iÃ§in 45 saniye bekle."
-          : "Bildirim iletilemedi. Cihaz izni ve sunucu ayarlarÄ±nÄ± kontrol et.",
+          ? "Yeni test göndermek için 45 saniye bekle."
+          : "Bildirim iletilemedi. Cihaz izni ve sunucu ayarlarını kontrol et.",
       }, { status: rateLimited > 0 ? 429 : 502 });
     }
-    // BaÅŸarÄ±yla push saÄŸlayÄ±cÄ±sÄ±na iletilen testler, kullanÄ±cÄ±nÄ±n
-    // site iÃ§i bildirim kutusuna da eklenir. Cihaza teslim garantisi deÄŸildir.
-    // SQL migrasyonu henÃ¼z kurulmadÄ±ysa mevcut push iÅŸleyiÅŸi bozulmaz.
+    // Başarıyla push sağlayıcısına iletilen testler, kullanıcının
+    // site içi bildirim kutusuna da eklenir. Cihaza teslim garantisi değildir.
+    // SQL migrasyonu henüz kurulmadıysa mevcut push işleyişi bozulmaz.
     const { error: historyError } = await admin.from("site_notifications").insert({
       user_id: user.id,
       kind: "test",
-      title: "F1 SOCIAL ğŸ",
-      body: "Test bildirimi gÃ¶nderildi! YarÄ±ÅŸ ve tahmin hatÄ±rlatmalarÄ±na bir adÄ±m kaldÄ±.",
+      title: "F1 SOCIAL 🏁",
+      body: "Test bildirimi gönderildi! Yarış ve tahmin hatırlatmalarına bir adım kaldı.",
       target_url: "/bildirimler",
     });
     if (historyError) console.warn("PUSH HISTORY SAVE:", historyError.code);
     return NextResponse.json({ ok: true, sent });
   } catch (error) {
     console.error("PUSH TEST ERROR:", error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: "Test bildirimi gÃ¶nderilemedi." }, { status: 500 });
+    return NextResponse.json({ error: "Test bildirimi gönderilemedi." }, { status: 500 });
   }
 }

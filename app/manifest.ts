@@ -2,7 +2,7 @@
 import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
-  const icon = "/f1-social-app-icon.png.png";
+  const icon = "/f1-social-push-icon.png";
 
   return {
     id: "/",
@@ -20,7 +20,7 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         src: icon,
         type: "image/png",
-        sizes: "any",
+        sizes: "192x192",
         purpose: "any",
       },
     ],

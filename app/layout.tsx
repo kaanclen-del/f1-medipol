@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin", "latin-ext"],
 });
 
-const appIcon = "/f1-social-app-icon.png.png";
+const appIcon = "/f1-social-push-icon.png";
 
 export const metadata: Metadata = {
   title: "F1 SOCIAL",

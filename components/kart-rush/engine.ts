@@ -1824,7 +1824,7 @@ export class KartRushEngine{
    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,atlas);
   };
   img.onerror=()=>{}; // Typography fallback remains visible on the billboards.
-  img.src='/kart-rush-f1medipol-logo.png';
+  img.src='/f1-social-logo.png';
  }
  private readonly cameraLabels=['TAKÄ°P','YAKIN TAKÄ°P','HALO YAKIN','TV KAMERASI','BURUN','HALO KOKPÄ°T','SÃœRÃœCÃœ KOKPÄ°TÄ°'] as const;
  private cockpitSteer=0;
