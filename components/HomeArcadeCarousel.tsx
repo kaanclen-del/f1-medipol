@@ -7,26 +7,31 @@ import styles from "./HomeArcadeCarousel.module.css";
 const games = [
   {
     title: "F1 Manager",
+    description: "Kendi takımını yönet, stratejini belirle ve şampiyonluğa ulaş.",
     href: "/arcade/manager",
     theme: "manager",
   },
   {
     title: "What If",
+    description: "Formula 1 tarihindeki alternatif senaryoları keşfet.",
     href: "/arcade/what-if",
     theme: "whatif",
   },
   {
     title: "Kart Rush 3D",
+    description: "Kartını piste çıkar, rakiplerini geride bırak ve yarışı kazan.",
     href: "/arcade/kart-rush",
     theme: "rush",
   },
   {
     title: "Go-Kart Zamanlama",
+    description: "Tur sürelerini ölç, cezaları takip et ve en hızlı takım ol.",
     href: "/arcade/gokart-zamanlama",
     theme: "timing",
   },
   {
     title: "MCOLD Grand Prix",
+    description: "Pistte mücadele et ve Grand Prix deneyimini yaşa.",
     href: "/arcade/mcold-grand-prix",
     theme: "mcold",
   },
@@ -92,13 +97,17 @@ export default function HomeArcadeCarousel() {
           }
           aria-live="polite"
         >
-          <h2 className={styles.title}>{game.title}</h2>
+          <div className={styles.intro}>
+            <div className={styles.headingRow}>
+              <h2 className={styles.title}>{game.title}</h2>
 
-          <div className={styles.centerContent}>
-            <Link href={game.href} className={styles.action}>
-              OYUNU OYNA
-              <span aria-hidden="true">↗</span>
-            </Link>
+              <Link href={game.href} className={styles.action}>
+                OYUNU OYNA
+                <span aria-hidden="true">↗</span>
+              </Link>
+            </div>
+
+            <p className={styles.description}>{game.description}</p>
           </div>
 
           <button
