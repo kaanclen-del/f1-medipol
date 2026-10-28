@@ -1,4 +1,5 @@
-import AdminRaceTicker from "@/components/AdminRaceTicker";
+﻿import AdminRaceTicker from "@/components/AdminRaceTicker";
+import AdminSocialLinks from "@/components/AdminSocialLinks";
 
 import Link from "next/link";
 
@@ -157,6 +158,7 @@ export default async function AdminPage() {
           </section>
 
           <AdminRaceTicker initialText={raceTickerConfig?.message ?? ""} />
+          <AdminSocialLinks />
 
           {/* İSTATİSTİKLER */}
 
@@ -659,3 +661,4 @@ const styles = `
     }
   }
 `;
+

@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 import Header from "@/components/Header";
 import HomeChampionshipLive from "@/components/HomeChampionshipLive";
@@ -803,7 +803,7 @@ export default async function HomePage() {
               <div className="f1-next-race-group" key={copy} aria-hidden={copy === 1}>
                 {Array.from({ length: 20 }, (_, index) => (
                   <span className="f1-next-race-item" key={index}>
-                    <b>● SOCIAL</b><span aria-hidden="true">◆</span>
+                    {!tickerMessage && <><b>● YAKLAŞAN</b><span aria-hidden="true">◆</span></>}
                     {tickerMessage ? <strong>{tickerMessage}</strong> : <strong>YAKLAŞAN YARIŞ: {race?.raceName}</strong>}
                     {!tickerMessage && race && <><span aria-hidden="true">◆</span><span>{formatSessionTimeTR(race.raceDate, race.raceTime)} (TSİ)</span></>}
                   </span>
@@ -4221,3 +4221,4 @@ export default async function HomePage() {
     </>
   );
 }
+

@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import LegendaryTeamRadio from "@/components/LegendaryTeamRadio";
 import RouteTransition from "@/components/RouteTransition";
 import SiteThemeSwitcher from "@/components/SiteThemeSwitcher";
+import SocialLinksFooter from "@/components/SocialLinksFooter";
 
 import "./globals.css";
 
@@ -102,6 +103,7 @@ export default function RootLayout({
         <SiteThemeSwitcher />
         <RouteTransition />
         {children}
+        <SocialLinksFooter />
         <LegendaryTeamRadio />
       </body>
     </html>
