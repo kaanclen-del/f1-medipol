@@ -18,16 +18,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin", "latin-ext"],
 });
 
-const appIcon = "/f1-social-push-icon.png";
-
 export const metadata: Metadata = {
   title: "F1 SOCIAL",
   description: "F1 SOCIAL yarış tahminleri, etkinlikler ve Arcade.",
   applicationName: "F1 SOCIAL",
   icons: {
-    icon: [{ url: appIcon, type: "image/png" }],
-    shortcut: [{ url: appIcon, type: "image/png" }],
-    apple: [{ url: appIcon, type: "image/png" }],
+    icon: [
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [
+      { url: "/apple-icon.png", type: "image/png", sizes: "180x180" },
+    ],
   },
 };
 
