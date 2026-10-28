@@ -9,6 +9,7 @@ import PaddockFollowButton from "@/components/PaddockFollowButton";
 import PaddockShareButton from "@/components/PaddockShareButton";
 import PaddockDeleteButton from "@/components/PaddockDeleteButton";
 import PaddockPinButton from "@/components/PaddockPinButton";
+import PaddockPostMenu from "@/components/PaddockPostMenu";
 
 import { createClient } from "@/utils/supabase/server";
 import { createAdminClient } from "@/utils/supabase/admin";
@@ -431,6 +432,56 @@ export default async function PaddockPage({
         padding: "34px 20px 90px",
       }}
     >
+
+      <style>{`
+        /* PADDOCK MOBILE RESPONSIVE FIX */
+        .paddock-theme-page,
+        .paddock-theme-page * {
+          box-sizing: border-box;
+        }
+
+        .paddock-theme-page {
+          overflow-x: clip;
+        }
+
+        .paddock-theme-page img,
+        .paddock-theme-page video {
+          max-width: 100%;
+        }
+
+        @media (max-width: 760px) {
+          .paddock-theme-page {
+            padding: 22px 12px 60px !important;
+          }
+
+          .paddock-theme-page > div {
+            min-width: 0;
+            width: 100%;
+          }
+
+          .paddock-theme-page article {
+            min-width: 0;
+            max-width: 100%;
+          }
+
+          .paddock-theme-page article > div {
+            min-width: 0;
+            max-width: 100%;
+          }
+
+          .paddock-theme-page img,
+          .paddock-theme-page video {
+            height: auto;
+          }
+        }
+
+        @media (max-width: 380px) {
+          .paddock-theme-page {
+            padding-left: 8px !important;
+            padding-right: 8px !important;
+          }
+        }
+      `}</style>
       <div
         style={{
           width: "100%",
@@ -1049,37 +1100,13 @@ export default async function PaddockPage({
                             )}
                           </div>
 
-                          <div
-                            style={{
-                              display: "flex",
-                              flexDirection:
-                                "column",
-                              alignItems:
-                                "flex-end",
-                              gap: "4px",
-                              flex:
-                                "0 0 auto",
-                            }}
-                          >
-                            {currentProfile?.is_admin && (
-                              <PaddockPinButton
-                                postId={
-                                  post.id
-                                }
-                                initialPinned={
-                                  post.is_pinned
-                                }
-                              />
-                            )}
-
-                            {canDelete && (
-                              <PaddockDeleteButton
-                                postId={
-                                  post.id
-                                }
-                              />
-                            )}
-                          </div>
+                          <PaddockPostMenu
+                            postId={post.id}
+                            canDelete={canDelete}
+                            isAdmin={Boolean(currentProfile?.is_admin)}
+                            initialPinned={post.is_pinned}
+                            initialBookmarked={post.bookmarked_by_current_user}
+                          />
                         </div>
 
                         {post.content && (

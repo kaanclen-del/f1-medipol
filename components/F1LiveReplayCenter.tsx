@@ -5169,7 +5169,14 @@ const styles = `
      ========================================================= */
 
   .table-scroll {
-    overflow-x:auto;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
   }
 
   .timing-table {
@@ -6766,7 +6773,7 @@ const styles = `
 
   .race-center .driver-row > span {
     color:var(--text) !important;
-    <font-size:14></font-size:14>px !important;
+    font-size:14px !important;
     font-weight:700 !important;
   }
 
@@ -6782,12 +6789,12 @@ const styles = `
 
   .race-center .tyre-cell small {
     color:var(--text) !important;
-    <font-size:13></font-size:13>px !important;
+    font-size:13px !important;
   }
 
   .race-center .sector-bottom b {
     color:var(--text) !important;
-    <font-size:13></font-size:13>px !important;
+    font-size:13px !important;
   }
 
   .race-center .sector-bottom span {
