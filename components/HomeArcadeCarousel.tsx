@@ -98,16 +98,14 @@ export default function HomeArcadeCarousel() {
           aria-live="polite"
         >
           <div className={styles.intro}>
-            <div className={styles.headingRow}>
-              <h2 className={styles.title}>{game.title}</h2>
-
-              <Link href={game.href} className={styles.action}>
-                OYUNU OYNA
-                <span aria-hidden="true">↗</span>
-              </Link>
-            </div>
+            <h2 className={styles.title}>{game.title}</h2>
 
             <p className={styles.description}>{game.description}</p>
+
+            <Link href={game.href} className={styles.action}>
+              OYUNU OYNA
+              <span aria-hidden="true">↗</span>
+            </Link>
           </div>
 
           <button
