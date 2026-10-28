@@ -367,3 +367,11 @@
 
 /* F1 LOGIN MOBILE REGISTER FIRST V4 */
 @media(max-width:990px){.registerLayout{display:flex!important;flex-direction:column!important;gap:22px!important}.registerLayout .card{order:-1!important}.registerLayout .story{order:1!important}}
+
+/* iPhone Safari: giriş ve kayıt alanlarında otomatik zoom'u önle */
+.root .inputBox input,
+.root .inputBox input[type="email"],
+.root .inputBox input[type="password"],
+.root .inputBox input[type="text"] {
+  font-size: 16px !important;
+}
