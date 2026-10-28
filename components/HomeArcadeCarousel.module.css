@@ -104,10 +104,10 @@
 .title {
   position: relative;
   z-index: 1;
-  width: auto;
+  width: 100%;
   margin: 8px 0 0;
   color: #fff;
-  text-align: center;
+  text-align: left;
   font-size: clamp(30px, 4.2vw, 56px);
   line-height: 1.08;
   font-weight: 950;
