@@ -704,18 +704,18 @@
 
 @media (max-width: 600px) {
   .popupMode {
-    right: 0;
-    bottom: 0;
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
     width: 100%;
-    height: 88dvh;
-    max-height: 760px;
-    min-height: 340px;
-    border-right: 0;
-    border-bottom: 0;
-    border-left: 0;
-    border-radius: 22px 22px 0 0;
-    box-shadow: 0 -14px 70px rgba(0, 0, 0, 0.35);
-    animation: dmMobileIn 200ms ease-out;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    max-height: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
   }
 
   .pageMode {
@@ -874,5 +874,33 @@
 
 :global(.medipol-quick-dm) .floatingButtonOpen:hover {
   background: rgba(225, 6, 0, 0.1);
+  box-shadow: none;
+}
+
+
+/* Fotoğraf tek başınaysa mesaj balonunu kaldır; metinli mesajları koru. */
+.message:has(.messageImage):not(:has(.messageText)) {
+  min-width: 0;
+  width: fit-content;
+  padding: 0;
+  gap: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.message:has(.messageImage):not(:has(.messageText)) .mediaLink {
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.message:has(.messageImage):not(:has(.messageText)) .messageImage {
+  display: block;
+  border: 0;
+  outline: 0;
   box-shadow: none;
 }
