@@ -475,6 +475,20 @@ export default async function PaddockPage({
           }
         }
 
+        @media (max-width: 760px) {
+          .paddock-theme-page .paddock-feed-layout {
+            grid-template-columns: minmax(0, 1fr) !important;
+            gap: 22px !important;
+          }
+
+          .paddock-theme-page .paddock-feed-layout > aside {
+            position: static !important;
+            top: auto !important;
+            width: 100% !important;
+            min-width: 0 !important;
+          }
+        }
+
         @media (max-width: 380px) {
           .paddock-theme-page {
             padding-left: 8px !important;
@@ -721,6 +735,7 @@ export default async function PaddockPage({
         </section>
 
         <div
+          className="paddock-feed-layout"
           style={{
             display: "grid",
             gridTemplateColumns:

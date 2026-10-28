@@ -2435,7 +2435,14 @@ const styles = `
 @media (max-width: 900px) {
   .spotlight-driver-info h3,
   .spotlight-p1 .spotlight-driver-info h3 {
-    display: none !important;
+    display: block !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    font-size: clamp(11px, 3.1vw, 15px) !important;
+    line-height: 1.15 !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
   }
 
   .spotlight-driver-info,

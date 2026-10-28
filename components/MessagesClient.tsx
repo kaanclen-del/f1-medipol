@@ -808,7 +808,11 @@ export default function DmDock({
   }, [open, active, userId, loadMessages, loadWallpaper]);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    const mobile = window.matchMedia("(max-width: 680px)").matches;
+    bottomRef.current?.scrollIntoView({
+      behavior: mobile ? "auto" : "smooth",
+      block: "end",
+    });
   }, [messages]);
 
   useEffect(() => {
