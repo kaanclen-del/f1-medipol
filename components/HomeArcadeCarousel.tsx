@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./HomeArcadeCarousel.module.css";
 
@@ -40,33 +40,48 @@ const games = [
     theme: "mcold",
     action: "OYUNU OYNA",
   },
-];
+] as const;
 
 export default function HomeArcadeCarousel() {
   const [active, setActive] = useState(0);
+  const [backgrounds, setBackgrounds] = useState<Record<string, string>>({});
   const game = games[active];
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/arcade-game-backgrounds", { cache: "no-store" })
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then((result) => {
+        if (cancelled || !result?.ok) return;
+        const next: Record<string, string> = {};
+        for (const item of result.backgrounds ?? []) {
+          if (typeof item.game_id === "string" && typeof item.image_url === "string") {
+            next[item.game_id] = item.image_url;
+          }
+        }
+        setBackgrounds(next);
+      })
+      .catch(() => undefined);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function move(step: number) {
     setActive((current) => (current + step + games.length) % games.length);
   }
 
-  return (
-    <section className={styles.carousel} aria-label="F1 Arcade oyun seçici">
-      <div className={styles.header}>
-        <span className={styles.eyebrow}>F1 SOCIAL · ARCADE</span>
-        <span className={styles.count}>
-          <strong>{String(active + 1).padStart(2, "0")}</strong>
-          {" / "}{String(games.length).padStart(2, "0")}
-        </span>
-      </div>
+  const backgroundImage = backgrounds[game.theme];
 
+  return (
+    <section className={styles.carousel} aria-label="F1 Social oyun seçici">
       <div className={styles.stage}>
-        <button
-          type="button"
-          className={styles.arrow}
-          onClick={() => move(-1)}
-          aria-label="Önceki oyun"
-        >
+        <button type="button" className={styles.arrow} onClick={() => move(-1)} aria-label="Önceki oyun">
           ‹
         </button>
 
@@ -74,29 +89,18 @@ export default function HomeArcadeCarousel() {
           key={game.href}
           href={game.href}
           className={`${styles.gameCard} ${styles[game.theme]}`}
+          style={backgroundImage ? { backgroundImage: `linear-gradient(90deg,rgba(5,8,13,.9) 0%,rgba(5,8,13,.62) 48%,rgba(5,8,13,.18) 100%),url("${backgroundImage}")` } : undefined}
           aria-live="polite"
         >
-          <span className={styles.number}>
-            OYUN {String(active + 1).padStart(2, "0")}
-          </span>
           <span className={styles.content}>
             <span className={styles.title}>{game.title}</span>
             <span className={styles.description}>{game.description}</span>
-            <span className={styles.action}>
-              {game.action} <span aria-hidden="true">↗</span>
-            </span>
+            <span className={styles.action}>{game.action} <span aria-hidden="true">↗</span></span>
           </span>
-          <span className={styles.watermark} aria-hidden="true">
-            {String(active + 1).padStart(2, "0")}
-          </span>
+          <span className={styles.watermark} aria-hidden="true">{String(active + 1).padStart(2, "0")}</span>
         </Link>
 
-        <button
-          type="button"
-          className={styles.arrow}
-          onClick={() => move(1)}
-          aria-label="Sonraki oyun"
-        >
+        <button type="button" className={styles.arrow} onClick={() => move(1)} aria-label="Sonraki oyun">
           ›
         </button>
       </div>
@@ -114,7 +118,6 @@ export default function HomeArcadeCarousel() {
             />
           ))}
         </div>
-        <span className={styles.hint}>OKLARLA OYUNLAR ARASINDA GEÇİŞ YAP</span>
       </div>
     </section>
   );

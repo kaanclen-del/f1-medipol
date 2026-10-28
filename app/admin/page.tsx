@@ -1,4 +1,4 @@
-﻿import AdminRaceTicker from "@/components/AdminRaceTicker";
+import AdminRaceTicker from "@/components/AdminRaceTicker";
 import AdminSocialLinks from "@/components/AdminSocialLinks";
 
 import Link from "next/link";
@@ -222,6 +222,13 @@ export default async function AdminPage() {
                   <h3>Profil Arka Planları</h3>
                   <p>Üyelerin kullanacağı arka planları ekle, yayınla ve yönet.</p>
                   <strong>KOLEKSİYONU YÖNET →</strong>
+                </Link>
+                <Link href="/admin/arcade-backgrounds" className="admin-module">
+                  <div className="module-icon">🕹️</div>
+                  <span>ARCADE MODULE</span>
+                  <h3>Oyun Arka Planları</h3>
+                  <p>Ana sayfadaki beş oyunun arka plan görsellerini ayrı ayrı yükle ve değiştir.</p>
+                  <strong>ARKA PLANLARI YÖNET →</strong>
                 </Link>
               {ownerConfig?.owner_id === user.id && (
                 <Link href="/admin/permissions" className="admin-module">
