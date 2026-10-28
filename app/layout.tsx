@@ -19,9 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "F1 SOCIAL",
-  description: "F1 SOCIAL yarış tahminleri, etkinlikler ve Arcade.",
-  applicationName: "F1 SOCIAL",
+  title: "F1 Social",
+  description: "F1 Social yarış tahminleri, etkinlikler ve Arcade.",
+  applicationName: "F1 Social",
   icons: {
     icon: [
       { url: "/icon.png", type: "image/png", sizes: "512x512" },
@@ -33,7 +33,6 @@ export const metadata: Metadata = {
     ],
   },
 };
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
