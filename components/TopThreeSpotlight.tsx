@@ -2367,4 +2367,66 @@ const styles = `
     .spotlight-driver .portrait-ring { width: 58px; height: 58px; }
   }
 
+
+/* MOBILE_SPOTLIGHT_COMPACT_FIX */
+@media (max-width: 900px) {
+  .spotlight-wrap {
+    width: 100% !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .spotlight-driver,
+  .spotlight-driver.spotlight-p1 {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-columns: 36px 48px minmax(0, 1fr) 34px !important;
+    gap: 6px !important;
+    padding: 10px 6px !important;
+  }
+
+  .spotlight-p1 .portrait-ring,
+  .spotlight-driver .portrait-ring {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .spotlight-driver-info,
+  .spotlight-timing {
+    min-width: 0 !important;
+  }
+
+  .spotlight-driver-info h3,
+  .spotlight-timing strong,
+  .spotlight-timing .current {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+  }
+
+  .spotlight-timing {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  .spotlight-timing small {
+    font-size: 7px !important;
+  }
+
+  .spotlight-timing strong,
+  .spotlight-timing .current {
+    font-size: clamp(9px, 2.8vw, 12px) !important;
+  }
+
+  .spotlight-tyre-zone {
+    min-width: 0 !important;
+  }
+
+  .spotlight-tyre {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 10px !important;
+  }
+}
+/* END MOBILE_SPOTLIGHT_COMPACT_FIX */
+
 `;
