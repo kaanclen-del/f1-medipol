@@ -7,38 +7,28 @@ import styles from "./HomeArcadeCarousel.module.css";
 const games = [
   {
     title: "F1 Manager",
-    description: "Takımını yönet, pilot transferlerini planla ve pit wall kararlarını sen ver.",
     href: "/arcade/manager",
     theme: "manager",
-    action: "MANAGER'I AÇ",
   },
   {
     title: "What If",
-    description: "Alternatif finiş sıraları kur ve şampiyona senaryolarını karşılaştır.",
     href: "/arcade/what-if",
     theme: "whatif",
-    action: "SENARYO OLUŞTUR",
   },
   {
     title: "Kart Rush 3D",
-    description: "3D pistte sür, rakiplerine karşı yarış ve hızlı aksiyona katıl.",
     href: "/arcade/kart-rush",
     theme: "rush",
-    action: "YARIŞA GİR",
   },
   {
     title: "Go-Kart Zamanlama",
-    description: "Karting turlarını kaydet, sürücüleri karşılaştır ve sıralamayı takip et.",
     href: "/arcade/gokart-zamanlama",
     theme: "timing",
-    action: "ZAMAN MERKEZİNİ AÇ",
   },
   {
     title: "MCOLD Grand Prix",
-    description: "Piste çık, motorları çalıştır ve Grand Prix mücadelesine katıl.",
     href: "/arcade/mcold-grand-prix",
     theme: "mcold",
-    action: "OYUNU OYNA",
   },
 ] as const;
 
@@ -57,12 +47,18 @@ export default function HomeArcadeCarousel() {
       })
       .then((result) => {
         if (cancelled || !result?.ok) return;
+
         const next: Record<string, string> = {};
+
         for (const item of result.backgrounds ?? []) {
-          if (typeof item.game_id === "string" && typeof item.image_url === "string") {
+          if (
+            typeof item.game_id === "string" &&
+            typeof item.image_url === "string"
+          ) {
             next[item.game_id] = item.image_url;
           }
         }
+
         setBackgrounds(next);
       })
       .catch(() => undefined);
@@ -79,30 +75,50 @@ export default function HomeArcadeCarousel() {
   const backgroundImage = backgrounds[game.theme];
 
   return (
-    <section className={styles.carousel} aria-label="F1 Social oyun seçici">
+    <section
+      className={styles.carousel}
+      aria-label="F1 Social oyun seçici"
+    >
       <div className={styles.stage}>
-        <button type="button" className={styles.arrow} onClick={() => move(-1)} aria-label="Önceki oyun">
-          ‹
-        </button>
-
-        <Link
+        <div
           key={game.href}
-          href={game.href}
           className={`${styles.gameCard} ${styles[game.theme]}`}
-          style={backgroundImage ? { backgroundImage: `linear-gradient(90deg,rgba(5,8,13,.9) 0%,rgba(5,8,13,.62) 48%,rgba(5,8,13,.18) 100%),url("${backgroundImage}")` } : undefined}
+          style={
+            backgroundImage
+              ? {
+                  backgroundImage: `linear-gradient(180deg, rgba(5,8,13,.52) 0%, rgba(5,8,13,.18) 42%, rgba(5,8,13,.4) 100%), url("${backgroundImage}")`,
+                }
+              : undefined
+          }
           aria-live="polite"
         >
-          <span className={styles.content}>
-            <span className={styles.title}>{game.title}</span>
-            <span className={styles.description}>{game.description}</span>
-            <span className={styles.action}>{game.action} <span aria-hidden="true">↗</span></span>
-          </span>
-          <span className={styles.watermark} aria-hidden="true">{String(active + 1).padStart(2, "0")}</span>
-        </Link>
+          <h2 className={styles.title}>{game.title}</h2>
 
-        <button type="button" className={styles.arrow} onClick={() => move(1)} aria-label="Sonraki oyun">
-          ›
-        </button>
+          <div className={styles.centerContent}>
+            <Link href={game.href} className={styles.action}>
+              OYUNU OYNA
+              <span aria-hidden="true">↗</span>
+            </Link>
+          </div>
+
+          <button
+            type="button"
+            className={`${styles.arrow} ${styles.arrowLeft}`}
+            onClick={() => move(-1)}
+            aria-label="Önceki oyun"
+          >
+            ‹
+          </button>
+
+          <button
+            type="button"
+            className={`${styles.arrow} ${styles.arrowRight}`}
+            onClick={() => move(1)}
+            aria-label="Sonraki oyun"
+          >
+            ›
+          </button>
+        </div>
       </div>
 
       <div className={styles.footer}>
@@ -112,7 +128,9 @@ export default function HomeArcadeCarousel() {
               key={item.href}
               type="button"
               onClick={() => setActive(index)}
-              className={index === active ? styles.activeDot : styles.dot}
+              className={
+                index === active ? styles.activeDot : styles.dot
+              }
               aria-label={`${index + 1}. oyun: ${item.title}`}
               aria-current={index === active ? "true" : undefined}
             />
