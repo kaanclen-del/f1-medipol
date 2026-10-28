@@ -2460,7 +2460,7 @@ const styles = `
   }
 
   .spotlight-acronym-row {
-    display: flex !important;
+    display: none !important;
     flex-wrap: nowrap !important;
     align-items: center;
     gap: 4px !important;

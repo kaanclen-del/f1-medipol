@@ -530,3 +530,77 @@
   .pageMode.keyboardOpen .chatMessages{padding:8px 11px 7px!important}
   .pageMode.keyboardOpen .replyDraft{padding:4px 8px!important}
 }
+
+
+/* F1SOCIAL_FULLSCREEN_DM_IMAGE_FIX */
+
+/* Masaüstü ve mobil: DM paneli ekranın tamamını kaplasın. */
+.popupMode {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  z-index: 12000 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+}
+
+.popupMode .panel {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  max-width: none !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  animation: none !important;
+  pointer-events: auto !important;
+  overflow: hidden !important;
+}
+
+.popupMode .chatMessages,
+.popupMode .listBody {
+  min-height: 0 !important;
+}
+
+/* Görsel içeren mesajlarda balonun gölge ve arka planını kaldır. */
+.popupMode .bubble:has(.messageImage),
+.popupMode .bubble:has(.mediaImage),
+.popupMode .bubble:has(.mediaVideo) {
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+}
+
+.popupMode .bubble:has(.messageImage) p,
+.popupMode .bubble:has(.mediaImage) p,
+.popupMode .bubble:has(.mediaVideo) p {
+  margin: 0 0 7px !important;
+}
+
+.popupMode .mediaLink,
+.popupMode .messageImage,
+.popupMode .mediaImage,
+.popupMode .mediaVideo {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 680px) {
+  .popupMode .panel {
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+  }
+}
