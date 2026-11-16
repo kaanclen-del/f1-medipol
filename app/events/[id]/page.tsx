@@ -618,6 +618,11 @@ export default async function EventDetailPage({
           font-size: 25px;
         }
 
+        :root[data-site-theme="light"] .event-hero h1,
+        :root[data-site-theme="light"] .event-featured-badge {
+          color: #ffffff !important;
+        }
+
         :root[data-site-theme="light"] .event-action-card,
         :root[data-site-theme="light"] .event-location-card {
           background: #ffffff;
