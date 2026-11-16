@@ -8,6 +8,7 @@ import {
 } from "react";
 
 import { useRouter } from "next/navigation";
+import EventImageCropper from "./EventImageCropper";
 
 type ApiResult = {
   ok?: boolean;
@@ -41,6 +42,9 @@ export default function AdminEventForm() {
 
   const [imageFile, setImageFile] =
     useState<File | null>(null);
+
+  const [cropSourceFile, setCropSourceFile] = useState<File | null>(null);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
 
   const [imageUrl, setImageUrl] =
     useState("");
@@ -207,6 +211,8 @@ export default function AdminEventForm() {
       form.reset();
 
       setImageFile(null);
+      setCropSourceFile(null);
+      setCropEditorOpen(false);
       setImageUrl("");
 
       setSuccess(true);
@@ -230,6 +236,7 @@ export default function AdminEventForm() {
   }
 
   return (
+    <>
     <form
       onSubmit={handleSubmit}
       style={{
@@ -420,19 +427,21 @@ export default function AdminEventForm() {
           Bilgisayarından JPG,
           PNG veya WEBP
           seçebilirsin.
-          Maksimum 5 MB.
+          Maksimum 20 MB.
         </p>
 
         <input
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={(event) => {
-            const file =
-              event.target
-                .files?.[0] ??
-              null;
+            const file = event.target.files?.[0] ?? null;
 
-            setImageFile(file);
+            if (file) {
+              setCropSourceFile(file);
+              setCropEditorOpen(true);
+            }
+
+            event.target.value = "";
           }}
           style={{
             ...inputStyle,
@@ -455,7 +464,7 @@ export default function AdminEventForm() {
               fontSize: "11px",
             }}
           >
-            ✓ Seçildi:{" "}
+            ✓ Kadraj hazır:{" "}
             {imageFile.name}
           </div>
         )}
@@ -594,7 +603,7 @@ export default function AdminEventForm() {
       <button
         type="submit"
         className="btn btn-red"
-        disabled={loading}
+        disabled={loading || cropEditorOpen}
         style={{
           minHeight: "48px",
           justifySelf: "start",
@@ -608,6 +617,22 @@ export default function AdminEventForm() {
           : "Etkinliği Oluştur"}
       </button>
     </form>
+
+    {cropSourceFile && cropEditorOpen && (
+      <EventImageCropper
+        file={cropSourceFile}
+        onApply={(croppedFile) => {
+          setImageFile(croppedFile);
+          setCropEditorOpen(false);
+          setCropSourceFile(null);
+        }}
+        onClose={() => {
+          setCropEditorOpen(false);
+          setCropSourceFile(null);
+        }}
+      />
+    )}
+    </>
   );
 }
 
