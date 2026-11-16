@@ -581,10 +581,16 @@ export default function DmDock({
         );
       });
 
-      // Okundu işaretleme ve bildirim yenilemeyi kritik yoldan çıkar.
-      void supabase.rpc("dm_mark_read", { p_other: otherId });
-      window.dispatchEvent(new CustomEvent("f1-notifications-updated"));
-      void refresh();
+      // Okundu olarak işaretle ve sayaç güncellemesini bekle.
+      const { error: markReadError } = await supabase.rpc("dm_mark_read", {
+        p_other: otherId,
+      });
+
+      if (markReadError) {
+        console.error("DM MARK READ ERROR:", markReadError);
+      }
+
+      await refresh();
 
       // Medya bilgileri ve imzalı URL'ler mesajlar ekrandayken yüklenir.
       void (async () => {
