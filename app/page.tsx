@@ -4068,6 +4068,68 @@ export default async function HomePage() {
           </section>
 
           {/* =================================================
+              EVENTS
+              ================================================= */}
+
+          <div className="section-head">
+            <div className="section-title">
+              <h2>
+                Etkinlikler
+              </h2>
+
+              <p>
+                Kulüp etkinlikleri.
+              </p>
+            </div>
+
+            <Link
+              href="/events"
+              className="section-link"
+            >
+              TÜM ETKİNLİKLER →
+            </Link>
+          </div>
+
+          <section className="events-stack" tabIndex={0} aria-label="Kulüp etkinlikleri. Daha fazla etkinlik için listeyi kaydırın">
+            {homeEvents.length ? homeEvents.map(({ event, upcoming }, index) => (
+              <Link href={`/events/${event.id}`} className="event-list-row" key={event.id}>
+                <div className="event-list-index">{String(index + 1).padStart(2, "0")}</div>
+                <div className="event-list-cover">
+                  {event.cover_image_url ? (
+                    <img
+                      src={event.cover_image_url}
+                      alt={`${event.title} etkinlik görseli`}
+                      loading="lazy"
+                      decoding="async"
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: `${eventThumbnailPositions.get(event.id)?.x ?? 50}% ${eventThumbnailPositions.get(event.id)?.y ?? 50}%`,
+                      }}
+                    />
+                  ) : <span>F1</span>}
+                </div>
+                <div className="event-list-info">
+                  <span className="event-list-meta">
+                    {upcoming ? "YAKLAŞAN ETKİNLİK" : "GEÇMİŞ ETKİNLİK"}
+                    <i aria-hidden="true">·</i>
+                    {formatEventType(event.event_type)}
+                  </span>
+                  <h3>{event.title}</h3>
+                  <p>{formatEventDate(event.start_at)}{event.location_name ? ` · ${event.location_name}` : ""}</p>
+                </div>
+                <span className="event-list-arrow" aria-hidden="true">↗</span>
+              </Link>
+            )) : (
+              <div className="events-stack-empty">Henüz yayımlanmış etkinlik bulunmuyor. Yeni etkinlikler burada sıralanacak.</div>
+            )}
+          </section>
+
+
+          {/* =================================================
               BOARD
               ================================================= */}
 
@@ -4125,68 +4187,6 @@ export default async function HomePage() {
               </div>
             </div>
           )}
-
-          {/* =================================================
-              EVENTS
-              ================================================= */}
-
-          <div className="section-head">
-            <div className="section-title">
-              <h2>
-                Etkinlikler
-              </h2>
-
-              <p>
-                Kulüp etkinlikleri.
-              </p>
-            </div>
-
-            <Link
-              href="/events"
-              className="section-link"
-            >
-              TÜM ETKİNLİKLER →
-            </Link>
-          </div>
-
-          <section className="events-stack" tabIndex={0} aria-label="Kulüp etkinlikleri. Daha fazla etkinlik için listeyi kaydırın">
-            {homeEvents.length ? homeEvents.map(({ event, upcoming }, index) => (
-              <Link href="/events" className="event-list-row" key={event.id}>
-                <div className="event-list-index">{String(index + 1).padStart(2, "0")}</div>
-                <div className="event-list-cover">
-                  {event.cover_image_url ? (
-                    <img
-                      src={event.cover_image_url}
-                      alt={`${event.title} etkinlik görseli`}
-                      loading="lazy"
-                      decoding="async"
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                        objectPosition: `${eventThumbnailPositions.get(event.id)?.x ?? 50}% ${eventThumbnailPositions.get(event.id)?.y ?? 50}%`,
-                      }}
-                    />
-                  ) : <span>F1</span>}
-                </div>
-                <div className="event-list-info">
-                  <span className="event-list-meta">
-                    {upcoming ? "YAKLAŞAN ETKİNLİK" : "GEÇMİŞ ETKİNLİK"}
-                    <i aria-hidden="true">·</i>
-                    {formatEventType(event.event_type)}
-                  </span>
-                  <h3>{event.title}</h3>
-                  <p>{formatEventDate(event.start_at)}{event.location_name ? ` · ${event.location_name}` : ""}</p>
-                </div>
-                <span className="event-list-arrow" aria-hidden="true">↗</span>
-              </Link>
-            )) : (
-              <div className="events-stack-empty">Henüz yayımlanmış etkinlik bulunmuyor. Yeni etkinlikler burada sıralanacak.</div>
-            )}
-          </section>
-
 
           {/* =================================================
               ARCADE — İKİ EŞİT OYUN KARTI

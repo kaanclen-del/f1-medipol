@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Header from "@/components/Header";
 import AddToCalendarButton from "@/components/AddToCalendarButton";
 import { loadPublishedEvents } from "@/lib/public-events-cache";
@@ -286,6 +287,19 @@ export default async function EventsPage() {
                     flexWrap: "wrap",
                   }}
                 >
+                  <Link
+                    href={`/events/${featuredEvent.id}`}
+                    className="btn"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "1px solid rgba(255,255,255,.18)",
+                    }}
+                  >
+                    Etkinlik Detayları →
+                  </Link>
+
                   {featuredEvent.registration_url && (
                     <a
                       href={featuredEvent.registration_url}
@@ -505,6 +519,18 @@ export default async function EventsPage() {
                           flexWrap: "wrap",
                         }}
                       >
+                        <Link
+                          href={`/events/${event.id}`}
+                          className="btn"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          Detayları Gör →
+                        </Link>
+
                         {event.registration_url && (
                           <a
                             href={event.registration_url}
@@ -517,7 +543,7 @@ export default async function EventsPage() {
                               justifyContent: "center",
                             }}
                           >
-                            Detay / Kayıt →
+                            Kayıt Ol →
                           </a>
                         )}
 
@@ -625,14 +651,18 @@ export default async function EventsPage() {
                           {formatEventDate(event.start_at)}
                         </div>
 
-                        <div
+                        <Link
+                          href={`/events/${event.id}`}
                           style={{
+                            display: "inline-block",
                             marginTop: "5px",
+                            color: "inherit",
                             fontWeight: 900,
+                            textDecoration: "none",
                           }}
                         >
                           {event.title}
-                        </div>
+                        </Link>
                       </div>
                     </div>
 
