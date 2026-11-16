@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+import EventImageCropper from "./EventImageCropper";
 
 type EventData = {
   id: string;
@@ -135,6 +136,9 @@ export default function AdminEventEditForm({
 
   const [imageFile, setImageFile] =
     useState<File | null>(null);
+  const [cropSourceFile, setCropSourceFile] =
+    useState<File | null>(null);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -419,10 +423,15 @@ export default function AdminEventEditForm({
             type="file"
             accept="image/jpeg,image/png,image/webp"
             onChange={(e) => {
-              const file =
-                e.target.files?.[0] ?? null;
+              const file = e.target.files?.[0] ?? null;
 
-              setImageFile(file);
+              if (file) {
+                setImageFile(null);
+                setCropSourceFile(file);
+                setCropEditorOpen(true);
+              }
+
+              e.target.value = "";
             }}
             style={inputStyle}
           />
@@ -451,6 +460,38 @@ export default function AdminEventEditForm({
           />
         </label>
       </div>
+
+      {cropSourceFile && cropEditorOpen && (
+        <EventImageCropper
+          file={cropSourceFile}
+          onApply={(croppedFile) => {
+            setImageFile(croppedFile);
+            setCropEditorOpen(false);
+            setCropSourceFile(null);
+          }}
+          onClose={() => {
+            setCropEditorOpen(false);
+            setCropSourceFile(null);
+          }}
+        />
+      )}
+
+      {imageFile && (
+        <div
+          style={{
+            padding: "10px 12px",
+            border: "1px solid rgba(40,190,120,.35)",
+            borderRadius: 8,
+            background: "rgba(40,190,120,.08)",
+            color: "#8ee0b5",
+            fontSize: 12,
+          }}
+        >
+          Kadraj hazır: {imageFile.name}
+          {" · "}
+          {(imageFile.size / (1024 * 1024)).toFixed(2)} MB
+        </div>
+      )}
 
       <label style={labelStyle}>
         Kayıt bağlantısı
