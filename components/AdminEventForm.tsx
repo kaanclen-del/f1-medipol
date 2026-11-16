@@ -138,6 +138,12 @@ export default function AdminEventForm() {
           ) || ""
         ).trim(),
 
+        locationMapUrl: String(
+          formData.get(
+            "locationMapUrl"
+          ) || ""
+        ).trim(),
+
         startAt: String(
           formData.get(
             "startAt"
@@ -334,6 +340,29 @@ export default function AdminEventForm() {
           />
         </label>
       </div>
+
+      <label>
+        <FieldTitle>
+          HARİTA BAĞLANTISI
+        </FieldTitle>
+
+        <input
+          name="locationMapUrl"
+          type="url"
+          placeholder="Google Maps veya Apple Haritalar bağlantısı"
+          style={inputStyle}
+        />
+
+        <p
+          style={{
+            color: "#8d98a6",
+            fontSize: "10px",
+            margin: "6px 0 0",
+          }}
+        >
+          Ziyaretçiler bu bağlantıyla etkinliğin konumunu haritada açabilir.
+        </p>
+      </label>
 
       <div
         style={{

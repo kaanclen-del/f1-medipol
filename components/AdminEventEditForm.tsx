@@ -14,6 +14,7 @@ type EventData = {
   event_type: string;
   location_name: string | null;
   location_address: string | null;
+  location_map_url: string | null;
   start_at: string;
   end_at: string | null;
   cover_image_url: string | null;
@@ -106,6 +107,9 @@ export default function AdminEventEditForm({
   );
   const [locationAddress, setLocationAddress] = useState(
     event.location_address ?? ""
+  );
+  const [locationMapUrl, setLocationMapUrl] = useState(
+    event.location_map_url ?? ""
   );
 
   const [startAt, setStartAt] = useState(
@@ -211,6 +215,7 @@ export default function AdminEventEditForm({
             eventType,
             locationName,
             locationAddress,
+            locationMapUrl,
             startAt,
             endAt,
             coverImageUrl: finalImageUrl,
@@ -340,6 +345,20 @@ export default function AdminEventEditForm({
           }
           style={inputStyle}
         />
+      </label>
+
+      <label style={labelStyle}>
+        Harita bağlantısı
+        <input
+          type="url"
+          value={locationMapUrl}
+          onChange={(e) => setLocationMapUrl(e.target.value)}
+          style={inputStyle}
+          placeholder="Google Maps veya Apple Haritalar bağlantısı"
+        />
+        <span style={{ color: "#8d98a6", fontSize: "11px" }}>
+          Ziyaretçiler bu bağlantıyla etkinliğin konumunu haritada açabilir.
+        </span>
       </label>
 
       <label style={labelStyle}>

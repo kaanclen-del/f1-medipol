@@ -49,6 +49,7 @@ export default async function EditEventPage({
         event_type,
         location_name,
         location_address,
+        location_map_url,
         start_at,
         end_at,
         cover_image_url,

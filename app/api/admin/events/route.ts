@@ -95,6 +95,25 @@ export async function POST(request: Request) {
         ? body.locationAddress.trim()
         : "";
 
+    const locationMapUrl =
+      typeof body.locationMapUrl === "string"
+        ? body.locationMapUrl.trim()
+        : "";
+
+    if (locationMapUrl) {
+      try {
+        const parsedMapUrl = new URL(locationMapUrl);
+        if (!["http:", "https:"].includes(parsedMapUrl.protocol)) {
+          throw new Error("Invalid protocol");
+        }
+      } catch {
+        return NextResponse.json(
+          { error: "Geçerli bir harita bağlantısı gir." },
+          { status: 400 }
+        );
+      }
+    }
+
     const coverImageUrl =
       typeof body.coverImageUrl === "string"
         ? body.coverImageUrl.trim()
@@ -203,6 +222,9 @@ export async function POST(request: Request) {
 
         location_address:
           locationAddress || null,
+
+        location_map_url:
+          locationMapUrl || null,
 
         start_at: startAt,
         end_at: endAt,

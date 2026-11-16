@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import AddToCalendarButton from "@/components/AddToCalendarButton";
 import { loadPublishedEvents } from "@/lib/public-events-cache";
 
 export const dynamic = "force-dynamic";
@@ -15,6 +16,7 @@ type EventRow = {
     | "other";
   location_name: string | null;
   location_address: string | null;
+  location_map_url: string | null;
   start_at: string;
   end_at: string | null;
   cover_image_url: string | null;
@@ -264,22 +266,56 @@ export default async function EventsPage() {
                   </p>
                 )}
 
-                {featuredEvent.registration_url && (
-                  <a
-                    href={featuredEvent.registration_url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn btn-red"
-                    style={{
-                      marginTop: "22px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    Etkinliğe Katıl →
-                  </a>
-                )}
+                <div
+                  style={{
+                    marginTop: "22px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "9px",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {featuredEvent.registration_url && (
+                    <a
+                      href={featuredEvent.registration_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="btn btn-red"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      Etkinliğe Katıl →
+                    </a>
+                  )}
+
+                  <AddToCalendarButton
+                    id={featuredEvent.id}
+                    title={featuredEvent.title}
+                    description={featuredEvent.description}
+                    location={[featuredEvent.location_name, featuredEvent.location_address].filter(Boolean).join(", ") || null}
+                    startAt={featuredEvent.start_at}
+                    endAt={featuredEvent.end_at}
+                  />
+
+                  {featuredEvent.location_map_url && (
+                    <a
+                      href={featuredEvent.location_map_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn"
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      Haritada Gör ↗
+                    </a>
+                  )}
+                </div>
               </div>
             </section>
           )}
@@ -453,21 +489,55 @@ export default async function EventsPage() {
                         </p>
                       )}
 
-                      {event.registration_url && (
-                        <a
-                          href={event.registration_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="btn"
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          Detay / Kayıt →
-                        </a>
-                      )}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "8px",
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {event.registration_url && (
+                          <a
+                            href={event.registration_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="btn btn-red"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            Detay / Kayıt →
+                          </a>
+                        )}
+
+                        <AddToCalendarButton
+                          id={event.id}
+                          title={event.title}
+                          description={event.description}
+                          location={[event.location_name, event.location_address].filter(Boolean).join(", ") || null}
+                          startAt={event.start_at}
+                          endAt={event.end_at}
+                        />
+
+                        {event.location_map_url && (
+                          <a
+                            href={event.location_map_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            Haritada Gör ↗
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </article>
                 ))}

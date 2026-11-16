@@ -140,6 +140,26 @@ export async function PATCH(
         body.locationAddress.trim() || null;
     }
 
+    if (typeof body.locationMapUrl === "string") {
+      const locationMapUrl = body.locationMapUrl.trim();
+
+      if (locationMapUrl) {
+        try {
+          const parsedMapUrl = new URL(locationMapUrl);
+          if (!["http:", "https:"].includes(parsedMapUrl.protocol)) {
+            throw new Error("Invalid protocol");
+          }
+        } catch {
+          return NextResponse.json(
+            { error: "Geçerli bir harita bağlantısı gir." },
+            { status: 400 }
+          );
+        }
+      }
+
+      updateData.location_map_url = locationMapUrl || null;
+    }
+
     if (typeof body.coverImageUrl === "string") {
       updateData.cover_image_url =
         body.coverImageUrl.trim() || null;
