@@ -394,12 +394,13 @@ export default async function EventsPage() {
 
           {regularUpcoming.length > 0 && (
             <section style={{ marginTop: "30px" }}>
-              <div className="eyebrow">UPCOMING</div>
+              <div className="eyebrow" style={{ color: "#ffffff" }}>UPCOMING</div>
 
               <h2
                 style={{
                   margin: "7px 0 17px",
                   fontSize: "30px",
+                  color: "#ffffff",
                 }}
               >
                 Yaklaşan Etkinlikler
@@ -457,7 +458,7 @@ export default async function EventsPage() {
                     <div style={{ padding: "19px" }}>
                       <div
                         style={{
-                          color: "#ff625b",
+                          color: "#ffffff",
                           fontSize: "9px",
                           fontWeight: 1000,
                         }}
@@ -470,6 +471,7 @@ export default async function EventsPage() {
                         style={{
                           margin: "8px 0",
                           fontSize: "20px",
+                          color: "#ffffff",
                         }}
                       >
                         {event.title}
@@ -478,7 +480,7 @@ export default async function EventsPage() {
                       {event.location_name && (
                         <div
                           style={{
-                            color: "#8c98a6",
+                            color: "#ffffff",
                             fontSize: "10px",
                             marginBottom: "9px",
                           }}
@@ -501,7 +503,7 @@ export default async function EventsPage() {
                       {event.description && (
                         <p
                           style={{
-                            color: "#8f9aa8",
+                            color: "#ffffff",
                             fontSize: "11px",
                             lineHeight: 1.6,
                             margin: "0 0 16px",
