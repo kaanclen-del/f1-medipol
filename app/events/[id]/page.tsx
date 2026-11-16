@@ -618,6 +618,28 @@ export default async function EventDetailPage({
           font-size: 25px;
         }
 
+        :root[data-site-theme="light"] .event-action-card,
+        :root[data-site-theme="light"] .event-location-card {
+          background: #ffffff;
+          border-color: #e5e7eb;
+          box-shadow: 0 12px 32px rgba(20, 30, 45, .08);
+        }
+
+        :root[data-site-theme="light"] .event-action-card h2,
+        :root[data-site-theme="light"] .event-location-card h2,
+        :root[data-site-theme="light"] .event-location-name {
+          color: #171b22;
+        }
+
+        :root[data-site-theme="light"] .event-action-card > p,
+        :root[data-site-theme="light"] .event-location-address {
+          color: #515b68;
+        }
+
+        :root[data-site-theme="light"] .event-action-card .event-no-registration {
+          color: #343b46;
+        }
+
         .event-action-card > p {
           margin: 0 0 20px;
           color: var(--muted, #a3adba);
