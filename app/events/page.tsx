@@ -248,7 +248,18 @@ export default async function EventsPage() {
                   </span>
 
                   {featuredEvent.location_name && (
-                    <span>📍 {featuredEvent.location_name}</span>
+                    featuredEvent.location_map_url ? (
+                      <a
+                        href={featuredEvent.location_map_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "inherit", textDecoration: "none" }}
+                      >
+                        📍 {featuredEvent.location_name}
+                      </a>
+                    ) : (
+                      <span>📍 {featuredEvent.location_name}</span>
+                    )
                   )}
                 </div>
 
@@ -300,21 +311,7 @@ export default async function EventsPage() {
                     endAt={featuredEvent.end_at}
                   />
 
-                  {featuredEvent.location_map_url && (
-                    <a
-                      href={featuredEvent.location_map_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="btn"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      Haritada Gör ↗
-                    </a>
-                  )}
+
                 </div>
               </div>
             </section>
@@ -472,7 +469,18 @@ export default async function EventsPage() {
                             marginBottom: "9px",
                           }}
                         >
-                          📍 {event.location_name}
+                          {event.location_map_url ? (
+                            <a
+                              href={event.location_map_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              style={{ color: "inherit", textDecoration: "none" }}
+                            >
+                              📍 {event.location_name}
+                            </a>
+                          ) : (
+                            <>📍 {event.location_name}</>
+                          )}
                         </div>
                       )}
 
@@ -522,21 +530,7 @@ export default async function EventsPage() {
                           endAt={event.end_at}
                         />
 
-                        {event.location_map_url && (
-                          <a
-                            href={event.location_map_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn"
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            Haritada Gör ↗
-                          </a>
-                        )}
+
                       </div>
                     </div>
                   </article>
