@@ -147,7 +147,7 @@ export default async function EventDetailPage({
                     </span>
                   </div>
 
-                  <h1>{event.title}</h1>
+                  <h1 style={{ color: "#ffffff" }}>{event.title}</h1>
 
                   <div className="event-hero-meta">
                     <span>
